@@ -31,8 +31,8 @@ public class InstructionSet {
 
     public void parseAndExecute(@NotNull Processor processor, int address) {
         Instruction instruction = parse(processor.MEMORY, address);
-        instruction.execute(processor, processor.MEMORY.getValuesAt(address + 1, instruction.LENGTH - 1));
-        processor.IP.setValue(processor.IP.getValue() + instruction.LENGTH);
+        if (!instruction.execute(processor, processor.MEMORY.getValuesAt(address + 1, instruction.LENGTH - 1)))
+            processor.IP.setValue(processor.IP.getValue() + instruction.LENGTH);
     }
 
 }
