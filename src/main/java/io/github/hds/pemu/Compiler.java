@@ -20,13 +20,20 @@ public class Compiler {
 
         while (reader.hasNextLine()) {
             String line = reader.nextLine().trim();
-            String[] tokens = line.split("\t");
+            String[] tokens = line.split("[\\s,]+");
             for (String token : tokens) {
                 int instructionCode = processor.INSTRUCTIONSET.getKeyCode(token);
                 if (instructionCode >= 0)
                     program.add(instructionCode);
-                else
-                    program.add(Integer.parseInt(token));
+                else {
+                    int radix = 10;
+                    String number = token;
+                         if (number.startsWith("0x")) radix = 16;
+                    else if (number.startsWith("0o")) radix =  8;
+                    else if (number.startsWith("0b")) radix =  2;
+                    if (radix != 10) number = number.substring(2);
+                    program.add(Integer.parseInt(number, radix));
+                }
             }
         }
 
