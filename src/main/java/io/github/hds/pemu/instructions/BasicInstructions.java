@@ -23,6 +23,30 @@ public class BasicInstructions {
         }
     };
 
+    public static final Instruction DATA = new Instruction("DATA", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            p.DATA.setValueAt(args[0], args[1]);
+            return false;
+        }
+    };
+
+    public static final Instruction OUTP = new Instruction("OUTP", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            System.out.println(p.PROGRAM.toString(args[0]));
+            return false;
+        }
+    };
+
+    public static final Instruction OUTD = new Instruction("OUTD", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            System.out.println(p.DATA.toString(args[0]));
+            return false;
+        }
+    };
+
     public static final Instruction JMP = new Instruction("JMP", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
@@ -57,7 +81,7 @@ public class BasicInstructions {
     };
 
     public static final InstructionSet BASIC_SET = new InstructionSet(
-            new Instruction[] { NULL, MOV, SWP, JMP, PUSH, POP, HLT }
+            new Instruction[] { NULL, MOV, SWP, DATA, OUTP, OUTD, JMP, PUSH, POP, HLT }
     );
 
 }
