@@ -10,7 +10,7 @@ public class BasicInstructions {
     public static final Instruction MOV = new Instruction("MOV", 2) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            p.MEMORY.setValueAt(args[0], p.MEMORY.getValueAt(args[1]));
+            p.DATA.setValueAt(args[0], p.DATA.getValueAt(args[1]));
             return false;
         }
     };
@@ -18,7 +18,7 @@ public class BasicInstructions {
     public static final Instruction SWP = new Instruction("SWP", 2) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            p.MEMORY.setValueAt(args[0], p.MEMORY.setValueAt(args[1], p.MEMORY.getValueAt(args[0])));
+            p.DATA.setValueAt(args[0], p.DATA.setValueAt(args[1], p.DATA.getValueAt(args[0])));
             return false;
         }
     };
@@ -26,8 +26,7 @@ public class BasicInstructions {
     public static final Instruction JMP = new Instruction("JMP", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            p.IP.setValue(args[0]);
-
+            p.IP.value = args[0];
             return true;
         }
     };
@@ -35,8 +34,8 @@ public class BasicInstructions {
     public static final Instruction PUSH = new Instruction("PUSH", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            p.MEMORY.setValueAt(p.SP.getValue(), p.MEMORY.getValueAt(args[0]));
-            p.SP.setValue(p.SP.getValue() - 1);
+            p.DATA.setValueAt(p.SP.getValue(), p.DATA.getValueAt(args[0]));
+            p.SP.value--;
             return false;
         }
     };
@@ -44,9 +43,7 @@ public class BasicInstructions {
     public static final Instruction POP = new Instruction("POP", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            int lastStackAddress = p.SP.getValue() + 1;
-            p.MEMORY.setValueAt(args[0], p.MEMORY.getValueAt(lastStackAddress));
-            p.SP.setValue(lastStackAddress);
+            p.DATA.setValueAt(args[0], p.DATA.getValueAt(++p.SP.value));
             return false;
         }
     };

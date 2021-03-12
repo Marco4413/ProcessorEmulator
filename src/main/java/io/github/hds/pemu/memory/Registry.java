@@ -7,7 +7,7 @@ public class Registry {
     public final String NAME;
     public final String SHORT;
 
-    private byte value = 0;
+    public int value = 0;
 
     public Registry(@NotNull String name) {
         NAME = name;
@@ -27,14 +27,13 @@ public class Registry {
     }
 
     public int getValue() {
-        return Byte.toUnsignedInt(value);
+        return value;
     }
 
     public int setValue(int value) {
-        int oldValue = getValue();
-        this.value = (byte) value;
+        int oldValue = this.value;
+        this.value = value;
         return oldValue;
     }
-
 
 }
