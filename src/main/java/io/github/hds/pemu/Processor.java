@@ -1,10 +1,9 @@
 package io.github.hds.pemu;
 
-import io.github.hds.pemu.instructions.Instruction;
+import io.github.hds.pemu.instructions.BasicInstructions;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.Memory;
 import io.github.hds.pemu.memory.Registry;
-import org.jetbrains.annotations.NotNull;
 
 public class Processor {
 
@@ -15,52 +14,25 @@ public class Processor {
 
     public final Memory MEMORY;
 
-    public final InstructionSet INSTRUCTIONSET = new InstructionSet(
-            new Instruction[] {
-                    new Instruction("NULL", 0),
-                    new Instruction("MOV", 2) {
-                        @Override
-                        public void execute(@NotNull Processor p, int[] args) {
-                            p.MEMORY.setValueAt(args[0], p.MEMORY.getValueAt(args[1]));
-                        }
-                    },
-                    new Instruction("SWP", 2) {
-                        @Override
-                        public void execute(@NotNull Processor p, int[] args) {
-                            p.MEMORY.setValueAt(args[0], p.MEMORY.setValueAt(args[1], p.MEMORY.getValueAt(args[0])));
-                        }
-                    },
-                    new Instruction("PUSH", 1) {
-                        @Override
-                        public void execute(@NotNull Processor p, int[] args) {
-                            p.MEMORY.setValueAt(p.SP.getValue(), p.MEMORY.getValueAt(args[0]));
-                            p.SP.setValue(p.SP.getValue() - 1);
-                        }
-                    },
-                    new Instruction("POP", 1) {
-                        @Override
-                        public void execute(@NotNull Processor p, int[] args) {
-                            int lastStackAddress = p.SP.getValue() + 1;
-                            p.MEMORY.setValueAt(args[0], p.MEMORY.getValueAt(lastStackAddress));
-                            p.SP.setValue(lastStackAddress);
-                        }
-                    },
-                    new Instruction("HLT", 0) {
-                        @Override
-                        public void execute(@NotNull Processor p, int[] args) {
-                            p.stop();
-                        }
-                    }
-            }
-    );
+    public final InstructionSet INSTRUCTIONSET;
 
     public Processor() {
-        this(256);
+        this(256, BasicInstructions.BASIC_SET);
     }
 
     public Processor(int memSize) {
+        this(memSize, BasicInstructions.BASIC_SET);
+    }
+
+    public Processor(InstructionSet instructionSet) {
+        this(256, instructionSet);
+    }
+
+    public Processor(int memSize, InstructionSet instructionSet) {
         MEMORY = new Memory(memSize);
         SP.setValue(MEMORY.getSize() - 1);
+
+        INSTRUCTIONSET = instructionSet;
     }
 
     public void run() {

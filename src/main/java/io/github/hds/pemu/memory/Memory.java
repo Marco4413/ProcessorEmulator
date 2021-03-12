@@ -1,14 +1,14 @@
 package io.github.hds.pemu.memory;
 
 public class Memory {
-    private final int[] MEMORY;
+    private final byte[] MEMORY;
 
     public Memory() {
         this(32);
     }
 
     public Memory(int size) {
-        MEMORY = new int[size];
+        MEMORY = new byte[size];
     }
 
     public String toString() {
@@ -34,14 +34,14 @@ public class Memory {
 
     public int setValueAt(int address, int value) {
         validateAddress(address);
-        int oldValue = MEMORY[address];
-        MEMORY[address] = value;
+        int oldValue = getValueAt(address);
+        MEMORY[address] = (byte) value;
         return oldValue;
     }
 
     public int getValueAt(int address) {
         validateAddress(address);
-        return MEMORY[address];
+        return Byte.toUnsignedInt(MEMORY[address]);
     }
 
     public int[] setValuesAt(int address, int[] values) {
@@ -50,8 +50,8 @@ public class Memory {
 
         int[] oldValues = new int[values.length];
         for (int i = 0; i < values.length; i++) {
-            oldValues[i] = MEMORY[address + i];
-            MEMORY[address + i] = values[i];
+            oldValues[i] = getValueAt(address + i);
+            MEMORY[address + i] = (byte) values[i];
         }
         return oldValues;
     }
@@ -62,7 +62,7 @@ public class Memory {
 
         int[] values = new int[size];
         for (int i = 0; i < size; i++) {
-            values[i] = MEMORY[address + i];
+            values[i] = getValueAt(address + i);
         }
         return values;
     }
