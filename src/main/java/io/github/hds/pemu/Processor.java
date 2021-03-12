@@ -12,25 +12,28 @@ public class Processor {
     public final Registry IP = new Registry("Instruction Pointer");
     public final Registry SP = new Registry("Stack Pointer");
 
-    public final Memory MEMORY;
+    public final Memory PROGRAM;
+    public final Memory DATA;
 
     public final InstructionSet INSTRUCTIONSET;
 
     public Processor() {
-        this(256, BasicInstructions.BASIC_SET);
+        this(Memory.MAX_UNSIGNED_BYTE);
     }
 
     public Processor(int memSize) {
-        this(memSize, BasicInstructions.BASIC_SET);
+        this(memSize, memSize);
     }
 
-    public Processor(InstructionSet instructionSet) {
-        this(256, instructionSet);
+    public Processor(int dataSize, int programSize) {
+        this(dataSize, programSize, BasicInstructions.BASIC_SET);
     }
 
-    public Processor(int memSize, InstructionSet instructionSet) {
-        MEMORY = new Memory(memSize);
-        SP.setValue(MEMORY.getSize() - 1);
+    public Processor(int dataSize, int programSize, InstructionSet instructionSet) {
+        PROGRAM = new Memory(programSize);
+        DATA = new Memory(dataSize);
+
+        SP.value = DATA.getSize() - 1;
 
         INSTRUCTIONSET = instructionSet;
     }
@@ -41,16 +44,10 @@ public class Processor {
         isRunning = true;
         while (isRunning) {
 
-            INSTRUCTIONSET.parseAndExecute(this, IP.getValue());
+            int instructionLength = INSTRUCTIONSET.parseAndExecute(this, PROGRAM, IP.value);
+            IP.value += instructionLength;
 
         }
-    }
-
-    public void run(int fromAddress) {
-        if (isRunning) return;
-
-        IP.setValue(fromAddress);
-        run();
     }
 
     public void stop() { isRunning = false; }

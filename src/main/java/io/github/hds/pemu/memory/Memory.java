@@ -1,10 +1,13 @@
 package io.github.hds.pemu.memory;
 
 public class Memory {
+
+    public static int MAX_UNSIGNED_BYTE = (int) Math.pow(2, Byte.SIZE);
+
     private final byte[] MEMORY;
 
     public Memory() {
-        this(32);
+        this(MAX_UNSIGNED_BYTE);
     }
 
     public Memory(int size) {

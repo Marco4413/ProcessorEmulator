@@ -29,10 +29,11 @@ public class InstructionSet {
         return INSTRUCTIONS[keycode];
     }
 
-    public void parseAndExecute(@NotNull Processor processor, int address) {
-        Instruction instruction = parse(processor.MEMORY, address);
-        if (!instruction.execute(processor, processor.MEMORY.getValuesAt(address + 1, instruction.LENGTH - 1)))
-            processor.IP.setValue(processor.IP.getValue() + instruction.LENGTH);
+    public int parseAndExecute(@NotNull Processor processor, @NotNull Memory memory, int address) {
+        Instruction instruction = parse(memory, address);
+        if (!instruction.execute(processor, memory.getValuesAt(address + 1, instruction.LENGTH - 1)))
+            return instruction.LENGTH;
+        return 0;
     }
 
 }
