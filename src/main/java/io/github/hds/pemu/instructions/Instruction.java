@@ -13,6 +13,6 @@ public class Instruction {
         LENGTH = length + 1;
     }
 
-    public void execute(Processor p, int[] args) { }
+    public void execute(@NotNull Processor p, int[] args) { }
 
 }
