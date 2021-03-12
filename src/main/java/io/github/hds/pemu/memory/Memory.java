@@ -21,7 +21,7 @@ public class Memory {
     public String toString(int width) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < MEMORY.length; i++) {
-            builder.append(MEMORY[i]).append('\t');
+            builder.append(Byte.toUnsignedInt(MEMORY[i])).append('\t');
 
             if ((i + 1) % width == 0) builder.append('\n');
         }
