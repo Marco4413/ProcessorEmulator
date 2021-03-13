@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'io.github.hds'
-version '0.3-DEV'
+version '0.4-DEV'
 
 repositories {
     mavenCentral()
@@ -18,6 +18,17 @@ test {
     useJUnitPlatform()
 }
 
+jar {
+    archiveBaseName = 'PEMU'
+    archiveVersion =  version
+
+    manifest {
+        attributes(
+                'Main-Class': 'io.github.hds.pemu.Main'
+        )
+    }
+}
+
 dependencies {
-    compileOnly "org.jetbrains:annotations:20.1.0"
+    compileOnly 'org.jetbrains:annotations:20.1.0'
 }

@@ -1,0 +1,22 @@
+; Defining memory addresses to data constants
+@count 0, @index 1, @step 2, @newline 3
+
+:init
+; Initializing data constants to their addresses
+DATA @count 20
+DATA @index 0
+DATA @step 1
+DATA @newline 10
+
+:start
+; Write current index and newline character
+OUTI @index
+OUTC @newline
+
+; Increase index and check if we're at the last one
+ADD @index @step
+CMP @count @index
+
+; If we're not on the last index jump back to start
+JNZ :start
+HLT
