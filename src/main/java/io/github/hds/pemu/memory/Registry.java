@@ -1,5 +1,6 @@
 package io.github.hds.pemu.memory;
 
+import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class Registry {
@@ -10,15 +11,7 @@ public class Registry {
     public int value = 0;
 
     public Registry(@NotNull String name) {
-        NAME = name;
-
-        StringBuilder shortName = new StringBuilder();
-        String[] words = name.split("\\s");
-        for (String word : words) {
-            shortName.append( word.charAt(0) );
-        }
-
-        SHORT = shortName.toString().toUpperCase();
+        this(name, StringUtils.toShortName(name));
     }
 
     public Registry(@NotNull String name, @NotNull String shortName) {
