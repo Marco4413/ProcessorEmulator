@@ -10,8 +10,15 @@ import java.util.Scanner;
 
 public class Compiler {
 
-    private enum LineType {
-        NONE, INSTR, CONST, LABEL
+    private static class LabelData {
+        public int pointer = -1;
+        public ArrayList<Integer> occurrences = new ArrayList<>();
+
+        public LabelData() { }
+
+        public LabelData(int pointer) {
+            this.pointer = pointer;
+        }
     }
 
     private static int parseInt(@NotNull String str) {
@@ -25,11 +32,11 @@ public class Compiler {
     }
 
     private static void parseConstant(@NotNull ArrayList<Integer> program, @NotNull HashMap<String, Integer> constants, @NotNull Tokenizer tokenizer, boolean assign) {
-        String constName = tokenizer.consumeNext("\\s+");
+        String constName = tokenizer.consumeNext(Tokens.SPACE);
         if (constName == null) throw new IllegalStateException("No name specified for constant!");
 
         if (assign) {
-            String value = tokenizer.consumeNext("\\s+");
+            String value = tokenizer.consumeNext(Tokens.SPACE);
             if (value == null) throw new IllegalStateException("Constant: " + constName + " value wasn't specified!");
 
             try {
@@ -44,19 +51,8 @@ public class Compiler {
         }
     }
 
-    private static class LabelData {
-        public int pointer = -1;
-        public ArrayList<Integer> occurrences = new ArrayList<>();
-
-        public LabelData() { }
-
-        public LabelData(int pointer) {
-            this.pointer = pointer;
-        }
-    }
-
     private static void parseLabel(@NotNull ArrayList<Integer> program, @NotNull HashMap<String, LabelData> labels, @NotNull Tokenizer tokenizer, boolean assign) {
-        String labelName = tokenizer.consumeNext("\\s+");
+        String labelName = tokenizer.consumeNext(Tokens.SPACE);
         if (labelName == null) throw new IllegalStateException("No name specified for label!");
 
         LabelData data = labels.containsKey(labelName) ? labels.get(labelName) : new LabelData();
@@ -84,44 +80,33 @@ public class Compiler {
         while (reader.hasNextLine()) {
             String line = reader.nextLine().trim();
 
-            Tokenizer tokenizedLine = new Tokenizer(line, true, "\\s", ",", ":", "@", ";");
+            Tokenizer tokenizedLine = new Tokenizer(line, true, Tokens.TOKENIZER_FILTER);
             tokenizedLine.removeDuplicates();
-            LineType currentLineType = LineType.NONE;
+            Token currentState = Tokens.SPACE;
 
-            while (tokenizedLine.hasNext()) {
-                String token = tokenizedLine.consumeNext();
-                     if (token.equals(";")) break;
-                else if (token.matches("[\\s,]+")) continue;
+            while (true) {
+                String token = tokenizedLine.consumeNext(Tokens.DELIMITERS);
+                if (token == null || Tokens.COMMENT.equals(token)) break;
 
-                switch (currentLineType) {
-                    case INSTR: {
-                        if (token.equals(":")) {
-                            parseLabel(program, labels, tokenizedLine, false);
-                        } else if (token.equals("@")) {
-                            parseConstant(program, constants, tokenizedLine, false);
-                        } else
-                            program.add(parseInt(token));
-                        break;
-                    }
-                    case NONE: {
-                        switch (token) {
-                            case ":": {
-                                parseLabel(program, labels, tokenizedLine, true);
-                                currentLineType = LineType.LABEL;
-                                break;
-                            }
-                            case "@": {
-                                parseConstant(program, constants, tokenizedLine, true);
-                                currentLineType = LineType.CONST;
-                                break;
-                            }
-                            default: {
-                                int instructionCode = processor.INSTRUCTIONSET.getKeyCode(token);
-                                if (instructionCode >= 0) {
-                                    program.add(instructionCode);
-                                    currentLineType = LineType.INSTR;
-                                }
-                            }
+                if (currentState.equals(Tokens.INSTR)) {
+                    if (Tokens.LABEL.equals(token))
+                        parseLabel(program, labels, tokenizedLine, false);
+                    else if (Tokens.CONSTANT.equals(token))
+                        parseConstant(program, constants, tokenizedLine, false);
+                    else
+                        program.add(parseInt(token));
+                } else {
+                    if (Tokens.LABEL.equals(token)) {
+                        parseLabel(program, labels, tokenizedLine, true);
+                        currentState = Tokens.LABEL;
+                    } else if (Tokens.CONSTANT.equals(token)) {
+                        parseConstant(program, constants, tokenizedLine, true);
+                        currentState = Tokens.CONSTANT;
+                    } else {
+                        int instructionCode = processor.INSTRUCTIONSET.getKeyCode(token);
+                        if (instructionCode >= 0) {
+                            program.add(instructionCode);
+                            currentState = Tokens.INSTR;
                         }
                     }
                 }

@@ -1,6 +1,9 @@
-@a 0x0A
-@b 0x14
+; Defining constants
+; Multiple labels and constants can be defined
+;  on the same line by putting either a space or comma
+@a 0x0A, @b 0x14
 
+; Defining main label
 :main
 CALL  :reset
 OUTD  8
@@ -8,6 +11,7 @@ SWP   0, 1
 OUTD  8
 HLT
 
+; Defining reset function
 :reset
 DATA  0, @a
 DATA  1, @b
