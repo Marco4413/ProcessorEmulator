@@ -1,6 +1,7 @@
 package io.github.hds.pemu.compiler;
 
 import io.github.hds.pemu.Processor;
+import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
@@ -21,16 +22,6 @@ public class Compiler {
         }
     }
 
-    private static int parseInt(@NotNull String str) {
-        int radix = 10;
-        String number = str;
-             if (number.startsWith("0x")) radix = 16;
-        else if (number.startsWith("0o")) radix =  8;
-        else if (number.startsWith("0b")) radix =  2;
-        if (radix != 10) number = number.substring(2);
-        return Integer.parseInt(number, radix);
-    }
-
     private static void parseConstant(@NotNull ArrayList<Integer> program, @NotNull HashMap<String, Integer> constants, @NotNull Tokenizer tokenizer, boolean assign) {
         String constName = tokenizer.consumeNext(Tokens.SPACE);
         if (constName == null) throw new IllegalStateException("No name specified for constant!");
@@ -40,7 +31,7 @@ public class Compiler {
             if (value == null) throw new IllegalStateException("Constant: " + constName + " value wasn't specified!");
 
             try {
-                constants.put(constName, parseInt(value));
+                constants.put(constName, StringUtils.parseInt(value));
             } catch (Exception err) {
                 throw new IllegalStateException("Invalid value specified for constant: " + constName);
             }
@@ -94,7 +85,7 @@ public class Compiler {
                     else if (Tokens.CONSTANT.equals(token))
                         parseConstant(program, constants, tokenizedLine, false);
                     else
-                        program.add(parseInt(token));
+                        program.add(StringUtils.parseInt(token));
                 } else {
                     if (Tokens.LABEL.equals(token)) {
                         parseLabel(program, labels, tokenizedLine, true);
