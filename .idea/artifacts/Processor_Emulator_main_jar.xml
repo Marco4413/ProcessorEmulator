@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Processor_Emulator.main:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Processor_Emulator_main_jar</output-path>
+    <root id="archive" name="Processor_Emulator.main.jar">
+      <element id="module-output" name="Processor_Emulator.main" />
+      <element id="file-copy" path="$PROJECT_DIR$/LICENSE.md" />
+      <element id="file-copy" path="$PROJECT_DIR$/README.md" />
+      <element id="directory" name="META-INF">
+        <element id="dir-copy" path="$PROJECT_DIR$/src/main/resources/META-INF" />
+      </element>
+    </root>
+  </artifact>
+</component>
