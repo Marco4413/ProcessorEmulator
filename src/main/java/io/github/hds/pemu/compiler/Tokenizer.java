@@ -18,6 +18,19 @@ public class Tokenizer {
         tokens = str.split(regex);
     }
 
+    public Tokenizer(@NotNull String str, boolean keepDelimiters, @NotNull Token... tokens) {
+        StringBuilder ruleBuilder = new StringBuilder();
+        for (Token token : tokens) {
+            ruleBuilder.append(token.REGEX);
+        }
+
+        String rule = ruleBuilder.toString();
+        String regex = keepDelimiters ?
+                "((?<=[" + rule + "])|(?=[" + rule + "]))" :
+                "[" + rule + "]+";
+        this.tokens = str.split(regex);
+    }
+
     public void removeDuplicates() {
         ArrayList<String> newTokens = new ArrayList<>();
         int offset = 0;
@@ -60,6 +73,22 @@ public class Tokenizer {
         while (hasNext()) {
             String token = consumeNext();
             if (token == null || !token.matches(blacklist)) return token;
+        }
+        return null;
+    }
+
+    public @Nullable String consumeNext(Token... tokenBlacklist) {
+        while (hasNext()) {
+            String token = consumeNext();
+            if (token == null) return null;
+
+            boolean isValid = true;
+            for (Token blacklisted : tokenBlacklist) {
+                if (!isValid) break;
+
+                isValid = !blacklisted.equals(token);
+            }
+            if (isValid) return token;
         }
         return null;
     }
