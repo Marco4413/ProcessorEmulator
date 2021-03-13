@@ -2,6 +2,7 @@ package io.github.hds.pemu;
 
 import io.github.hds.pemu.compiler.Compiler;
 import io.github.hds.pemu.arguments.ArgumentsParser;
+import io.github.hds.pemu.processor.Processor;
 
 public class Main {
 
@@ -11,8 +12,9 @@ public class Main {
         // Define valid options
         parser.defineFlag("-help", "-h")
               .defineStr("-program", "-p", "/example.pemu")
-              .defineInt("-pmem", "-pm", 64)
-              .defineInt("-dmem", "-dm", 64);
+              .defineInt("-bits", "-b", 16)
+              .defineInt("-pmem", "-pm", 128)
+              .defineInt("-dmem", "-dm", 128);
         // Parse arguments
         parser.parse(args);
 
@@ -24,11 +26,19 @@ public class Main {
 
         // Get specified program path and capacities
         String programPath = (String) parser.getOption("-program").value;
+        int wordSize       = (int) parser.getOption("-bits").value;
         int dataMemory     = (int) parser.getOption("-dmem").value;
         int programMemory  = (int) parser.getOption("-pmem").value;
 
-        // Create a new Processor with the specified memory capacity
-        Processor proc = new Processor(dataMemory, programMemory);
+        // Create a new Processor with the specified values
+        Processor proc;
+        try {
+            proc = new Processor(wordSize, dataMemory, programMemory);
+        } catch (Exception err) {
+            System.err.println("Couldn't create processor!");
+            err.printStackTrace();
+            return;
+        }
 
         // Compile the specified program
         int[] compiledProgram;
@@ -51,6 +61,7 @@ public class Main {
 
         // Run the processor
         try {
+            System.out.println("Running Processor:\n" + proc.getInfo());
             proc.run();
         } catch (Exception err) {
             System.err.println("Error while running program!");

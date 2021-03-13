@@ -1,10 +1,11 @@
-package io.github.hds.pemu;
+package io.github.hds.pemu.processor;
 
 import io.github.hds.pemu.instructions.BasicInstructions;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.Flag;
 import io.github.hds.pemu.memory.Memory;
 import io.github.hds.pemu.memory.Registry;
+import org.jetbrains.annotations.NotNull;
 
 public class Processor {
 
@@ -21,25 +22,32 @@ public class Processor {
 
     public final InstructionSet INSTRUCTIONSET;
 
-    public Processor() {
-        this(Memory.MAX_UNSIGNED_BYTE);
+    public Processor(int bits) {
+        this(256, 256);
     }
 
-    public Processor(int memSize) {
-        this(memSize, memSize);
+    public Processor(int bits, int memSize) {
+        this(bits, memSize, memSize);
     }
 
-    public Processor(int dataSize, int programSize) {
-        this(dataSize, programSize, BasicInstructions.BASIC_SET);
+    public Processor(int bits, int dataSize, int programSize) {
+        this(bits, dataSize, programSize, BasicInstructions.BASIC_SET);
     }
 
-    public Processor(int dataSize, int programSize, InstructionSet instructionSet) {
-        PROGRAM = new Memory(programSize);
-        DATA = new Memory(dataSize);
+    public Processor(int bits, int dataSize, int programSize, InstructionSet instructionSet) {
+        Word word = new Word(bits);
+        PROGRAM = new Memory(programSize, word);
+        DATA = new Memory(dataSize, word);
 
         SP.value = DATA.getSize() - 1;
 
         INSTRUCTIONSET = instructionSet;
+    }
+
+    public @NotNull String getInfo() {
+        return "\tData Memory:\t" + DATA.getSize() + 'x' + DATA.WORD.BYTES + " Bytes\n" +
+               "\tProgram Memory:\t" + PROGRAM.getSize() + 'x' + PROGRAM.WORD.BYTES + " Bytes\n" +
+               "\tInstructions:\t" + INSTRUCTIONSET.getSize() + "\n";
     }
 
     public void run() {
