@@ -77,6 +77,45 @@ public class BasicInstructions {
         }
     };
 
+    public static final Instruction SUB = new Instruction("SUB", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            int sub = p.DATA.getValueAt(args[0]) + ~((byte) p.DATA.getValueAt(args[1])) + 1;
+
+            p.CARRY.value = sub >= Memory.MAX_UNSIGNED_BYTE;
+            p.ZERO.value  = (byte) sub == 0;
+
+            p.DATA.setValueAt(args[0], sub);
+            return false;
+        }
+    };
+
+    public static final Instruction MUL = new Instruction("MUL", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            int mult = p.DATA.getValueAt(args[0]) * p.DATA.getValueAt(args[1]);
+
+            p.CARRY.value = mult >= Memory.MAX_UNSIGNED_BYTE;
+            p.ZERO.value  = (byte) mult == 0;
+
+            p.DATA.setValueAt(args[0], mult);
+            return false;
+        }
+    };
+
+    public static final Instruction DIV = new Instruction("DIV", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            int div = p.DATA.getValueAt(args[0]) / p.DATA.getValueAt(args[1]);
+
+            p.CARRY.value = div >= Memory.MAX_UNSIGNED_BYTE;
+            p.ZERO.value  = (byte) div == 0;
+
+            p.DATA.setValueAt(args[0], div);
+            return false;
+        }
+    };
+
     public static final Instruction CMP = new Instruction("CMP", 2) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
@@ -166,7 +205,7 @@ public class BasicInstructions {
     };
 
     public static final InstructionSet BASIC_SET = new InstructionSet(
-            new Instruction[] { NULL, MOV, SWP, DATA, OUTP, OUTD, OUTI, OUTC, ADD, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
+            new Instruction[] { NULL, MOV, SWP, DATA, OUTP, OUTD, OUTI, OUTC, ADD, SUB, MUL, DIV, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
     );
 
 }
