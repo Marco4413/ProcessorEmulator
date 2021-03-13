@@ -2,6 +2,7 @@ package io.github.hds.pemu;
 
 import io.github.hds.pemu.instructions.BasicInstructions;
 import io.github.hds.pemu.instructions.InstructionSet;
+import io.github.hds.pemu.memory.Flag;
 import io.github.hds.pemu.memory.Memory;
 import io.github.hds.pemu.memory.Registry;
 
@@ -11,6 +12,9 @@ public class Processor {
 
     public final Registry IP = new Registry("Instruction Pointer");
     public final Registry SP = new Registry("Stack Pointer");
+
+    public final Flag ZERO  = new Flag(false, "Zero Bit");
+    public final Flag CARRY = new Flag(false, "Carry Bit");
 
     public final Memory PROGRAM;
     public final Memory DATA;

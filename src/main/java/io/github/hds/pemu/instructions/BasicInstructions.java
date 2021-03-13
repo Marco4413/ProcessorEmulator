@@ -1,6 +1,7 @@
 package io.github.hds.pemu.instructions;
 
 import io.github.hds.pemu.Processor;
+import io.github.hds.pemu.memory.Memory;
 import org.jetbrains.annotations.NotNull;
 
 public class BasicInstructions {
@@ -47,6 +48,28 @@ public class BasicInstructions {
         }
     };
 
+    public static final Instruction ADD = new Instruction("ADD", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            int sum = p.DATA.getValueAt(args[0]) + p.DATA.getValueAt(args[1]);
+
+            p.CARRY.value = sum >= Memory.MAX_UNSIGNED_BYTE;
+            p.ZERO.value  = (byte) sum == 0;
+
+            p.DATA.setValueAt(args[0], sum);
+            return false;
+        }
+    };
+
+    public static final Instruction CMP = new Instruction("CMP", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            p.ZERO.value  = p.DATA.getValueAt(args[0]) == p.DATA.getValueAt(args[1]);
+            p.CARRY.value = p.DATA.getValueAt(args[0]) <  p.DATA.getValueAt(args[1]);
+            return false;
+        }
+    };
+
     public static final Instruction JMP = new Instruction("JMP", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
@@ -55,11 +78,57 @@ public class BasicInstructions {
         }
     };
 
+    public static final Instruction JC = new Instruction("JC", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            if (p.CARRY.value) return JMP.execute(p, args);
+            return false;
+        }
+    };
+
+    public static final Instruction JNC = new Instruction("JNC", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            if (!p.CARRY.value) return JMP.execute(p, args);
+            return false;
+        }
+    };
+
+    public static final Instruction JZ = new Instruction("JZ", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            if (p.ZERO.value) return JMP.execute(p, args);
+            return false;
+        }
+    };
+
+    public static final Instruction JNZ = new Instruction("JNZ", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            if (!p.ZERO.value) return JMP.execute(p, args);
+            return false;
+        }
+    };
+
+    public static final Instruction CALL = new Instruction("CALL", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            p.DATA.setValueAt(p.SP.value--, p.IP.value + LENGTH);
+            return JMP.execute(p, args);
+        }
+    };
+
+    public static final Instruction RET = new Instruction("RET", 0) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            return JMP.execute(p, new int[] { p.DATA.getValueAt(++p.SP.value) });
+        }
+    };
+
     public static final Instruction PUSH = new Instruction("PUSH", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            p.DATA.setValueAt(p.SP.getValue(), p.DATA.getValueAt(args[0]));
-            p.SP.value--;
+            p.DATA.setValueAt(p.SP.value--, p.DATA.getValueAt(args[0]));
             return false;
         }
     };
@@ -81,7 +150,7 @@ public class BasicInstructions {
     };
 
     public static final InstructionSet BASIC_SET = new InstructionSet(
-            new Instruction[] { NULL, MOV, SWP, DATA, OUTP, OUTD, JMP, PUSH, POP, HLT }
+            new Instruction[] { NULL, MOV, SWP, DATA, OUTP, OUTD, ADD, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
     );
 
 }
