@@ -4,6 +4,16 @@ import org.jetbrains.annotations.NotNull;
 
 public class StringUtils {
 
+    public static int parseInt(@NotNull String str) {
+        int radix = 10;
+        String number = str;
+        if (number.startsWith("0x")) radix = 16;
+        else if (number.startsWith("0o")) radix =  8;
+        else if (number.startsWith("0b")) radix =  2;
+        if (radix != 10) number = number.substring(2);
+        return Integer.parseInt(number, radix);
+    }
+
     public static @NotNull String toShortName(@NotNull String name) {
         StringBuilder shortName = new StringBuilder();
         String[] words = name.split("\\s+");
