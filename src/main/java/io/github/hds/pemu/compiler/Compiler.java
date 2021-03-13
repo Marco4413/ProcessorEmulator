@@ -44,17 +44,29 @@ public class Compiler {
         }
     }
 
-    private static void parseLabel(@NotNull ArrayList<Integer> program, @NotNull HashMap<String, Integer> label, @NotNull Tokenizer tokenizer, boolean assign) {
+    private static class LabelData {
+        public int pointer = -1;
+        public ArrayList<Integer> occurrences = new ArrayList<>();
+
+        public LabelData() { }
+
+        public LabelData(int pointer) {
+            this.pointer = pointer;
+        }
+    }
+
+    private static void parseLabel(@NotNull ArrayList<Integer> program, @NotNull HashMap<String, LabelData> labels, @NotNull Tokenizer tokenizer, boolean assign) {
         String labelName = tokenizer.consumeNext("\\s+");
         if (labelName == null) throw new IllegalStateException("No name specified for label!");
 
+        LabelData data = labels.containsKey(labelName) ? labels.get(labelName) : new LabelData();
         if (assign)
-            label.put(labelName, program.size());
+            data.pointer = program.size();
         else {
-            if (label.containsKey(labelName))
-                program.add(label.get(labelName));
-            else throw new IllegalStateException("Label: " + labelName + " was never assigned before!");
+            data.occurrences.add(program.size());
+            program.add(0);
         }
+        labels.put(labelName, data);
     }
 
     public static int[] compileFile(@NotNull String resourcePath, @NotNull Processor processor) {
@@ -66,7 +78,7 @@ public class Compiler {
         Scanner reader = new Scanner(stream);
 
         ArrayList<Integer> program = new ArrayList<>();
-        HashMap<String, Integer> labels = new HashMap<>();
+        HashMap<String, LabelData>  labels = new HashMap<>();
         HashMap<String, Integer> constants = new HashMap<>();
 
         while (reader.hasNextLine()) {
@@ -115,6 +127,13 @@ public class Compiler {
                 }
             }
         }
+
+        labels.forEach((key, data) -> {
+            if (data.pointer < 0) throw new IllegalStateException("Label: " + key + " was never defined!");
+            for (int occurrence : data.occurrences) {
+                program.set(occurrence, data.pointer);
+            }
+        });
 
         int[] primitiveIntProgram = new int[program.size()];
         for (int i = 0; i < program.size(); i++)
