@@ -1,6 +1,6 @@
 package io.github.hds.pemu.instructions;
 
-import io.github.hds.pemu.Processor;
+import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.memory.Memory;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,6 +19,10 @@ public class InstructionSet {
         return -1;
     }
 
+    public int getSize() {
+        return INSTRUCTIONS.length;
+    }
+
     public Instruction parse(@NotNull Memory memory, int address) {
         memory.validateAddress(address);
 
@@ -31,8 +35,8 @@ public class InstructionSet {
 
     public int parseAndExecute(@NotNull Processor processor, @NotNull Memory memory, int address) {
         Instruction instruction = parse(memory, address);
-        if (!instruction.execute(processor, memory.getValuesAt(address + 1, instruction.LENGTH - 1)))
-            return instruction.LENGTH;
+        if (!instruction.execute(processor, memory.getValuesAt(address + 1, instruction.WORDS - 1)))
+            return instruction.WORDS;
         return 0;
     }
 

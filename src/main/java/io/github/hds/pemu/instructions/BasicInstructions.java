@@ -1,7 +1,6 @@
 package io.github.hds.pemu.instructions;
 
-import io.github.hds.pemu.Processor;
-import io.github.hds.pemu.memory.Memory;
+import io.github.hds.pemu.processor.Processor;
 import org.jetbrains.annotations.NotNull;
 
 public class BasicInstructions {
@@ -69,7 +68,7 @@ public class BasicInstructions {
         public boolean execute(@NotNull Processor p, int[] args) {
             int sum = p.DATA.getValueAt(args[0]) + p.DATA.getValueAt(args[1]);
 
-            p.CARRY.value = sum >= Memory.MAX_UNSIGNED_BYTE;
+            p.CARRY.value = sum >= p.DATA.MAX_VALUE;
             p.ZERO.value  = (byte) sum == 0;
 
             p.DATA.setValueAt(args[0], sum);
@@ -82,7 +81,7 @@ public class BasicInstructions {
         public boolean execute(@NotNull Processor p, int[] args) {
             int sub = p.DATA.getValueAt(args[0]) + ~((byte) p.DATA.getValueAt(args[1])) + 1;
 
-            p.CARRY.value = sub >= Memory.MAX_UNSIGNED_BYTE;
+            p.CARRY.value = sub >= p.DATA.MAX_VALUE;
             p.ZERO.value  = (byte) sub == 0;
 
             p.DATA.setValueAt(args[0], sub);
@@ -95,7 +94,7 @@ public class BasicInstructions {
         public boolean execute(@NotNull Processor p, int[] args) {
             int mult = p.DATA.getValueAt(args[0]) * p.DATA.getValueAt(args[1]);
 
-            p.CARRY.value = mult >= Memory.MAX_UNSIGNED_BYTE;
+            p.CARRY.value = mult >= p.DATA.MAX_VALUE;
             p.ZERO.value  = (byte) mult == 0;
 
             p.DATA.setValueAt(args[0], mult);
@@ -108,7 +107,7 @@ public class BasicInstructions {
         public boolean execute(@NotNull Processor p, int[] args) {
             int div = p.DATA.getValueAt(args[0]) / p.DATA.getValueAt(args[1]);
 
-            p.CARRY.value = div >= Memory.MAX_UNSIGNED_BYTE;
+            p.CARRY.value = div >= p.DATA.MAX_VALUE;
             p.ZERO.value  = (byte) div == 0;
 
             p.DATA.setValueAt(args[0], div);
@@ -168,7 +167,7 @@ public class BasicInstructions {
     public static final Instruction CALL = new Instruction("CALL", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            p.DATA.setValueAt(p.SP.value--, p.IP.value + LENGTH);
+            p.DATA.setValueAt(p.SP.value--, p.IP.value + WORDS);
             return JMP.execute(p, args);
         }
     };
