@@ -1,7 +1,7 @@
 
 # Processor Emulator
 
-Copyright (c) 2021 [hds536jhmk](https://github.com/hds536jhmk/)
+Copyright (c) 2021 [hds536jhmk](https://github.com/hds536jhmk/ProcessorEmulator)
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
