@@ -1,5 +1,7 @@
-DATA  0, 0x0A
-DATA  1, 0x14
+@a 0x0A
+@b 0x14
+DATA  0, @a
+DATA  1, @b
 OUTD  8
 SWP   0, 1
 OUTD  8
