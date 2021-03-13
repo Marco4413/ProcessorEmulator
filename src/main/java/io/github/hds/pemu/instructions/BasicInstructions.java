@@ -48,6 +48,22 @@ public class BasicInstructions {
         }
     };
 
+    public static final Instruction OUTI = new Instruction("OUTI", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            System.out.print(p.DATA.getValueAt(args[0]));
+            return false;
+        }
+    };
+
+    public static final Instruction OUTC = new Instruction("OUTC", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            System.out.print((char) p.DATA.getValueAt(args[0]));
+            return false;
+        }
+    };
+
     public static final Instruction ADD = new Instruction("ADD", 2) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
@@ -150,7 +166,7 @@ public class BasicInstructions {
     };
 
     public static final InstructionSet BASIC_SET = new InstructionSet(
-            new Instruction[] { NULL, MOV, SWP, DATA, OUTP, OUTD, ADD, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
+            new Instruction[] { NULL, MOV, SWP, DATA, OUTP, OUTD, OUTI, OUTC, ADD, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
     );
 
 }
