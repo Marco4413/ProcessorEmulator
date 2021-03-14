@@ -46,7 +46,7 @@ public class Word {
     public int[] getBytes(int value) {
         int[] bytes = new int[BYTES];
         for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (value >> (i * SIZE)) & MaskBit8;
+            bytes[i] = (value >> (i * Byte.SIZE)) & MaskBit8;
         }
         return bytes;
     }

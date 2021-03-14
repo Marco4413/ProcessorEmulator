@@ -1,5 +1,9 @@
 
 -- Version (v0.6.0-DEV)
+-- Changes from commit @f78cf47
+
+Fixed method Word#getBytes not splitting integers properly
+
 -- Changes from commit @3726e89
 
 Now the first CLI argument indicates the program to execute and the path to the program is relative to the working dir
