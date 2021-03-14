@@ -77,6 +77,8 @@ public class Memory {
 
     public int[] setValuesAt(int address, int[] values) {
         validateAddress(address);
+
+        if (values.length == 0) return values;
         validateAddress(address + values.length - 1);
 
         int[] oldValues = new int[values.length];
@@ -88,6 +90,8 @@ public class Memory {
 
     public int[] getValuesAt(int address, int size) {
         validateAddress(address);
+
+        if (size == 0) return new int[0];
         validateAddress(address + size - 1);
 
         int[] values = new int[size];

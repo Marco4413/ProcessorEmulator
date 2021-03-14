@@ -57,7 +57,7 @@ public class Tokenizer {
         return nextToken < tokens.length;
     }
 
-    public @Nullable String peekPrevious() {
+    public @Nullable String getLast() {
         return nextToken - 1 > 0 ? tokens[nextToken - 1] : null;
     }
 
@@ -65,16 +65,25 @@ public class Tokenizer {
         return hasNext() ? tokens[nextToken] : null;
     }
 
-    public @Nullable String consumeNext() {
-        return hasNext() ? tokens[nextToken++] : null;
-    }
+    public @Nullable String peekNext(Token... tokenBlacklist) {
+        int offset = 0;
+        while (offset + nextToken < tokens.length) {
+            String token = tokens[offset++ + nextToken];
+            if (token == null) return null;
 
-    public @Nullable String consumeNext(String blacklist) {
-        while (hasNext()) {
-            String token = consumeNext();
-            if (token == null || !token.matches(blacklist)) return token;
+            boolean isValid = true;
+            for (Token blacklisted : tokenBlacklist) {
+                if (!isValid) break;
+
+                isValid = !blacklisted.equals(token);
+            }
+            if (isValid) return token;
         }
         return null;
+    }
+
+    public @Nullable String consumeNext() {
+        return hasNext() ? tokens[nextToken++] : null;
     }
 
     public @Nullable String consumeNext(Token... tokenBlacklist) {

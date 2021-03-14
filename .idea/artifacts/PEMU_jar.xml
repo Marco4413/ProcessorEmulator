@@ -8,6 +8,7 @@
       <element id="directory" name="META-INF">
         <element id="dir-copy" path="$PROJECT_DIR$/src/main/resources/META-INF" />
       </element>
+      <element id="file-copy" path="$PROJECT_DIR$/changelog.txt" />
     </root>
   </artifact>
 </component>

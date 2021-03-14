@@ -13,8 +13,7 @@ public class Main {
         parser.defineFlag("-help", "-h")
               .defineStr("-program", "-p", "/example.pemu")
               .defineInt("-bits", "-b", 16)
-              .defineInt("-pmem", "-pm", 128)
-              .defineInt("-dmem", "-dm", 128);
+              .defineInt("-memory", "-mem", 256);
         // Parse arguments
         parser.parse(args);
 
@@ -27,13 +26,12 @@ public class Main {
         // Get specified program path and capacities
         String programPath = (String) parser.getOption("-program").value;
         int wordSize       = (int) parser.getOption("-bits").value;
-        int dataMemory     = (int) parser.getOption("-dmem").value;
-        int programMemory  = (int) parser.getOption("-pmem").value;
+        int memoryCapacity = (int) parser.getOption("-memory").value;
 
         // Create a new Processor with the specified values
         Processor proc;
         try {
-            proc = new Processor(wordSize, dataMemory, programMemory);
+            proc = new Processor(wordSize, memoryCapacity);
         } catch (Exception err) {
             System.err.println("Couldn't create processor!");
             err.printStackTrace();
@@ -52,7 +50,7 @@ public class Main {
 
         // Load compiled program into memory
         try {
-            proc.PROGRAM.setValuesAt(0, compiledProgram);
+            proc.MEMORY.setValuesAt(0, compiledProgram);
         } catch (Exception err) {
             System.err.println("Error while loading program into memory!");
             err.printStackTrace();

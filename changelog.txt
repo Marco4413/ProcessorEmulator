@@ -1,0 +1,29 @@
+
+-- Version (v0.5-DEV)
+-- Changes from commit @1eab8f7
+
+Added CLI arguments: -mem
+Removed CLI arguments: -pmem, -dmem
+
+Reworked how Compiler works (Language's syntax has changed)
+Added Instructions: OUTM, INC, DEC
+Removed Instructions: OUTD, OUTP, DATA
+
+Merged fields Processor#DATA and Processor#PROGRAM into Processor#MEMORY (Program and Data memory is now shared)
+
+Added field Instruction#ARGUMENTS
+Added method Instruction#getWords
+Removed field Instruction#WORDS
+
+Added & Removed some Tokens
+Renamed field Tokens#TOKENIZER_FILTER to Tokens#ALL_TOKENS
+Renamed method Tokenizer#peekPrevious to Tokenizer#getLast
+
+Added Annotations to method InstructionSet#getKeyCode
+Added method InstructionSet#getInstruction
+
+Added changelog.txt to log changes more easily
+Including changelog.txt into artifact
+
+Fixed method Memory#setValuesAt throwing if a 0-length array is passed
+Fixed method Memory#getValuesAt throwing if size argument is set to 0
