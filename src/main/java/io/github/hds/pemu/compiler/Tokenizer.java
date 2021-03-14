@@ -53,6 +53,17 @@ public class Tokenizer {
         tokens = newTokens.toArray(new String[0]);
     }
 
+    public void removeEmpties() {
+        ArrayList<String> newTokens = new ArrayList<>();
+
+        for (String token : tokens) {
+            if (!token.equals(""))
+                newTokens.add(token);
+        }
+
+        tokens = newTokens.toArray(new String[0]);
+    }
+
     public boolean hasNext() {
         return nextToken < tokens.length;
     }
