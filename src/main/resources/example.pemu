@@ -1,22 +1,33 @@
-; Defining memory addresses to data constants
-@count 0, @index 1, @step 2, @newline 3
+; Jumping to the main body of the program
+JMP start
 
-:init
-; Initializing data constants to their addresses
-DATA @count 20
-DATA @index 0
-DATA @step 1
-DATA @newline 10
+; str label points to the beginning of the string
+str:
+#DS "Hello World!"
+#DW 10 ; Adding new line character
+null:
+#DW 0  ; Adding null termination character
 
-:start
-; Write current index and newline character
-OUTI @index
-OUTC @newline
+; "index" contains the pointer to a string's character
+index: #DW str
+; "char" contains the current character
+char:  #DW 0
 
-; Increase index and check if we're at the last one
-ADD @index @step
-CMP @count @index
+start:
+; Moving what "index" is pointing to the second argument
+;  of the second MOV instruction
+MOV ptr index
+; Moving to "char" the character that the second address is pointing to
+;  (The second address is changed by the previous MOV instruction, so its starting value doesn't matter)
+MOV char ptr: 0
+; Displaying the character pointed by "char"
+OUTC char
 
-; If we're not on the last index jump back to start
-JNZ :start
+; Incrementing the pointer to the current character
+INC index
+; Check if the character previously displayed was the null termination one
+CMP char null
+; If it isn't go back to the start
+JNZ start
+; Else terminate the program
 HLT

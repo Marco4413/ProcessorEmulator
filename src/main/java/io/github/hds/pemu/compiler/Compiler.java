@@ -1,5 +1,6 @@
 package io.github.hds.pemu.compiler;
 
+import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +13,9 @@ import java.util.Scanner;
 public class Compiler {
 
     private static class LabelData {
-        public int pointer = -1;
+        public static int NULL_PTR = -1;
+
+        public int pointer = NULL_PTR;
         public ArrayList<Integer> occurrences = new ArrayList<>();
 
         public LabelData() { }
@@ -22,38 +25,56 @@ public class Compiler {
         }
     }
 
-    private static void parseConstant(@NotNull ArrayList<Integer> program, @NotNull HashMap<String, Integer> constants, @NotNull Tokenizer tokenizer, boolean assign) {
-        String constName = tokenizer.consumeNext(Tokens.SPACE);
-        if (constName == null) throw new IllegalStateException("No name specified for constant!");
+    public static boolean parseValue(ArrayList<Integer> program, HashMap<String, LabelData> labels, HashMap<String, Integer> constants, Tokenizer tokenizer) {
+        // Default value is 0
+        int value = 0;
+        // Get the value to parse
+        String valueToParse = tokenizer.consumeNext(Tokens.SPACE);
 
-        if (assign) {
-            String value = tokenizer.consumeNext(Tokens.SPACE);
-            if (value == null) throw new IllegalStateException("Constant: " + constName + " value wasn't specified!");
+        // Throw if there's no value, because there MUST be one if this function is called
+        if (valueToParse == null) throw new IllegalStateException("Expected value got null.");
 
-            try {
-                constants.put(constName, StringUtils.parseInt(value));
-            } catch (Exception err) {
-                throw new IllegalStateException("Invalid value specified for constant: " + constName);
+        // Try to convert it into a number, if that didn't happen then the value must be either a label or constant
+        try {
+            value = StringUtils.parseInt(valueToParse);
+        } catch (Exception err) {
+            String nextToken = tokenizer.peekNext(Tokens.SPACE);
+            if (Tokens.CONSTANT.equals(valueToParse)) {
+                if (nextToken == null) throw new IllegalStateException("Expected constant's name, got null.");
+                else if (constants.containsKey(nextToken)) {
+                    // If the constant was defined put its value and consume the token
+                    tokenizer.consumeNext(Tokens.SPACE);
+                    program.add(constants.get(nextToken));
+                } else throw new IllegalStateException("Constant '" + nextToken + "' was never declared before.");
+            } else if (Tokens.LABEL.equals(nextToken)) {
+                // If a label is being declared consume the declaration token
+                tokenizer.consumeNext(Tokens.SPACE);
+                if (labels.containsKey(valueToParse)) {
+                    // If a label was already created check if it has a pointer
+                    LabelData labelData = labels.get(valueToParse);
+                    if (labelData.pointer == LabelData.NULL_PTR)
+                        labelData.pointer = program.size();
+                    else
+                        // If the label has a valid pointer then it was already declared!
+                        throw new IllegalStateException("Label '" + valueToParse + "' was already declared.");
+                } else
+                    // If no label was created then create it
+                    labels.put(valueToParse, new LabelData(program.size()));
+                return false; // Returning false tells the compiler that no value was added to the program
+
+            // If no label is being declared put the label's value
+            } else if (labels.containsKey(valueToParse)) {
+                LabelData labelData = labels.get(valueToParse);
+                labelData.occurrences.add(program.size());
+            } else {
+                LabelData labelData = new LabelData();
+                labelData.occurrences.add(program.size());
+                labels.put(valueToParse, labelData);
             }
-        } else {
-            if (constants.containsKey(constName))
-                program.add(constants.get(constName));
-            else throw new IllegalStateException("Constant: " + constName + " was never assigned before!");
         }
-    }
 
-    private static void parseLabel(@NotNull ArrayList<Integer> program, @NotNull HashMap<String, LabelData> labels, @NotNull Tokenizer tokenizer, boolean assign) {
-        String labelName = tokenizer.consumeNext(Tokens.SPACE);
-        if (labelName == null) throw new IllegalStateException("No name specified for label!");
-
-        LabelData data = labels.containsKey(labelName) ? labels.get(labelName) : new LabelData();
-        if (assign)
-            data.pointer = program.size();
-        else {
-            data.occurrences.add(program.size());
-            program.add(0);
-        }
-        labels.put(labelName, data);
+        program.add(value);
+        return true;
     }
 
     public static int[] compileFile(@NotNull String resourcePath, @NotNull Processor processor) {
@@ -71,41 +92,84 @@ public class Compiler {
         while (reader.hasNextLine()) {
             String line = reader.nextLine().trim();
 
-            Tokenizer tokenizedLine = new Tokenizer(line, true, Tokens.TOKENIZER_FILTER);
-            tokenizedLine.removeDuplicates();
-            Token currentState = Tokens.SPACE;
+            Tokenizer tokenizer = new Tokenizer(line, true, Tokens.ALL_TOKENS);
+            tokenizer.removeDuplicates();
 
-            while (true) {
-                String token = tokenizedLine.consumeNext(Tokens.DELIMITERS);
+            while (tokenizer.hasNext()) {
+
+                String token = tokenizer.consumeNext(Tokens.SPACE);
                 if (token == null || Tokens.COMMENT.equals(token)) break;
 
-                if (currentState.equals(Tokens.INSTR)) {
-                    if (Tokens.LABEL.equals(token))
-                        parseLabel(program, labels, tokenizedLine, false);
-                    else if (Tokens.CONSTANT.equals(token))
-                        parseConstant(program, constants, tokenizedLine, false);
-                    else
-                        program.add(StringUtils.parseInt(token));
+                int instructionCode = processor.INSTRUCTIONSET.getKeyCode(token);
+                Instruction instruction = processor.INSTRUCTIONSET.getInstruction(instructionCode);
+
+                if (instruction != null) {
+                    // If an instruction was found add it to the memory
+
+                    program.add(instructionCode);
+                    for (int i = 0; i < instruction.ARGUMENTS; ) {
+                        if (parseValue(program, labels, constants, tokenizer)) i++;
+                    }
+                } else if (Tokens.COMPILER.equals(token)) {
+                    // Parsing Compiler Instructions
+
+                    String compilerInstr = tokenizer.consumeNext(Tokens.SPACE);
+                    if (compilerInstr == null)
+                        throw new IllegalStateException("Expected compiler instruction, got null.");
+                    else if (compilerInstr.equals("DW")) {
+                        parseValue(program, labels, constants, tokenizer);
+                    } else if (compilerInstr.equals("DS")) {
+                        String terminator = tokenizer.consumeNext(Tokens.SPACE);
+                        if (Tokens.STRING.equals(terminator)) {
+                            boolean escapeChar = false;
+                            StringBuilder value = new StringBuilder();
+                            while (true) {
+                                String valueToAdd = tokenizer.consumeNext();
+                                if (valueToAdd == null)
+                                    throw new IllegalStateException("String '" + value.toString() + "' wasn't terminated properly.");
+                                else if (escapeChar) {
+                                    value.append(valueToAdd);
+                                    escapeChar = false;
+                                } else if (valueToAdd.equals(terminator)) break;
+                                else if (Tokens.ESCAPECH.equals(valueToAdd)) escapeChar = true;
+                                else value.append(valueToAdd);
+                            }
+                            for (int i = 0; i < value.length(); i++) program.add((int) value.charAt(i));
+                        } else throw new IllegalStateException("String expected, got '" + terminator + "'");
+                    } else throw new IllegalStateException("Expected compiler instruction, got '" + compilerInstr + "'.");
                 } else {
-                    if (Tokens.LABEL.equals(token)) {
-                        parseLabel(program, labels, tokenizedLine, true);
-                        currentState = Tokens.LABEL;
-                    } else if (Tokens.CONSTANT.equals(token)) {
-                        parseConstant(program, constants, tokenizedLine, true);
-                        currentState = Tokens.CONSTANT;
-                    } else {
-                        int instructionCode = processor.INSTRUCTIONSET.getKeyCode(token);
-                        if (instructionCode >= 0) {
-                            program.add(instructionCode);
-                            currentState = Tokens.INSTR;
+                    // Parsing Labels and Constants
+                    boolean isConstant = Tokens.CONSTANT.equals(token);
+                    if (isConstant) {
+                        String constantName = tokenizer.consumeNext(Tokens.SPACE);
+                        String constantValue = tokenizer.consumeNext(Tokens.SPACE);
+                        if (constantName == null) throw new IllegalStateException("Expected constant's name, got null.");
+                        else if (constantValue == null) throw new IllegalStateException("Expected value for constant '" + constantName + "', got null.");
+
+                        try {
+                            constants.put(constantName, StringUtils.parseInt(constantValue));
+                        } catch (Exception err) {
+                            throw new IllegalStateException("Expected static number for constant '" + constantName + "', got '" + constantValue + "'.");
                         }
+                    } else {
+                        boolean isLabel = Tokens.LABEL.equals(tokenizer.consumeNext(Tokens.SPACE));
+                        if (isLabel) {
+                            if (labels.containsKey(token)) {
+                                LabelData labelData = labels.get(token);
+                                if (labelData.pointer == LabelData.NULL_PTR)
+                                    labelData.pointer = program.size();
+                                else
+                                    throw new IllegalStateException("Label '" + token + "' was already declared.");
+                            } else
+                                labels.put(token, new LabelData(program.size()));
+                        } else throw new IllegalStateException("Expected label declaration, got '" + token + "'.");
                     }
                 }
             }
         }
 
         labels.forEach((key, data) -> {
-            if (data.pointer < 0) throw new IllegalStateException("Label: " + key + " was never defined!");
+            if (data.pointer == LabelData.NULL_PTR) throw new IllegalStateException("Label '" + key + "' was never declared.");
             for (int occurrence : data.occurrences) {
                 program.set(occurrence, data.pointer);
             }

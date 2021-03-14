@@ -17,8 +17,7 @@ public class Processor {
     public final Flag ZERO  = new Flag(false, "Zero Bit");
     public final Flag CARRY = new Flag(false, "Carry Bit");
 
-    public final Memory PROGRAM;
-    public final Memory DATA;
+    public final Memory MEMORY;
 
     public final InstructionSet INSTRUCTIONSET;
 
@@ -27,26 +26,20 @@ public class Processor {
     }
 
     public Processor(int bits, int memSize) {
-        this(bits, memSize, memSize);
+        this(bits, memSize, BasicInstructions.BASIC_SET);
     }
 
-    public Processor(int bits, int dataSize, int programSize) {
-        this(bits, dataSize, programSize, BasicInstructions.BASIC_SET);
-    }
-
-    public Processor(int bits, int dataSize, int programSize, InstructionSet instructionSet) {
+    public Processor(int bits, int memSize, InstructionSet instructionSet) {
         Word word = new Word(bits);
-        PROGRAM = new Memory(programSize, word);
-        DATA = new Memory(dataSize, word);
+        MEMORY = new Memory(memSize, word);
 
-        SP.value = DATA.getSize() - 1;
+        SP.value = MEMORY.getSize() - 1;
 
         INSTRUCTIONSET = instructionSet;
     }
 
     public @NotNull String getInfo() {
-        return "\tData Memory:\t" + DATA.getSize() + 'x' + DATA.WORD.BYTES + " Bytes\n" +
-               "\tProgram Memory:\t" + PROGRAM.getSize() + 'x' + PROGRAM.WORD.BYTES + " Bytes\n" +
+        return "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.WORD.BYTES + " Bytes\n" +
                "\tInstructions:\t" + INSTRUCTIONSET.getSize() + "\n";
     }
 
@@ -56,7 +49,7 @@ public class Processor {
         isRunning = true;
         while (isRunning) {
 
-            int instructionLength = INSTRUCTIONSET.parseAndExecute(this, PROGRAM, IP.value);
+            int instructionLength = INSTRUCTIONSET.parseAndExecute(this, MEMORY, IP.value);
             IP.value += instructionLength;
 
         }

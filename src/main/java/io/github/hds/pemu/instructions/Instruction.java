@@ -6,11 +6,15 @@ import org.jetbrains.annotations.NotNull;
 public class Instruction {
 
     public final String KEYWORD;
-    public final int WORDS;
+    public final int ARGUMENTS;
 
     public Instruction(@NotNull String keyword, int arguments) {
         KEYWORD = keyword;
-        WORDS = arguments + 1;
+        ARGUMENTS = arguments;
+    }
+
+    public int getWords() {
+        return ARGUMENTS + 1;
     }
 
     public boolean execute(@NotNull Processor p, int[] args) { return false; }

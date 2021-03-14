@@ -3,6 +3,7 @@ package io.github.hds.pemu.instructions;
 import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.memory.Memory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class InstructionSet {
 
@@ -12,11 +13,22 @@ public class InstructionSet {
         INSTRUCTIONS = instructions;
     }
 
-    public int getKeyCode(String keyword) {
+    public int getKeyCode(@NotNull String keyword) {
         for (int i = 0; i < INSTRUCTIONS.length; i++) {
             if (INSTRUCTIONS[i].KEYWORD.equals(keyword)) return i;
         }
         return -1;
+    }
+
+    public @Nullable Instruction getInstruction(int keycode) {
+        if (keycode < 0 || keycode >= INSTRUCTIONS.length) return null;
+        return INSTRUCTIONS[keycode];
+    }
+
+    public @Nullable Instruction getInstruction(@NotNull String keyword) {
+        int keycode = getKeyCode(keyword);
+        if (keycode < 0) return null;
+        return INSTRUCTIONS[keycode];
     }
 
     public int getSize() {
@@ -35,8 +47,8 @@ public class InstructionSet {
 
     public int parseAndExecute(@NotNull Processor processor, @NotNull Memory memory, int address) {
         Instruction instruction = parse(memory, address);
-        if (!instruction.execute(processor, memory.getValuesAt(address + 1, instruction.WORDS - 1)))
-            return instruction.WORDS;
+        if (!instruction.execute(processor, memory.getValuesAt(address + 1, instruction.ARGUMENTS)))
+            return instruction.getWords();
         return 0;
     }
 
