@@ -1,5 +1,10 @@
 
--- Version (v0.5-DEV)
+-- Version (v0.6.0-DEV)
+-- Changes from commit @0359999
+
+Made paths relative to the jar's resource location valid
+
+-- Version (v0.5.0-DEV)
 -- Changes from commit @1eab8f7
 
 Added CLI arguments: -mem

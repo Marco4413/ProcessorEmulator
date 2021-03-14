@@ -78,8 +78,6 @@ public class Compiler {
     }
 
     public static int[] compileFile(@NotNull String resourcePath, @NotNull Processor processor) {
-        if (!resourcePath.startsWith("/")) resourcePath = "/" + resourcePath;
-
         InputStream stream = System.class.getResourceAsStream(resourcePath);
         if (stream == null) throw new IllegalArgumentException("Invalid Resource Path!");
 
