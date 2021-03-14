@@ -5,7 +5,7 @@ import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.InputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -77,11 +77,16 @@ public class Compiler {
         return true;
     }
 
-    public static int[] compileFile(@NotNull String resourcePath, @NotNull Processor processor) {
-        InputStream stream = System.class.getResourceAsStream(resourcePath);
-        if (stream == null) throw new IllegalArgumentException("Invalid Resource Path!");
+    public static int[] compileFile(@NotNull File file, @NotNull Processor processor) {
+        if (!file.exists()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file doesn't exist.");
+        if (!file.canRead()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file can't be read.");
 
-        Scanner reader = new Scanner(stream);
+        Scanner reader;
+        try {
+            reader = new Scanner(file);
+        } catch (Exception err) {
+            throw new IllegalStateException("Something went wrong while initializing Scanner.");
+        }
 
         ArrayList<Integer> program = new ArrayList<>();
         HashMap<String, LabelData>  labels = new HashMap<>();
@@ -91,7 +96,7 @@ public class Compiler {
             String line = reader.nextLine().trim();
 
             Tokenizer tokenizer = new Tokenizer(line, true, Tokens.ALL_TOKENS);
-            tokenizer.removeDuplicates();
+            tokenizer.removeEmpties();
 
             while (tokenizer.hasNext()) {
 

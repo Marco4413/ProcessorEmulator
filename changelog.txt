@@ -1,5 +1,12 @@
 
 -- Version (v0.6.0-DEV)
+-- Changes from commit @3726e89
+
+Now the first CLI argument indicates the program to execute and the path to the program is relative to the working dir
+Removed CLI arguments: -program
+
+Added method Tokenizer#removeEmpties
+
 -- Changes from commit @0359999
 
 Made paths relative to the jar's resource location valid
