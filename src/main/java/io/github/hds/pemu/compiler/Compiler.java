@@ -1,5 +1,6 @@
 package io.github.hds.pemu.compiler;
 
+import io.github.hds.pemu.app.Console;
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.utils.StringUtils;

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 public class ProcessorConfig {
     public int bits;
     public int memSize;
+    public int clock;
     public @NotNull InstructionSet instructionSet;
 
     public ProcessorConfig() {
@@ -18,10 +19,14 @@ public class ProcessorConfig {
     }
 
     public ProcessorConfig(int bits, int memSize) {
-        this(bits, memSize, BasicInstructions.BASIC_SET);
+        this(bits, memSize, 1000);
     }
 
-    public ProcessorConfig(int bits, int memSize, @NotNull InstructionSet instructionSet) {
+    public ProcessorConfig(int bits, int memSize, int clock) {
+        this(bits, memSize, clock, BasicInstructions.BASIC_SET);
+    }
+
+    public ProcessorConfig(int bits, int memSize, int clock, @NotNull InstructionSet instructionSet) {
         switch (bits) {
             case Word.SizeBit8:
             case Word.SizeBit16:
@@ -31,7 +36,8 @@ public class ProcessorConfig {
             default:
                 this.bits = 16;
         }
-        this.memSize = memSize;
+        this.memSize = memSize > 0 ? memSize : 256;
+        this.clock = clock > 0 ? clock : 1000;
         this.instructionSet = instructionSet;
     }
 }

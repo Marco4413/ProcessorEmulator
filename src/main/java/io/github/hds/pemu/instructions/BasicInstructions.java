@@ -52,6 +52,32 @@ public class BasicInstructions {
         }
     };
 
+    public static final Instruction GETC = new Instruction("GETC", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            p.MEMORY.setValueAt(args[0], p.pressedChar);
+            return false;
+        }
+    };
+
+    public static final Instruction TS = new Instruction("TS", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            long timeElapsed = p.getTimeRunning();
+            p.MEMORY.setValueAt(args[0], (int) (timeElapsed / 1000));
+            return false;
+        }
+    };
+
+    public static final Instruction TMS = new Instruction("TMS", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            long timeElapsed = p.getTimeRunning();
+            p.MEMORY.setValueAt(args[0], (int) timeElapsed);
+            return false;
+        }
+    };
+
     public static final Instruction INC = new Instruction("INC", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
@@ -219,7 +245,7 @@ public class BasicInstructions {
     };
 
     public static final InstructionSet BASIC_SET = new InstructionSet(
-            new Instruction[] { NULL, MOV, SWP, OUTM, OUTI, OUTC, INC, DEC, ADD, SUB, MUL, DIV, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
+            new Instruction[] { NULL, MOV, SWP, OUTM, OUTI, OUTC, GETC, TS, TMS, INC, DEC, ADD, SUB, MUL, DIV, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
     );
 
 }
