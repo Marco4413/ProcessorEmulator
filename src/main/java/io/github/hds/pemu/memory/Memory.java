@@ -25,15 +25,22 @@ public class Memory {
     }
 
     public String toString() {
-        return toString(8);
+        return toString(true);
     }
 
-    public String toString(int width) {
+    public String toString(boolean divideByWord) {
+        return toString(divideByWord, 8);
+    }
+
+    public String toString(boolean divideByWord, int width) {
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < MEMORY.length; i++) {
-            builder.append(Byte.toUnsignedInt(MEMORY[i])).append('\t');
+        int size = divideByWord ? getSize() : MEMORY.length;
+        for (int i = 0; i < size; i++) {
+            if (divideByWord) builder.append(getValueAt(i));
+            else builder.append(Byte.toUnsignedInt(MEMORY[i]));
 
             if ((i + 1) % width == 0) builder.append('\n');
+            else builder.append('\t');
         }
         return builder.toString();
     }

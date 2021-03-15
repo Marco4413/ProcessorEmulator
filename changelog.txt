@@ -1,5 +1,11 @@
 
 -- Version (v0.7.0-BETA)
+-- Changes from commit @60bd6b5
+
+Added Dump Memory button to Processor Menu
+Removed Instruction: OUTM
+
+Added divideByWord argument to method Memory#toString
 
 -- Version (v0.6.5-BETA)
 -- Changes from commit @3c60bdf

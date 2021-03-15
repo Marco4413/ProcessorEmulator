@@ -24,14 +24,6 @@ public class BasicInstructions {
         }
     };
 
-    public static final Instruction OUTM = new Instruction("OUTM", 1) {
-        @Override
-        public boolean execute(@NotNull Processor p, int[] args) {
-            Console.POutput.println(p.MEMORY.toString(args[0]));
-            return false;
-        }
-    };
-
     public static final Instruction OUTI = new Instruction("OUTI", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
@@ -245,7 +237,7 @@ public class BasicInstructions {
     };
 
     public static final InstructionSet BASIC_SET = new InstructionSet(
-            new Instruction[] { NULL, MOV, SWP, OUTM, OUTI, OUTC, GETC, TS, TMS, INC, DEC, ADD, SUB, MUL, DIV, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
+            new Instruction[] { NULL, MOV, SWP, OUTI, OUTC, GETC, TS, TMS, INC, DEC, ADD, SUB, MUL, DIV, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
     );
 
 }

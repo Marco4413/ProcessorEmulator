@@ -24,6 +24,8 @@ public class Application extends JFrame implements KeyListener {
     private @Nullable Processor currentProcessor = null;
 
     private final JFileChooser FILE_DIALOG;
+    private final Integer[] dumpMemoryPossibleValues = { 8, 16, 24, 32, 48, 64 };
+    private int dumpMemoryLastSelected = 0;
 
     private Application(@NotNull ProcessorConfig initialConfig) throws HeadlessException {
         super();
@@ -77,6 +79,11 @@ public class Application extends JFrame implements KeyListener {
         pConfigProcessor.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
         pConfigProcessor.addActionListener(this::configureProcessor);
         processorMenu.add(pConfigProcessor);
+
+        JMenuItem pDumpProcessor = new JMenuItem("Dump Memory", 'D');
+        pDumpProcessor.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK));
+        pDumpProcessor.addActionListener(this::dumpMemory);
+        processorMenu.add(pDumpProcessor);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(Console.POutput.ELEMENT), new JScrollPane(Console.Debug.ELEMENT));
         splitPane.setResizeWeight(0.5d);
@@ -133,6 +140,25 @@ public class Application extends JFrame implements KeyListener {
         char released = e.getKeyChar();
         if (released != KeyEvent.CHAR_UNDEFINED && Character.toLowerCase(released) == Character.toLowerCase(currentProcessor.pressedChar))
             currentProcessor.pressedChar = '\0';
+    }
+
+    public void dumpMemory(ActionEvent e) {
+        if (currentProcessor == null) {
+            Console.Debug.println("No processor was ever started yet.");
+            return;
+        }
+
+        Integer selected = (Integer) JOptionPane.showInputDialog(
+                this, "Words on each line:", "Memory Dump",
+                JOptionPane.QUESTION_MESSAGE, null, dumpMemoryPossibleValues,
+                dumpMemoryPossibleValues[dumpMemoryLastSelected]
+        );
+
+        if (selected == null) return;
+        for (int i = 0; i < dumpMemoryPossibleValues.length; i++)
+            if (dumpMemoryPossibleValues[i].equals(selected)) dumpMemoryLastSelected = i;
+
+        Console.Debug.println("Memory Dump:\n" + currentProcessor.MEMORY.toString(true, selected));
     }
 
     public void openProgram(ActionEvent e) {
@@ -210,7 +236,7 @@ public class Application extends JFrame implements KeyListener {
                         Console.Debug.println("Error while running program!");
                         Console.Debug.printStackTrace(err);
                     }
-                    Console.Debug.println("Processor stopped!");
+                    Console.Debug.println("Processor stopped!\n");
                 }
             };
             processorThread.start();
