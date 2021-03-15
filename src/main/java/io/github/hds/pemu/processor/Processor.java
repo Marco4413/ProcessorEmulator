@@ -18,20 +18,29 @@ public class Processor implements Runnable {
     public final Flag CARRY = new Flag(false, "Carry Bit");
 
     public final Memory MEMORY;
+    public final Clock CLOCK;
 
     public final InstructionSet INSTRUCTIONSET;
 
+    public volatile char pressedChar = '\0';
+    private long startTimestamp = 0;
+
     public Processor(int bits) {
-        this(256, 256);
+        this(bits, 256);
     }
 
     public Processor(int bits, int memSize) {
-        this(bits, memSize, BasicInstructions.BASIC_SET);
+        this(bits, memSize, 1000);
     }
 
-    public Processor(int bits, int memSize, @NotNull InstructionSet instructionSet) {
+    public Processor(int bits, int memSize, int clock) {
+        this(bits, memSize, clock, BasicInstructions.BASIC_SET);
+    }
+
+    public Processor(int bits, int memSize, int clock, @NotNull InstructionSet instructionSet) {
         Word word = new Word(bits);
         MEMORY = new Memory(memSize, word);
+        CLOCK = new Clock(clock);
 
         SP.value = MEMORY.getSize() - 1;
 
@@ -39,12 +48,17 @@ public class Processor implements Runnable {
     }
 
     public Processor(@NotNull ProcessorConfig config) {
-        this(config.bits, config.memSize, config.instructionSet);
+        this(config.bits, config.memSize, config.clock, config.instructionSet);
     }
 
     public @NotNull String getInfo() {
         return "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.WORD.BYTES + " Bytes\n" +
                "\tInstructions:\t" + INSTRUCTIONSET.getSize() + "\n";
+    }
+
+    public long getTimeRunning() {
+        if (!isRunning) return -1;
+        return System.currentTimeMillis() - startTimestamp;
     }
 
     public boolean isRunning() {
@@ -54,13 +68,16 @@ public class Processor implements Runnable {
     public void run() {
         if (isRunning) return;
 
+        startTimestamp = System.currentTimeMillis();
         isRunning = true;
         while (isRunning) {
 
-            int instructionLength = INSTRUCTIONSET.parseAndExecute(this, MEMORY, IP.value);
-            IP.value += instructionLength;
+            if (CLOCK.update()) {
+                int instructionLength = INSTRUCTIONSET.parseAndExecute(this, MEMORY, IP.value);
+                IP.value += instructionLength;
 
-            if (IP.value >= MEMORY.getSize()) stop();
+                if (IP.value >= MEMORY.getSize()) stop();
+            }
 
         }
     }

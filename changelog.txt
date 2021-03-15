@@ -1,4 +1,20 @@
 
+-- Version (v0.7.0-BETA)
+
+-- Version (v0.6.5-BETA)
+-- Changes from commit @3c60bdf
+
+Added command line parameter: -clock
+Added measure units to Config Panel
+Added Instructions: GETC, TS, TMS
+
+Added filter for PEMU programs on Open Program's dialog
+Made Open Program's dialog remember the last folder it was in
+Now logging how much memory the compiled program occupies
+
+Added clock to Processor
+Added method Processor#getTimeRunning which returns how long the Processor has been running in millis or -1 if not running
+
 -- Version (v0.6.0-BETA)
 -- Changes from commit @e471fb1
 

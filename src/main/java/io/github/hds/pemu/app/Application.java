@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -18,11 +19,11 @@ public class Application extends JFrame implements KeyListener {
     private static Application INSTANCE;
     private static final String APP_TITLE = "PEMU";
 
-    public char lastCharPressed = '\0';
-
     private final ProcessorConfig PROCESSOR_CONFIG;
     private @Nullable File currentProgram = null;
     private @Nullable Processor currentProcessor = null;
+
+    private final JFileChooser FILE_DIALOG;
 
     private Application(@NotNull ProcessorConfig initialConfig) throws HeadlessException {
         super();
@@ -51,6 +52,11 @@ public class Application extends JFrame implements KeyListener {
         JMenuItem fileClose = new JMenuItem("Quit", 'Q');
         fileClose.addActionListener(e -> { INSTANCE.stopProcessor(null); INSTANCE.dispose(); });
         fileMenu.add(fileClose);
+
+        FILE_DIALOG = new JFileChooser();
+        FILE_DIALOG.setCurrentDirectory(new File("./"));
+        FILE_DIALOG.setMultiSelectionEnabled(false);
+        FILE_DIALOG.setFileFilter(new FileNameExtensionFilter("PEMU program", "pemu"));
 
         // PROCESSOR MENU
         JMenu processorMenu = new JMenu("Processor");
@@ -108,11 +114,13 @@ public class Application extends JFrame implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
+        if (currentProcessor == null) return;
+
         char typed = e.getKeyChar();
         if (typed == KeyEvent.CHAR_UNDEFINED)
-            lastCharPressed = '\0';
+            currentProcessor.pressedChar = '\0';
         else
-            lastCharPressed = typed;
+            currentProcessor.pressedChar = typed;
     }
 
     @Override
@@ -120,16 +128,16 @@ public class Application extends JFrame implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
+        if (currentProcessor == null) return;
+
         char released = e.getKeyChar();
-        if (released != KeyEvent.CHAR_UNDEFINED && Character.toLowerCase(released) == Character.toLowerCase(lastCharPressed))
-            lastCharPressed = '\0';
+        if (released != KeyEvent.CHAR_UNDEFINED && Character.toLowerCase(released) == Character.toLowerCase(currentProcessor.pressedChar))
+            currentProcessor.pressedChar = '\0';
     }
 
     public void openProgram(ActionEvent e) {
-        JFileChooser fileDialog = new JFileChooser();
-        fileDialog.setCurrentDirectory(new File("./"));
-        if (fileDialog.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
-            setCurrentProgram(fileDialog.getSelectedFile());
+        if (FILE_DIALOG.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
+            setCurrentProgram(FILE_DIALOG.getSelectedFile());
     }
 
     public void configureProcessor(ActionEvent e) {
@@ -172,6 +180,12 @@ public class Application extends JFrame implements KeyListener {
             return;
         }
 
+        Console.Debug.println(
+                "Compiled file (" + currentProgram.getName() + ") occupies "
+              + compiledProgram.length * currentProcessor.MEMORY.WORD.BYTES + " / "
+              + currentProcessor.MEMORY.getSize() * currentProcessor.MEMORY.WORD.BYTES + " Bytes"
+        );
+
         // Load compiled program into memory
         try {
             currentProcessor.MEMORY.setValuesAt(0, compiledProgram);
@@ -212,6 +226,5 @@ public class Application extends JFrame implements KeyListener {
             return;
         }
         currentProcessor.stop();
-        Console.Debug.println("Processor was stopped!");
     }
 }

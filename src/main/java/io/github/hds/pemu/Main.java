@@ -18,6 +18,7 @@ public class Main {
               .defineFlag("-run", "-r")
               .defineInt("-bits", "-b", 16)
               .defineInt("-memory", "-mem", 256)
+              .defineInt("-clock", "-c", 1000)
               .defineStr("-program", "-p", "");
         // Parse Arguments
         parser.parse(args);
@@ -36,7 +37,8 @@ public class Main {
         // Creating initial processor config
         ProcessorConfig config = new ProcessorConfig(
                 (int) parser.getOption("-bits").value,
-                (int) parser.getOption("-memory").value
+                (int) parser.getOption("-memory").value,
+                (int) parser.getOption("-clock").value
         );
 
         // Initializing app instance and showing it
