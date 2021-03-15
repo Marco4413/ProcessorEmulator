@@ -1,32 +1,37 @@
-; Jumping to the main body of the program
+
 JMP start
 
-; str points to the beginning of the string
-str:
-#DS "Hello World!"
-#DW 10 ; Adding new line character
-null:
-#DW 0  ; Adding null termination character
+@new_line 10
 
-; index points to the current character in the string
-index: #DW str
-; char points to the address where the current character is stored
-char:  #DW 0
+str: #DS "Hello World!" #DW @new_line #DW 0
+str_ptr: #DW str
+
+_temp: #DW 0
+null: #DW 0
+
+f_print:
+    _print_str_ptr: #DW 0
+    _print_char: #DW 0
+    POP _temp
+    POP _print_str_ptr
+    PUSH _temp
+
+    _f_print_char:
+    MOV _print_ptr _print_str_ptr
+    MOV _print_char _print_ptr: 0
+
+    CMP _print_char null
+    JZ _f_print_end
+
+    OUTC _print_char
+    INC _print_str_ptr
+
+    JMP _f_print_char
+
+    _f_print_end:
+    RET
 
 start:
-; Moving to the second MOV instruction the pointer to the current character
-MOV ptr index
-; Moving to the variable containing the current character, the character itself
-MOV char ptr: 0
-
-; If the current character is the null termination one jump to the end
-CMP char null
-JZ end
-
-; If it isn't then write it and increment the char pointer
-OUTC char
-INC index
-JMP start
-
-end:
-HLT
+    PUSH str_ptr
+    CALL f_print
+    HLT
