@@ -7,7 +7,7 @@ import io.github.hds.pemu.memory.Memory;
 import io.github.hds.pemu.memory.Registry;
 import org.jetbrains.annotations.NotNull;
 
-public class Processor {
+public class Processor implements Runnable {
 
     private boolean isRunning = false;
 
@@ -29,7 +29,7 @@ public class Processor {
         this(bits, memSize, BasicInstructions.BASIC_SET);
     }
 
-    public Processor(int bits, int memSize, InstructionSet instructionSet) {
+    public Processor(int bits, int memSize, @NotNull InstructionSet instructionSet) {
         Word word = new Word(bits);
         MEMORY = new Memory(memSize, word);
 
@@ -38,9 +38,17 @@ public class Processor {
         INSTRUCTIONSET = instructionSet;
     }
 
+    public Processor(@NotNull ProcessorConfig config) {
+        this(config.bits, config.memSize, config.instructionSet);
+    }
+
     public @NotNull String getInfo() {
         return "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.WORD.BYTES + " Bytes\n" +
                "\tInstructions:\t" + INSTRUCTIONSET.getSize() + "\n";
+    }
+
+    public boolean isRunning() {
+        return this.isRunning;
     }
 
     public void run() {
@@ -51,6 +59,8 @@ public class Processor {
 
             int instructionLength = INSTRUCTIONSET.parseAndExecute(this, MEMORY, IP.value);
             IP.value += instructionLength;
+
+            if (IP.value >= MEMORY.getSize()) stop();
 
         }
     }

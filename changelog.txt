@@ -1,5 +1,21 @@
 
--- Version (v0.6.0-DEV)
+-- Version (v0.6.0-BETA)
+-- Changes from commit @e471fb1
+
+Added GUI
+Added command line options: -run, -program
+Now program path isn't required to run the emulator
+Added logo
+
+Made OUTC clear console if NULL character is displayed
+Reworked instructions: INC, DEC, ADD, SUB, MUL, DIV to hopefully work correctly
+Made Processor stop itself when the Instruction Pointer is at the last address of the Memory
+Fixed method InstructionSet#parseAndExecute throwing if at last memory address and the instruction has 0 arguments
+
+Added method StringUtils.stackTraceAsString
+Added ProcessorConfig class
+Using Console class to log
+
 -- Changes from commit @f78cf47
 
 Fixed method Word#getBytes not splitting integers properly

@@ -2,6 +2,9 @@ package io.github.hds.pemu.utils;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class StringUtils {
 
     public static int parseInt(@NotNull String str) {
@@ -22,6 +25,12 @@ public class StringUtils {
         }
 
         return shortName.toString().toUpperCase();
+    }
+
+    public static @NotNull String stackTraceAsString(@NotNull Exception err) {
+        StringWriter str = new StringWriter();
+        err.printStackTrace(new PrintWriter(str));
+        return str.toString();
     }
 
 }
