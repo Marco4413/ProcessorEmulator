@@ -1,5 +1,6 @@
 package io.github.hds.pemu.instructions;
 
+import io.github.hds.pemu.app.Console;
 import io.github.hds.pemu.processor.Processor;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,7 +27,7 @@ public class BasicInstructions {
     public static final Instruction OUTM = new Instruction("OUTM", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            System.out.println(p.MEMORY.toString(args[0]));
+            Console.POutput.println(p.MEMORY.toString(args[0]));
             return false;
         }
     };
@@ -34,7 +35,7 @@ public class BasicInstructions {
     public static final Instruction OUTI = new Instruction("OUTI", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            System.out.print(p.MEMORY.getValueAt(args[0]));
+            Console.POutput.print(p.MEMORY.getValueAt(args[0]));
             return false;
         }
     };
@@ -42,7 +43,11 @@ public class BasicInstructions {
     public static final Instruction OUTC = new Instruction("OUTC", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            System.out.print((char) p.MEMORY.getValueAt(args[0]));
+            char character = (char) p.MEMORY.getValueAt(args[0]);
+            if (character == '\0')
+                Console.POutput.clear();
+            else
+                Console.POutput.print((char) p.MEMORY.getValueAt(args[0]));
             return false;
         }
     };
@@ -50,12 +55,12 @@ public class BasicInstructions {
     public static final Instruction INC = new Instruction("INC", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            int newValue = p.MEMORY.getValueAt(args[0]) + 1;
+            int result = p.MEMORY.getValueAt(args[0]) + 1;
 
-            p.CARRY.value = newValue >= p.MEMORY.MAX_VALUE;
-            p.ZERO.value  = (byte) newValue == 0;
+            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
+            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
 
-            p.MEMORY.setValueAt(args[0], newValue);
+            p.MEMORY.setValueAt(args[0], result);
             return false;
         }
     };
@@ -63,12 +68,12 @@ public class BasicInstructions {
     public static final Instruction DEC = new Instruction("DEC", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            int newValue = p.MEMORY.getValueAt(args[0]) + ~((byte) 1) + 1;
+            int result = p.MEMORY.getValueAt(args[0]) - 1;
 
-            p.CARRY.value = newValue >= p.MEMORY.MAX_VALUE;
-            p.ZERO.value  = (byte) newValue == 0;
+            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
+            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
 
-            p.MEMORY.setValueAt(args[0], newValue);
+            p.MEMORY.setValueAt(args[0], result);
             return false;
         }
     };
@@ -76,12 +81,12 @@ public class BasicInstructions {
     public static final Instruction ADD = new Instruction("ADD", 2) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            int sum = p.MEMORY.getValueAt(args[0]) + p.MEMORY.getValueAt(args[1]);
+            int result = p.MEMORY.getValueAt(args[0]) + p.MEMORY.getValueAt(args[1]);
 
-            p.CARRY.value = sum >= p.MEMORY.MAX_VALUE;
-            p.ZERO.value  = (byte) sum == 0;
+            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
+            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
 
-            p.MEMORY.setValueAt(args[0], sum);
+            p.MEMORY.setValueAt(args[0], result);
             return false;
         }
     };
@@ -89,12 +94,12 @@ public class BasicInstructions {
     public static final Instruction SUB = new Instruction("SUB", 2) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            int sub = p.MEMORY.getValueAt(args[0]) + ~((byte) p.MEMORY.getValueAt(args[1])) + 1;
+            int result = p.MEMORY.getValueAt(args[0]) - p.MEMORY.getValueAt(args[1]);
 
-            p.CARRY.value = sub >= p.MEMORY.MAX_VALUE;
-            p.ZERO.value  = (byte) sub == 0;
+            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
+            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
 
-            p.MEMORY.setValueAt(args[0], sub);
+            p.MEMORY.setValueAt(args[0], result);
             return false;
         }
     };
@@ -102,12 +107,12 @@ public class BasicInstructions {
     public static final Instruction MUL = new Instruction("MUL", 2) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            int mult = p.MEMORY.getValueAt(args[0]) * p.MEMORY.getValueAt(args[1]);
+            int result = p.MEMORY.getValueAt(args[0]) * p.MEMORY.getValueAt(args[1]);
 
-            p.CARRY.value = mult >= p.MEMORY.MAX_VALUE;
-            p.ZERO.value  = (byte) mult == 0;
+            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
+            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
 
-            p.MEMORY.setValueAt(args[0], mult);
+            p.MEMORY.setValueAt(args[0], result);
             return false;
         }
     };
@@ -115,12 +120,12 @@ public class BasicInstructions {
     public static final Instruction DIV = new Instruction("DIV", 2) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
-            int div = p.MEMORY.getValueAt(args[0]) / p.MEMORY.getValueAt(args[1]);
+            int result = p.MEMORY.getValueAt(args[0]) / p.MEMORY.getValueAt(args[1]);
 
-            p.CARRY.value = div >= p.MEMORY.MAX_VALUE;
-            p.ZERO.value  = (byte) div == 0;
+            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
+            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
 
-            p.MEMORY.setValueAt(args[0], div);
+            p.MEMORY.setValueAt(args[0], result);
             return false;
         }
     };

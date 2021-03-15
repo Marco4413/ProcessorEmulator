@@ -1,5 +1,7 @@
 # Processor Emulator
 
+![](./logo.png)
+
 ## What's this project all about?
 
 One day I woke up and decided to challenge myself.
@@ -9,7 +11,7 @@ Don't expect much from this emulator, it's made just for learning purposes.
 ## How to run:
 
 There are four main ways to run this project:
- 1. By downloading the precompiled jar file and running `java -jar PEMU-version.jar`.
+ 1. By downloading the precompiled jar file and running `java -jar PEMU-version.jar -help`.
  2. By compiling it yourself! Download the latest version from the repo and run `gradlew build`,
     the compiled file should be located in `./build/libs/PEMU-version.jar`.
  3. By opening the project using **IntelliJ IDEA** and building the **project's artifact**.

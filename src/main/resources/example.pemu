@@ -1,33 +1,32 @@
 ; Jumping to the main body of the program
 JMP start
 
-; str label points to the beginning of the string
+; str points to the beginning of the string
 str:
 #DS "Hello World!"
 #DW 10 ; Adding new line character
 null:
 #DW 0  ; Adding null termination character
 
-; "index" contains the pointer to a string's character
+; index points to the current character in the string
 index: #DW str
-; "char" contains the current character
+; char points to the address where the current character is stored
 char:  #DW 0
 
 start:
-; Moving what "index" is pointing to the second argument
-;  of the second MOV instruction
+; Moving to the second MOV instruction the pointer to the current character
 MOV ptr index
-; Moving to "char" the character that the second address is pointing to
-;  (The second address is changed by the previous MOV instruction, so its starting value doesn't matter)
+; Moving to the variable containing the current character, the character itself
 MOV char ptr: 0
-; Displaying the character pointed by "char"
-OUTC char
 
-; Incrementing the pointer to the current character
-INC index
-; Check if the character previously displayed was the null termination one
+; If the current character is the null termination one jump to the end
 CMP char null
-; If it isn't go back to the start
-JNZ start
-; Else terminate the program
+JZ end
+
+; If it isn't then write it and increment the char pointer
+OUTC char
+INC index
+JMP start
+
+end:
 HLT
