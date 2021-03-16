@@ -44,10 +44,26 @@ public class BasicInstructions {
         }
     };
 
+    public static final Instruction GETI = new Instruction("GETI", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            p.MEMORY.setValueAt(args[0], Math.max(Character.getNumericValue(p.pressedKey), 0));
+            return false;
+        }
+    };
+
     public static final Instruction GETC = new Instruction("GETC", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
             p.MEMORY.setValueAt(args[0], p.pressedChar);
+            return false;
+        }
+    };
+
+    public static final Instruction GETK = new Instruction("GETK", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            p.MEMORY.setValueAt(args[0], p.pressedKey);
             return false;
         }
     };
@@ -237,7 +253,7 @@ public class BasicInstructions {
     };
 
     public static final InstructionSet BASIC_SET = new InstructionSet(
-            new Instruction[] { NULL, MOV, SWP, OUTI, OUTC, GETC, TS, TMS, INC, DEC, ADD, SUB, MUL, DIV, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
+            new Instruction[] { NULL, MOV, SWP, OUTI, OUTC, GETI, GETC, GETK, TS, TMS, INC, DEC, ADD, SUB, MUL, DIV, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
     );
 
 }

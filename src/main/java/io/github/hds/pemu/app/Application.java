@@ -131,15 +131,21 @@ public class Application extends JFrame implements KeyListener {
     }
 
     @Override
-    public void keyPressed(KeyEvent e) { }
+    public void keyPressed(KeyEvent e) {
+        if (currentProcessor == null) return;
+        currentProcessor.pressedKey = e.getKeyCode();
+    }
 
     @Override
     public void keyReleased(KeyEvent e) {
         if (currentProcessor == null) return;
 
-        char released = e.getKeyChar();
-        if (released != KeyEvent.CHAR_UNDEFINED && Character.toLowerCase(released) == Character.toLowerCase(currentProcessor.pressedChar))
+        char character = e.getKeyChar();
+        if (character != KeyEvent.CHAR_UNDEFINED && Character.toLowerCase(character) == Character.toLowerCase(currentProcessor.pressedChar))
             currentProcessor.pressedChar = '\0';
+
+        if (e.getKeyCode() == currentProcessor.pressedKey)
+            currentProcessor.pressedKey = KeyEvent.VK_UNDEFINED;
     }
 
     public void dumpMemory(ActionEvent e) {
@@ -233,6 +239,7 @@ public class Application extends JFrame implements KeyListener {
                     try {
                         super.run();
                     } catch (Exception err) {
+                        currentProcessor.stop(); // Make sure to stop the processor if it fails
                         Console.Debug.println("Error while running program!");
                         Console.Debug.printStackTrace(err);
                     }

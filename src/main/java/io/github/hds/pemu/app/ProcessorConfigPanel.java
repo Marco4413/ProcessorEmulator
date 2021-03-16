@@ -1,5 +1,6 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.ProcessorConfig;
 import io.github.hds.pemu.processor.Word;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +34,7 @@ public class ProcessorConfigPanel extends JPanel {
         add(memorySpinner);
 
         add(new JLabel("Clock (Hz): "));
-        SpinnerNumberModel clockModel = new SpinnerNumberModel(CONFIG.clock, 1, Integer.MAX_VALUE, 1);
+        SpinnerNumberModel clockModel = new SpinnerNumberModel(CONFIG.clock, 1, Clock.MAX_CLOCK, 1);
         clockSpinner = new JSpinner(clockModel);
         add(clockSpinner);
     }
@@ -41,7 +42,7 @@ public class ProcessorConfigPanel extends JPanel {
     public @NotNull ProcessorConfig apply() {
         CONFIG.bits = (int) bitsSpinner.getValue();
         CONFIG.memSize = (int) memorySpinner.getValue();
-        CONFIG.clock = (int) clockSpinner.getValue();
+        CONFIG.clock = (double) clockSpinner.getValue();
         return CONFIG;
     }
 }

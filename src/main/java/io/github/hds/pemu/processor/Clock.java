@@ -2,17 +2,21 @@ package io.github.hds.pemu.processor;
 
 public class Clock {
 
-    public final int CLOCK;
+    public static final double MAX_CLOCK = 1e9d;
+
+    public final double CLOCK;
+    private final double TIME_BETWEEN_UPDATES;
 
     private long lastUpdated = 0;
 
-    public Clock(int clock) {
+    public Clock(double clock) {
         CLOCK = clock;
+        TIME_BETWEEN_UPDATES = MAX_CLOCK / CLOCK;
     }
 
     public boolean update() {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastUpdated >= 1000.0f / (float) CLOCK) {
+        long currentTime = System.nanoTime();
+        if (currentTime - lastUpdated >= TIME_BETWEEN_UPDATES) {
             lastUpdated = currentTime;
             return true;
         }

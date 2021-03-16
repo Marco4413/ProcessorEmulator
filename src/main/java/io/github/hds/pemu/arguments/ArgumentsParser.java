@@ -57,6 +57,11 @@ public class ArgumentsParser {
         return this;
     }
 
+    public @NotNull ArgumentsParser defineDbl(@NotNull String name, @NotNull String shortName, @NotNull Double defaultValue) {
+        options.put(name, new ArgumentOptions.Dbl(name, shortName, defaultValue));
+        return this;
+    }
+
     public @NotNull ArgumentsParser defineStr(@NotNull String name, @NotNull String shortName, @NotNull String defaultValue) {
         options.put(name, new ArgumentOptions.Str(name, shortName, defaultValue));
         return this;
