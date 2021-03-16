@@ -7,6 +7,8 @@ import io.github.hds.pemu.memory.Memory;
 import io.github.hds.pemu.memory.Registry;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.event.KeyEvent;
+
 public class Processor implements Runnable {
 
     private boolean isRunning = false;
@@ -23,6 +25,7 @@ public class Processor implements Runnable {
     public final InstructionSet INSTRUCTIONSET;
 
     public volatile char pressedChar = '\0';
+    public volatile int pressedKey = KeyEvent.VK_UNDEFINED;
     private long startTimestamp = 0;
 
     public Processor(int bits) {
@@ -33,11 +36,11 @@ public class Processor implements Runnable {
         this(bits, memSize, 1000);
     }
 
-    public Processor(int bits, int memSize, int clock) {
+    public Processor(int bits, int memSize, double clock) {
         this(bits, memSize, clock, BasicInstructions.BASIC_SET);
     }
 
-    public Processor(int bits, int memSize, int clock, @NotNull InstructionSet instructionSet) {
+    public Processor(int bits, int memSize, double clock, @NotNull InstructionSet instructionSet) {
         Word word = new Word(bits);
         MEMORY = new Memory(memSize, word);
         CLOCK = new Clock(clock);

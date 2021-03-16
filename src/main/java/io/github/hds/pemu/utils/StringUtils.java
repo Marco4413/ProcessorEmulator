@@ -9,12 +9,11 @@ public class StringUtils {
 
     public static int parseInt(@NotNull String str) {
         int radix = 10;
-        String number = str;
-        if (number.startsWith("0x")) radix = 16;
-        else if (number.startsWith("0o")) radix =  8;
-        else if (number.startsWith("0b")) radix =  2;
-        if (radix != 10) number = number.substring(2);
-        return Integer.parseInt(number, radix);
+        if (str.startsWith("0x")) radix = 16;
+        else if (str.startsWith("0o")) radix =  8;
+        else if (str.startsWith("0b")) radix =  2;
+        if (radix != 10) str = str.substring(2);
+        return Integer.parseInt(str, radix);
     }
 
     public static @NotNull String toShortName(@NotNull String name) {

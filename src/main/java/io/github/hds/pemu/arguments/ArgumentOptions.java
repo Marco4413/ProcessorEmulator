@@ -21,6 +21,22 @@ public class ArgumentOptions {
         }
     }
 
+    public static class Dbl extends ArgumentOption<Double> {
+        public Dbl(@NotNull String name, @NotNull String shortName, @NotNull Double defaultValue) {
+            super(name, shortName, defaultValue);
+        }
+
+        @Override
+        public int getLength() {
+            return 1;
+        }
+
+        @Override
+        public void parse(@NotNull String[] args) {
+            this.value = Double.parseDouble(args[0]);
+        }
+    }
+
     public static class Str extends ArgumentOption<String> {
         public Str(@NotNull String name, @NotNull String shortName, @NotNull String defaultValue) {
             super(name, shortName, defaultValue);
