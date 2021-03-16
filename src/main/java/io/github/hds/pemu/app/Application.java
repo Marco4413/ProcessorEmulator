@@ -13,11 +13,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
+import java.net.URI;
 
 public class Application extends JFrame implements KeyListener {
 
     private static Application INSTANCE;
     private static final String APP_TITLE = "PEMU";
+    private static final String WEBPAGE = "https://github.com/hds536jhmk/ProcessorEmulator";
 
     private final ProcessorConfig PROCESSOR_CONFIG;
     private @Nullable File currentProgram = null;
@@ -32,8 +34,8 @@ public class Application extends JFrame implements KeyListener {
         PROCESSOR_CONFIG = initialConfig;
         updateTitle();
 
-        ImageIcon icon = new ImageIcon(System.class.getResource("/icon.png"));
-        setIconImage(icon.getImage());
+        final int MENU_ITEM_ICON_SIZE = 20;
+        setIconImage(new ImageIcon(System.class.getResource("/assets/icon.png")).getImage());
 
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -46,14 +48,22 @@ public class Application extends JFrame implements KeyListener {
         fileMenu.setMnemonic('F');
         menuBar.add(fileMenu);
 
-        JMenuItem fileOpenProgram = new JMenuItem("Open Program", 'O');
-        fileOpenProgram.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
-        fileOpenProgram.addActionListener(this::openProgram);
-        fileMenu.add(fileOpenProgram);
+        ImageIcon openIcon = new ImageIcon(System.class.getResource("/assets/open_file.png"));
+        ImageIcon scaledOpenIcon = new ImageIcon(openIcon.getImage().getScaledInstance(MENU_ITEM_ICON_SIZE, MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH));
 
-        JMenuItem fileClose = new JMenuItem("Quit", 'Q');
-        fileClose.addActionListener(e -> { INSTANCE.stopProcessor(null); INSTANCE.dispose(); });
-        fileMenu.add(fileClose);
+        JMenuItem fOpenProgram = new JMenuItem("Open Program", 'O');
+        fOpenProgram.setIcon(scaledOpenIcon);
+        fOpenProgram.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
+        fOpenProgram.addActionListener(this::openProgram);
+        fileMenu.add(fOpenProgram);
+
+        ImageIcon quitIcon = new ImageIcon(System.class.getResource("/assets/quit.png"));
+        ImageIcon scaledQuitIcon = new ImageIcon(quitIcon.getImage().getScaledInstance(MENU_ITEM_ICON_SIZE, MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH));
+
+        JMenuItem fQuit = new JMenuItem("Quit", 'Q');
+        fQuit.setIcon(scaledQuitIcon);
+        fQuit.addActionListener(e -> { INSTANCE.stopProcessor(null); INSTANCE.dispose(); });
+        fileMenu.add(fQuit);
 
         FILE_DIALOG = new JFileChooser();
         FILE_DIALOG.setCurrentDirectory(new File("./"));
@@ -65,25 +75,69 @@ public class Application extends JFrame implements KeyListener {
         processorMenu.setMnemonic('P');
         menuBar.add(processorMenu);
 
+        ImageIcon runIcon = new ImageIcon(System.class.getResource("/assets/run.png"));
+        ImageIcon scaledRunIcon = new ImageIcon(runIcon.getImage().getScaledInstance(MENU_ITEM_ICON_SIZE, MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH));
+
         JMenuItem pRunProcessor = new JMenuItem("Run", 'R');
+        pRunProcessor.setIcon(scaledRunIcon);
         pRunProcessor.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
         pRunProcessor.addActionListener(this::runProcessor);
         processorMenu.add(pRunProcessor);
 
+        ImageIcon stopIcon = new ImageIcon(System.class.getResource("/assets/stop.png"));
+        ImageIcon scaledStopIcon = new ImageIcon(stopIcon.getImage().getScaledInstance(MENU_ITEM_ICON_SIZE, MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH));
+
         JMenuItem pStopProcessor = new JMenuItem("Stop", 'S');
+        pStopProcessor.setIcon(scaledStopIcon);
         pStopProcessor.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
         pStopProcessor.addActionListener(this::stopProcessor);
         processorMenu.add(pStopProcessor);
 
+        ImageIcon configIcon = new ImageIcon(System.class.getResource("/assets/configure.png"));
+        ImageIcon scaledConfigIcon = new ImageIcon(configIcon.getImage().getScaledInstance(MENU_ITEM_ICON_SIZE, MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH));
+
         JMenuItem pConfigProcessor = new JMenuItem("Configure", 'C');
+        pConfigProcessor.setIcon(scaledConfigIcon);
         pConfigProcessor.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
         pConfigProcessor.addActionListener(this::configureProcessor);
         processorMenu.add(pConfigProcessor);
 
+        ImageIcon dumpIcon = new ImageIcon(System.class.getResource("/assets/dump_memory.png"));
+        ImageIcon scaledDumpIcon = new ImageIcon(dumpIcon.getImage().getScaledInstance(MENU_ITEM_ICON_SIZE, MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH));
+
         JMenuItem pDumpProcessor = new JMenuItem("Dump Memory", 'D');
+        pDumpProcessor.setIcon(scaledDumpIcon);
         pDumpProcessor.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK));
         pDumpProcessor.addActionListener(this::dumpMemory);
         processorMenu.add(pDumpProcessor);
+
+        // ABOUT MENU
+        JMenu aboutMenu = new JMenu("About");
+        aboutMenu.setMnemonic('A');
+        menuBar.add(aboutMenu);
+
+        ImageIcon webIcon = new ImageIcon(System.class.getResource("/assets/webpage.png"));
+        ImageIcon scaledWebIcon = new ImageIcon(webIcon.getImage().getScaledInstance(MENU_ITEM_ICON_SIZE, MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH));
+
+        JMenuItem aOpenWebpage = new JMenuItem("Open Webpage", 'O');
+        aOpenWebpage.setIcon(scaledWebIcon);
+        aOpenWebpage.addActionListener(
+                e -> {
+                    boolean failed = true;
+                    if (Desktop.isDesktopSupported()) {
+                        Desktop desktop = Desktop.getDesktop();
+                        if (desktop.isSupported(Desktop.Action.BROWSE))
+                            try {
+                                desktop.browse(new URI(WEBPAGE));
+                                failed = false;
+                            } catch (Exception ignored) { }
+                    }
+
+                    if (failed)
+                        JOptionPane.showMessageDialog(this, "Couldn't open link: " + WEBPAGE, "Failed to open Webpage.", JOptionPane.WARNING_MESSAGE);
+                }
+        );
+        aboutMenu.add(aOpenWebpage);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(Console.POutput.ELEMENT), new JScrollPane(Console.Debug.ELEMENT));
         splitPane.setResizeWeight(0.5d);
