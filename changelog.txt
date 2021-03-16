@@ -1,5 +1,11 @@
 
--- Version (v0.7.0-BETA)
+-- Version (v0.7.0-RELEASE)
+-- Changes from commit @7bb4dcd
+
+Icons everywhere!
+Added About menu
+Added Documentation
+
 -- Changes from commit @f0afbc4
 
 Improved Clock precision
