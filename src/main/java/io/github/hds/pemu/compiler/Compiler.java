@@ -1,6 +1,5 @@
 package io.github.hds.pemu.compiler;
 
-import io.github.hds.pemu.app.Console;
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.utils.StringUtils;
@@ -91,7 +90,7 @@ public class Compiler {
 
         ArrayList<Integer> program = new ArrayList<>();
         HashMap<String, LabelData>  labels = new HashMap<>();
-        HashMap<String, Integer> constants = new HashMap<>();
+        HashMap<String, Integer> constants = Constants.getDefaultConstants(); // Getting Default constants
 
         while (reader.hasNextLine()) {
             String line = reader.nextLine().trim();
@@ -132,7 +131,12 @@ public class Compiler {
                                 if (valueToAdd == null)
                                     throw new IllegalStateException("String '" + value.toString() + "' wasn't terminated properly.");
                                 else if (escapeChar) {
-                                    value.append(valueToAdd);
+                                    char escapedChar = valueToAdd.charAt(0);
+                                    if (SpecialCharacters.SPECIAL_MAP.containsKey(escapedChar)) {
+                                        value.append(SpecialCharacters.SPECIAL_MAP.get(escapedChar));
+                                        if (valueToAdd.length() > 1)
+                                            value.append(valueToAdd.substring(1));
+                                    } else value.append(valueToAdd);
                                     escapeChar = false;
                                 } else if (valueToAdd.equals(terminator)) break;
                                 else if (Tokens.ESCAPECH.equals(valueToAdd)) escapeChar = true;

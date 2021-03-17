@@ -8,6 +8,14 @@ public class BasicInstructions {
 
     public static final Instruction NULL = new Instruction("NULL", 0);
 
+    public static final Instruction DATA = new Instruction("DATA", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            p.MEMORY.setValueAt(args[0], args[1]);
+            return false;
+        }
+    };
+
     public static final Instruction MOV = new Instruction("MOV", 2) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
@@ -90,11 +98,8 @@ public class BasicInstructions {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
             int result = p.MEMORY.getValueAt(args[0]) + 1;
-
-            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
-            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
-
             p.MEMORY.setValueAt(args[0], result);
+            p.updateFlags(result, true, true);
             return false;
         }
     };
@@ -103,11 +108,8 @@ public class BasicInstructions {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
             int result = p.MEMORY.getValueAt(args[0]) - 1;
-
-            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
-            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
-
             p.MEMORY.setValueAt(args[0], result);
+            p.updateFlags(result, true, true);
             return false;
         }
     };
@@ -116,11 +118,8 @@ public class BasicInstructions {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
             int result = p.MEMORY.getValueAt(args[0]) + p.MEMORY.getValueAt(args[1]);
-
-            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
-            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
-
             p.MEMORY.setValueAt(args[0], result);
+            p.updateFlags(result, true, true);
             return false;
         }
     };
@@ -129,11 +128,8 @@ public class BasicInstructions {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
             int result = p.MEMORY.getValueAt(args[0]) - p.MEMORY.getValueAt(args[1]);
-
-            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
-            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
-
             p.MEMORY.setValueAt(args[0], result);
+            p.updateFlags(result, true, true);
             return false;
         }
     };
@@ -142,11 +138,8 @@ public class BasicInstructions {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
             int result = p.MEMORY.getValueAt(args[0]) * p.MEMORY.getValueAt(args[1]);
-
-            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
-            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
-
             p.MEMORY.setValueAt(args[0], result);
+            p.updateFlags(result, true, true);
             return false;
         }
     };
@@ -155,11 +148,58 @@ public class BasicInstructions {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
             int result = p.MEMORY.getValueAt(args[0]) / p.MEMORY.getValueAt(args[1]);
-
-            p.CARRY.value = (result & ~p.MEMORY.WORD.MASK) != 0;
-            p.ZERO.value  = (result & p.MEMORY.WORD.MASK) == 0;
-
             p.MEMORY.setValueAt(args[0], result);
+            p.updateFlags(result, true, true);
+            return false;
+        }
+    };
+
+    public static final Instruction MOD = new Instruction("MOD", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            int result = p.MEMORY.getValueAt(args[0]) % p.MEMORY.getValueAt(args[1]);
+            p.MEMORY.setValueAt(args[0], result);
+            p.updateFlags(result, true, true);
+            return false;
+        }
+    };
+
+    public static final Instruction AND = new Instruction("AND", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            int res = p.MEMORY.getValueAt(args[0]) & p.MEMORY.getValueAt(args[1]);
+            p.MEMORY.setValueAt(args[0], res);
+            p.updateFlags(res, true, false);
+            return false;
+        }
+    };
+
+    public static final Instruction OR = new Instruction("OR", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            int res = p.MEMORY.getValueAt(args[0]) | p.MEMORY.getValueAt(args[1]);
+            p.MEMORY.setValueAt(args[0], res);
+            p.updateFlags(res, true, false);
+            return false;
+        }
+    };
+
+    public static final Instruction NOT = new Instruction("NOT", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            int res = ~p.MEMORY.getValueAt(args[0]);
+            p.MEMORY.setValueAt(args[0], res);
+            p.updateFlags(res, true, false);
+            return false;
+        }
+    };
+
+    public static final Instruction XOR = new Instruction("XOR", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            int res = p.MEMORY.getValueAt(args[0]) ^ p.MEMORY.getValueAt(args[1]);
+            p.MEMORY.setValueAt(args[0], res);
+            p.updateFlags(res, true, false);
             return false;
         }
     };
@@ -253,7 +293,7 @@ public class BasicInstructions {
     };
 
     public static final InstructionSet BASIC_SET = new InstructionSet(
-            new Instruction[] { NULL, MOV, SWP, OUTI, OUTC, GETI, GETC, GETK, TS, TMS, INC, DEC, ADD, SUB, MUL, DIV, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
+            new Instruction[] { NULL, DATA, MOV, SWP, OUTI, OUTC, GETI, GETC, GETK, TS, TMS, INC, DEC, ADD, SUB, MUL, DIV, MOD, AND, OR, NOT, XOR, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
     );
 
 }

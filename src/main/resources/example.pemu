@@ -9,9 +9,9 @@ str_ptr: #DW str
 _temp: #DW 0
 null: #DW 0
 
+_print_str_ptr: #DW 0
+_print_char: #DW 0
 f_print:
-    _print_str_ptr: #DW 0
-    _print_char: #DW 0
     POP _temp
     POP _print_str_ptr
     PUSH _temp

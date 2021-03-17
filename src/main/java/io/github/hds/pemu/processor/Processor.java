@@ -54,6 +54,11 @@ public class Processor implements Runnable {
         this(config.bits, config.memSize, config.clock, config.instructionSet);
     }
 
+    public void updateFlags(int value, boolean zero, boolean carry) {
+        if (zero) ZERO.value = value == 0;
+        if (carry) CARRY.value = (value & ~MEMORY.WORD.MASK) != 0;
+    }
+
     public @NotNull String getInfo() {
         return "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.WORD.BYTES + " Bytes\n" +
                "\tInstructions:\t" + INSTRUCTIONSET.getSize() + "\n";

@@ -12,6 +12,7 @@
    * [Compiler Instructions](#compiler-instructions)
  - [Instructions](#instructions)
    * [NULL](#null)
+   * [DATA](#data)
    * [MOV](#mov)
    * [SWP](#swp)
    * [OUTI](#outi)
@@ -27,6 +28,11 @@
    * [SUB](#sub)
    * [MUL](#mul)
    * [DIV](#div)
+   * [MOD](#mod)
+   * [AND](#and)
+   * [OR](#or)
+   * [NOT](#not)
+   * [XOR](#xor)
    * [CMP](#cmp)
    * [JMP](#jmp)
    * [JC](#jc)
@@ -72,6 +78,12 @@ The code above won't execute the contents of the declared variable.
 The processor crashes when dividing a number by zero, no division by zero is executed inside the emulator's code,
 so most of the time it's the user's fault.
 
+## Setting the clock too high
+
+The clock can go up to 1 instruction every nanosecond (1GHz), though it's overkill for most programs and will probably
+lock the emulator if the program has an uncapped loop that writes to the console, so it's not recommended going above the
+1MHz mark.
+
 # Compiler Basics
 
 ## Constants
@@ -82,13 +94,13 @@ Constants can be declared as follows:
 @const 10
 ```
 
-Constants are values, they don't point to anything in memory, so they are rarely used as arguments for instructions.
+Constants are values, they don't point to anything in memory, so they are rarely used as arguments for instructions (see [DATA](#data)).
 Though they are useful in one case, since they don't change the memory where they are defined, you can use them to put
-key bindings at the top of your program and add them later to memory:
+config options at the top of your program and add them later to memory:
 
 ```Assembly
 ; Since this doesn't change memory it doesn't execute any instruction
-@keybinding 10
+@time_till_stop 10
 
 JMP start
 
@@ -96,11 +108,22 @@ start:
 HLT
 
 ; We can add it to memory where we like
-key: #DW @keybinding
+key: #DW @time_till_stop
 ```
 
 Constants are parsed as they come up, so if you redefine one, values where said constant is used depend on its
 last defined value.
+There are some constants that are already defined, such as virtual keys (or VK), the emulator uses reflection to get
+all VKs from the [KeyEvent](https://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html) class that then get
+used as a base template for constants. So if you want to define a variable that stores the value of a virtual key, you
+can go to the above linked class's docs and search if there's the field (starting with `VK_`) that you want to use:
+
+```Assembly
+; If I want to put the enter key's key code inside my memory,
+;  I can do it like this:
+VK_ENTER: #DW @VK_ENTER
+; Then I can use the declared variable to check if the key was pressed
+```
 
 ## Labels
 
@@ -128,7 +151,7 @@ OUTC arg: 0
 HLT
 
 ; Declaring a label that points to a string
-str: #DS "Hello World!" #DW 0
+str: #DS "Hello World!\0"
 ; Declaring a label that points to a label's address
 str_ptr: #DW str
 ```
@@ -153,7 +176,8 @@ number: #DW 30
 
 ; #DS adds all characters in the string to memory, so the label "string"
 ;  is only pointing to the first character ("H")
-string: #DS "Hello World!"
+string: #DS "Hello World!\0"
+; #DS also supports common special characters: '\0', '\n', '\t'
 ```
 
 # Instructions
@@ -161,6 +185,25 @@ string: #DS "Hello World!"
 ## NULL
 
 This instruction doesn't do anything and its code is 0, this is used to ignore empty memory.
+
+## DATA
+
+`DATA addr val`
+
+Sets the value at `addr` to `val`.
+
+```Assembly
+; Sets the contents of val to the value of the
+;  constant @VK_A
+DATA val @VK_A
+
+; Printing contents of val, it isn't equal to
+;  10 because it was overridden by DATA
+OUTI val
+HLT
+
+val: #DW 10
+```
 
 ## MOV
 
@@ -281,7 +324,7 @@ HLT
 
 _number_pressed: #DW 0
 _quit_value: #DW 9
-null: #DW 0
+null: #DS '\0'
 ```
 
 ## GETC
@@ -320,7 +363,8 @@ null: #DW 0
 
 `GETK dst`
 
-Gets the currently pressed key and sets `dst` to its [keycode](https://stackoverflow.com/a/31637206).
+Gets the currently pressed key and sets `dst` to its [keycode](https://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html)
+(Constants can be used to add keys to memory. e.g. `@VK_ENTER`).
 If no key is pressed, it's set to **0**.
 
 **Example:**
@@ -344,7 +388,7 @@ JNZ loop
 HLT
 
 _key_pressed: #DW 0
-VK_ENTER: #DW 0x0A
+VK_ENTER: #DW @VK_ENTER
 null: #DW 0
 ```
 
@@ -406,7 +450,7 @@ HLT
 
 _time_elapsed: #DW 0
 _max_time: #DW 10000
-null: #DW 0
+null: #DS '0'
 ```
 
 ## INC
@@ -425,12 +469,12 @@ OUTI _value
 ; Incrementing _value
 INC _value
 
-OUTC new_line
+OUTC newline
 OUTI _value
 HLT
 
 _value: #DW 10
-new_line: #DW 10
+newline: #DS '\n'
 ```
 
 ## DEC
@@ -449,12 +493,12 @@ OUTI _value
 ; Decrementing _value
 DEC _value
 
-OUTC new_line
+OUTC newline
 OUTI _value
 HLT
 
 _value: #DW 10
-new_line: #DW 10
+newline: #DS '\n'
 ```
 
 ## ADD
@@ -539,6 +583,8 @@ equal_sign: #DS '='
 Divides `a` by `b` and stores the result (floored) in `a`.
 Sets Carry and Zero flags accordingly.
 
+**NOTE:** May produce Division by Zero exception.
+
 **Example:**
 
 ```Assembly
@@ -556,6 +602,132 @@ HLT
 _a: #DW 11
 _b: #DW 10
 div_sign: #DS '/'
+equal_sign: #DS '='
+```
+
+## MOD
+
+`MOD a b`
+
+Stores `a` modulus `b` in `a`.
+Sets Carry and Zero flags accordingly.
+
+**NOTE:** May produce Division by Zero exception.
+
+**Example:**
+
+```Assembly
+; Showing operation on the console
+OUTI _a OUTC modulo_sign OUTI _b OUTC equal_sign
+
+; Calculating _a mod _b and storing value in _a
+MOD _a _b
+
+OUTI _a
+HLT
+
+_a: #DW 11
+_b: #DW 3
+modulo_sign: #DS '%'
+equal_sign: #DS '='
+```
+
+## AND
+
+`AND a b`
+
+Calculates the Bitwise And on `a` and `b` and stores the result in `a`.
+Sets Zero flag accordingly (Carry flag doesn't change).
+
+**Example:**
+
+```Assembly
+; Showing operation on the console
+OUTI _a OUTC and_sign OUTI _b OUTC equal_sign
+
+; Calculating _a & _b and storing value in _a
+AND _a _b
+
+OUTI _a
+HLT
+
+_a: #DW 0x0F
+_b: #DW 0xFA
+and_sign: #DS '&'
+equal_sign: #DS '='
+```
+
+## OR
+
+`OR a b`
+
+Calculates the Bitwise Or on `a` and `b` and stores the result in `a`.
+Sets Zero flag accordingly (Carry flag doesn't change).
+
+**Example:**
+
+```Assembly
+; Showing operation on the console
+OUTI _a OUTC or_sign OUTI _b OUTC equal_sign
+
+; Calculating _a | _b and storing value in _a
+OR _a _b
+
+OUTI _a
+HLT
+
+_a: #DW 0x0C
+_b: #DW 0xF2
+or_sign: #DS '|'
+equal_sign: #DS '='
+```
+
+## NOT
+
+`NOT val`
+
+Calculates the Bitwise Not on `val` and stores the result in `val`.
+Sets Zero flag accordingly (Carry flag doesn't change).
+
+**Example:**
+
+```Assembly
+; Showing operation on the console
+OUTC not_sign OUTI _val OUTC equal_sign
+
+; Calculating ~_val storing value in _val
+NOT _val
+
+OUTI _val
+HLT
+
+_val: #DW 0x0F
+not_sign: #DS '~'
+equal_sign: #DS '='
+```
+
+## XOR
+
+`OR a b`
+
+Calculates the Bitwise Xor on `a` and `b` and stores the result in `a`.
+Sets Zero flag accordingly (Carry flag doesn't change).
+
+**Example:**
+
+```Assembly
+; Showing operation on the console
+OUTI _a OUTC xor_sign OUTI _b OUTC equal_sign
+
+; Calculating _a ^ _b and storing value in _a
+XOR _a _b
+
+OUTI _a
+HLT
+
+_a: #DW 0x0C
+_b: #DW 0xAD
+xor_sign: #DS '^'
 equal_sign: #DS '='
 ```
 
@@ -611,7 +783,7 @@ start:
     PUSH _v1 PUSH _v2
     CALL f_are_eq
 
-    OUTC new_line
+    OUTC newline
 
     PUSH _v1 PUSH _v3
     CALL f_are_eq
@@ -623,7 +795,7 @@ _v3: #DW 11
 
 equal_sign: #DS '='
 not_sign: #DS '!'
-new_line: #DW 10
+newline: #DS '\n'
 ```
 
 ## JMP
@@ -731,7 +903,7 @@ HLT
 _value: #DW 10
 _value_ptr: #DW _value
 _max: #DW 12
-newline: #DW 10
+newline: #DS '\n'
 ```
 
 ## RET
@@ -768,7 +940,7 @@ HLT
 
 _v1: #DW 33
 _v2: #DW 46
-newline: #DW 10
+newline: #DS '\n'
 ```
 
 ## POP
