@@ -1,4 +1,13 @@
 
+-- Version (v0.8.0-RELEASE)
+-- Changes from commit @b434fd1
+
+Added more special characters: \t, \b, \r, \f, \n, \0
+Added Instructions: DATA, MOD, AND, OR, NOT, XOR
+Added predefined constants (All VKs are now available by default)
+
+Added method Processor#updateFlags to update flags based on the given value
+
 -- Version (v0.7.0-RELEASE)
 -- Changes from commit @7bb4dcd
 
