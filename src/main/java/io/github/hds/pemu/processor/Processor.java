@@ -1,6 +1,5 @@
 package io.github.hds.pemu.processor;
 
-import io.github.hds.pemu.instructions.BasicInstructions;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.Flag;
 import io.github.hds.pemu.memory.Memory;
@@ -28,30 +27,14 @@ public class Processor implements Runnable {
     public volatile int pressedKey = KeyEvent.VK_UNDEFINED;
     private long startTimestamp = 0;
 
-    public Processor(int bits) {
-        this(bits, 256);
-    }
-
-    public Processor(int bits, int memSize) {
-        this(bits, memSize, 1000);
-    }
-
-    public Processor(int bits, int memSize, double clock) {
-        this(bits, memSize, clock, BasicInstructions.BASIC_SET);
-    }
-
-    public Processor(int bits, int memSize, double clock, @NotNull InstructionSet instructionSet) {
-        Word word = new Word(bits);
-        MEMORY = new Memory(memSize, word);
-        CLOCK = new Clock(clock);
+    public Processor(@NotNull ProcessorConfig config) {
+        Word word = new Word(config.bits);
+        MEMORY = new Memory(config.memSize, word);
+        CLOCK = new Clock(config.clock);
 
         SP.value = MEMORY.getSize() - 1;
 
-        INSTRUCTIONSET = instructionSet;
-    }
-
-    public Processor(@NotNull ProcessorConfig config) {
-        this(config.bits, config.memSize, config.clock, config.instructionSet);
+        INSTRUCTIONSET = config.instructionSet;
     }
 
     public void updateFlags(int value, boolean zero, boolean carry) {

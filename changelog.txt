@@ -1,5 +1,22 @@
 
 -- Version (v0.8.0-RELEASE)
+-- Changes from commit @f563f54
+
+Now command line arguments can't be arbitrary numbers, they've got ranges and steps
+
+Made field Clock#CLOCK an integer again, it doesn't need to be a double (doesn't affect Clock's precision)
+Added field Clock.MIN_CLOCK
+
+Made ArgumentsParser#getUsage display options in the same order as they're defined
+Added class ArgumentOptions.RangedInt
+Removed method ArgumentParser#defineDbl
+Removed class ArgumentOptions.Dbl
+
+Added RangedArgumentOption class
+Added methods to ArgumentOption: toString, valueToString
+Added method Word.getClosestSize
+Added MathUtils class
+
 -- Changes from commit @b434fd1
 
 Added more special characters: \t, \b, \r, \f, \n, \0

@@ -2,7 +2,10 @@ package io.github.hds.pemu;
 
 import io.github.hds.pemu.app.Application;
 import io.github.hds.pemu.arguments.ArgumentsParser;
+import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.ProcessorConfig;
+import io.github.hds.pemu.processor.Word;
+import io.github.hds.pemu.utils.MathUtils;
 
 import javax.swing.*;
 import java.io.File;
@@ -16,9 +19,9 @@ public class Main {
         // Define valid options
         parser.defineFlag("-help", "-h")
               .defineFlag("-run", "-r")
-              .defineInt("-bits", "-b", 16)
-              .defineInt("-memory", "-mem", 256)
-              .defineDbl("-clock", "-c", 1000d)
+              .defineRangedInt("-bits", "-b", Word.SizeBit16, Word.SizeBit8, Word.SizeBit24)
+              .defineRangedInt("-memory", "-mem", 256, Byte.SIZE, Word.MaskBit24)
+              .defineRangedInt("-clock", "-c", 1000, Clock.MIN_CLOCK, Clock.MAX_CLOCK)
               .defineStr("-program", "-p", "");
         // Parse Arguments
         parser.parse(args);
@@ -36,9 +39,9 @@ public class Main {
 
         // Creating initial processor config
         ProcessorConfig config = new ProcessorConfig(
-                (int) parser.getOption("-bits").value,
-                (int) parser.getOption("-memory").value,
-                (double) parser.getOption("-clock").value
+                Word.getClosestSize((int) parser.getOption("-bits").value),
+                MathUtils.makeMultipleOf(Byte.SIZE, (int) parser.getOption("-memory").value),
+                (int) parser.getOption("-clock").value
         );
 
         // Initializing app instance and showing it

@@ -2,26 +2,35 @@ package io.github.hds.pemu.arguments;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ArgumentsParser {
 
-    private final HashMap<String, ArgumentOption> options = new HashMap<>();
+    private final ArrayList<ArgumentOption> orderedOptions = new ArrayList<>();
+    private final HashMap<String, ArgumentOption> options = new HashMap<String, ArgumentOption>() {
+        @Override
+        public ArgumentOption put(String key, ArgumentOption value) {
+            if (containsKey(key)) return get(key);
+            orderedOptions.add(value);
+            return super.put(key, value);
+        }
+    };
 
     public ArgumentsParser() { }
 
     public String getUsage() {
         StringBuilder usage = new StringBuilder();
-        options.forEach((key, option) -> {
+        orderedOptions.forEach(option -> {
             // The format is "OptionName: OptionClassName = (nArguments) -> ValueType"
             usage.append('\t')
                     .append(option.NAME)
                     .append(": ")
-                    .append(option.getClass().getSimpleName())
+                    .append(option.toString())
                     .append(" = (")
                     .append(option.getLength())
                     .append(") -> ")
-                    .append(option.value.getClass().getSimpleName())
+                    .append(option.valueToString())
                     .append('\n');
         });
         return usage.toString();
@@ -57,8 +66,8 @@ public class ArgumentsParser {
         return this;
     }
 
-    public @NotNull ArgumentsParser defineDbl(@NotNull String name, @NotNull String shortName, @NotNull Double defaultValue) {
-        options.put(name, new ArgumentOptions.Dbl(name, shortName, defaultValue));
+    public @NotNull ArgumentsParser defineRangedInt(@NotNull String name, @NotNull String shortName, @NotNull Integer defaultValue, @NotNull Integer minValue, @NotNull Integer maxValue) {
+        options.put(name, new ArgumentOptions.RangedInt(name, shortName, defaultValue, minValue, maxValue));
         return this;
     }
 
