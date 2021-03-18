@@ -20,4 +20,13 @@ public abstract class ArgumentOption <T> {
 
     public abstract int getLength();
     public abstract void parse(@NotNull String[] args);
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
+
+    public String valueToString() {
+        return value.getClass().getSimpleName();
+    }
 }

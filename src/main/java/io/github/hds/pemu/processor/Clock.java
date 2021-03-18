@@ -2,14 +2,16 @@ package io.github.hds.pemu.processor;
 
 public class Clock {
 
-    public static final double MAX_CLOCK = 1e9d;
+    public static final int MAX_CLOCK = 1_000_000_000;
+    public static final int MIN_CLOCK = 1;
 
-    public final double CLOCK;
-    private final double TIME_BETWEEN_UPDATES;
+    public final int CLOCK;
+    private final int TIME_BETWEEN_UPDATES;
 
     private long lastUpdated = 0;
 
-    public Clock(double clock) {
+    public Clock(int clock) {
+        if (clock < MIN_CLOCK) throw new IllegalArgumentException("Clock can't be less than " + MIN_CLOCK + "Hz!");
         CLOCK = clock;
         TIME_BETWEEN_UPDATES = MAX_CLOCK / CLOCK;
     }

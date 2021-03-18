@@ -1,5 +1,7 @@
 package io.github.hds.pemu.processor;
 
+import io.github.hds.pemu.utils.MathUtils;
+
 public class Word {
 
     public static final int SizeBit8  =  8;
@@ -33,6 +35,10 @@ public class Word {
         }
 
         BYTES = SIZE / Byte.SIZE;
+    }
+
+    public static int getClosestSize(int targetSize) {
+        return MathUtils.constrain(MathUtils.makeMultipleOf(Byte.SIZE, targetSize), SizeBit8, SizeBit24);
     }
 
     public int combineBytes(int... bytes) {

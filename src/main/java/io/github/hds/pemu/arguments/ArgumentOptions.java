@@ -2,6 +2,9 @@ package io.github.hds.pemu.arguments;
 
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.text.DecimalFormat;
 
 public class ArgumentOptions {
 
@@ -21,9 +24,13 @@ public class ArgumentOptions {
         }
     }
 
-    public static class Dbl extends ArgumentOption<Double> {
-        public Dbl(@NotNull String name, @NotNull String shortName, @NotNull Double defaultValue) {
-            super(name, shortName, defaultValue);
+    public static class RangedInt extends RangedArgumentOption<Integer> {
+
+        private static final DecimalFormat FORMAT = new DecimalFormat("0.###E0");
+        private static final int FORMAT_THRESHOLD = 10000;
+
+        public RangedInt(@NotNull String name, @Nullable String shortName, @NotNull Integer defaultValue, @NotNull Integer minValue, @NotNull Integer maxValue) {
+            super(name, shortName, defaultValue, minValue, maxValue);
         }
 
         @Override
@@ -33,7 +40,15 @@ public class ArgumentOptions {
 
         @Override
         public void parse(@NotNull String[] args) {
-            this.value = Double.parseDouble(args[0]);
+            this.value = StringUtils.parseInt(args[0]);
+            validate();
+        }
+
+        @Override
+        public String valueToString() {
+            return this.value.getClass().getSimpleName()
+                    + "[" + (MIN_VALUE >= FORMAT_THRESHOLD ? FORMAT.format(MIN_VALUE) : MIN_VALUE.toString())
+                    + "; " + (MAX_VALUE >= FORMAT_THRESHOLD ? FORMAT.format(MAX_VALUE) : MAX_VALUE.toString()) + "]";
         }
     }
 
