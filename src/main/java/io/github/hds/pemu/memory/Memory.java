@@ -1,8 +1,23 @@
 package io.github.hds.pemu.memory;
 
 import io.github.hds.pemu.processor.Word;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Consumer;
 
 public class Memory {
+
+    public static class FormatterData {
+        public @NotNull StringBuilder builder;
+        public int index;
+        public int value;
+
+        protected FormatterData(@NotNull StringBuilder builder, int index, int value) {
+            this.builder = builder;
+            this.index = index;
+            this.value = value;
+        }
+    }
 
     public final int MAX_VALUE;
     public final Word WORD;
@@ -34,12 +49,16 @@ public class Memory {
     }
 
     public String toString(boolean divideByWord, int width) {
+        return toString(divideByWord, width, d -> d.builder.append(d.value));
+    }
+
+    public String toString(boolean divideByWord, int width, Consumer<FormatterData> formatter) {
         StringBuilder builder = new StringBuilder();
         int size = divideByWord ? getSize() : MEMORY.length;
         for (int i = 0; i < size; i++) {
-            if (divideByWord) builder.append(getValueAt(i));
-            else builder.append(Byte.toUnsignedInt(MEMORY[i]));
 
+            int value = divideByWord ? getValueAt(i) : Byte.toUnsignedInt(MEMORY[i]);
+            formatter.accept(new FormatterData(builder, i, value));
             if ((i + 1) % width == 0) builder.append('\n');
             else builder.append('\t');
         }

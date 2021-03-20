@@ -1,5 +1,19 @@
 
 -- Version (v0.8.0-RELEASE)
+-- Changes from commit @6c955a8
+
+Added buttons to pause, resume and step Processor in Processor Menu
+Added field Processor#history which holds all instructions that were executed and their memory address
+Reworked method ProcessorMenu#dumpMemory
+
+Renamed class BasicInstructions to Instructions
+Renamed field Instructions#BASIC_SET to SET
+Added methods to Processor: isPaused, pause, resume, step
+Added overload to method Memory#toString that accepts a formatter as a Consumer
+
+Added methods to Application: toggleProcessorExecution, stepProcessor
+Added class DumpMemoryPanel
+
 -- Changes from commit @db98271
 
 Reorganized pemu.app package

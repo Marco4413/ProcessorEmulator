@@ -1,6 +1,6 @@
 package io.github.hds.pemu.processor;
 
-import io.github.hds.pemu.instructions.BasicInstructions;
+import io.github.hds.pemu.instructions.Instructions;
 import io.github.hds.pemu.instructions.InstructionSet;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +23,7 @@ public class ProcessorConfig {
     }
 
     public ProcessorConfig(int bits, int memSize, int clock) {
-        this(bits, memSize, clock, BasicInstructions.BASIC_SET);
+        this(bits, memSize, clock, Instructions.SET);
     }
 
     public ProcessorConfig(int bits, int memSize, int clock, @NotNull InstructionSet instructionSet) {

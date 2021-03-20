@@ -47,6 +47,7 @@ public class InstructionSet {
 
     public int parseAndExecute(@NotNull Processor processor, @NotNull Memory memory, int address) {
         Instruction instruction = parse(memory, address);
+        processor.HISTORY.put(address, instruction.KEYWORD);
         if (!instruction.execute(processor, instruction.ARGUMENTS == 0 ? new int[0] : memory.getValuesAt(address + 1, instruction.ARGUMENTS)))
             return instruction.getWords();
         return 0;
