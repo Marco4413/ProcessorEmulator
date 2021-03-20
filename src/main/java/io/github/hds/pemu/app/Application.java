@@ -197,6 +197,31 @@ public class Application extends JFrame implements KeyListener {
         currentProcessor.stop();
     }
 
+    public void toggleProcessorExecution(ActionEvent e) {
+        if (currentProcessor == null || !currentProcessor.isRunning()) {
+            Console.Debug.println("Couldn't pause or resume processor because it isn't currently running!");
+            return;
+        }
+
+        if (currentProcessor.isPaused()) {
+            currentProcessor.resume();
+            Console.Debug.println("Processor was resumed!");
+        } else {
+            currentProcessor.pause();
+            Console.Debug.println("Processor was paused!");
+        }
+    }
+
+    public void stepProcessor(ActionEvent e) {
+        if (currentProcessor == null || !currentProcessor.isRunning()) {
+            Console.Debug.println("Couldn't step processor because it isn't currently running!");
+            return;
+        }
+
+        currentProcessor.step();
+        Console.Debug.println("Processor stepped forward!");
+    }
+
     protected void close(ActionEvent e) {
         stopProcessor(null);
         dispose();

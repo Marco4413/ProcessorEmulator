@@ -4,7 +4,7 @@ import io.github.hds.pemu.app.Console;
 import io.github.hds.pemu.processor.Processor;
 import org.jetbrains.annotations.NotNull;
 
-public class BasicInstructions {
+public class Instructions {
 
     public static final Instruction NULL = new Instruction("NULL", 0);
 
@@ -292,7 +292,7 @@ public class BasicInstructions {
         }
     };
 
-    public static final InstructionSet BASIC_SET = new InstructionSet(
+    public static final InstructionSet SET = new InstructionSet(
             new Instruction[] { NULL, DATA, MOV, SWP, OUTI, OUTC, GETI, GETC, GETK, TS, TMS, INC, DEC, ADD, SUB, MUL, DIV, MOD, AND, OR, NOT, XOR, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
     );
 

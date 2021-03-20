@@ -1,35 +1,40 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.processor.Processor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.HashMap;
 
 public class ProcessorMenu extends JMenu {
 
     private final Application app;
 
-    private final Integer[] dumpMemoryPossibleValues = { 8, 16, 24, 32, 48, 64 };
-    private int dumpMemoryLastSelected = 0;
-
     private final JMenuItem RUN;
     private final JMenuItem STOP;
     private final JMenuItem CONFIGURE;
     private final JMenuItem DUMP_MEMORY;
+    private final JMenuItem PAUSE_RESUME;
+    private final JMenuItem STEP;
 
     private final ImageIcon ICON_RUN;
     private final ImageIcon ICON_STOP;
     private final ImageIcon ICON_CONFIGURE;
     private final ImageIcon ICON_DUMP_MEMORY;
+    private final ImageIcon ICON_PAUSE_RESUME;
+    private final ImageIcon ICON_STEP;
 
     private final ProcessorConfigPanel CONFIG_PANEL;
+    private final DumpMemoryPanel DUMP_MEMORY_PANEL;
 
     protected ProcessorMenu(@NotNull Application parentApp) {
         super("Processor");
         app = parentApp;
         CONFIG_PANEL = new ProcessorConfigPanel();
+        DUMP_MEMORY_PANEL = new DumpMemoryPanel();
 
         setMnemonic('P');
 
@@ -76,25 +81,58 @@ public class ProcessorMenu extends JMenu {
         DUMP_MEMORY.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK));
         DUMP_MEMORY.addActionListener(this::dumpMemory);
         add(DUMP_MEMORY);
+
+        ICON_PAUSE_RESUME = new ImageIcon(
+                new ImageIcon(System.class.getResource("/assets/pause_resume.png"))
+                        .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
+        );
+
+        PAUSE_RESUME = new JMenuItem("Pause/Resume", 'P');
+        PAUSE_RESUME.setIcon(ICON_PAUSE_RESUME);
+        PAUSE_RESUME.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.SHIFT_DOWN_MASK));
+        PAUSE_RESUME.addActionListener(app::toggleProcessorExecution);
+        add(PAUSE_RESUME);
+
+        ICON_STEP = new ImageIcon(
+                new ImageIcon(System.class.getResource("/assets/step.png"))
+                        .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
+        );
+
+        STEP = new JMenuItem("Step", 'S');
+        STEP.setIcon(ICON_STEP);
+        STEP.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.SHIFT_DOWN_MASK));
+        STEP.addActionListener(app::stepProcessor);
+        add(STEP);
     }
 
     public void dumpMemory(ActionEvent e) {
-        if (app.currentProcessor == null) {
+        Processor processor = app.currentProcessor;
+        if (processor == null) {
             Console.Debug.println("No processor was ever started yet.");
             return;
         }
 
-        Integer selected = (Integer) JOptionPane.showInputDialog(
-                this, "Words on each line:", "Memory Dump",
-                JOptionPane.QUESTION_MESSAGE, null, dumpMemoryPossibleValues,
-                dumpMemoryPossibleValues[dumpMemoryLastSelected]
-        );
+        int result = JOptionPane.showConfirmDialog(this, DUMP_MEMORY_PANEL, "Dump Memory", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result == JOptionPane.OK_OPTION) {
+            DumpMemoryPanel.DumpMemorySettings settings = DUMP_MEMORY_PANEL.getSettings();
+            HashMap<Integer, String> history = new HashMap<>(processor.HISTORY);
+            int IP = processor.IP.value;
+            int SP = processor.SP.value;
+            String str = processor.MEMORY.toString(true, settings.WIDTH, data -> {
+                if (settings.SHOW_POINTERS)
+                    if (IP == data.index) data.builder.append("{ ");
+                    else if (SP == data.index) data.builder.append("[ ");
 
-        if (selected == null) return;
-        for (int i = 0; i < dumpMemoryPossibleValues.length; i++)
-            if (dumpMemoryPossibleValues[i].equals(selected)) dumpMemoryLastSelected = i;
+                if (settings.SHOW_HISTORY && history.containsKey(data.index))
+                    data.builder.append(history.get(data.index));
+                else data.builder.append(data.value);
 
-        Console.Debug.println("Memory Dump:\n" + app.currentProcessor.MEMORY.toString(true, selected));
+                if (settings.SHOW_POINTERS)
+                    if (IP == data.index) data.builder.append(" }");
+                    else if (SP == data.index) data.builder.append(" ]");
+            });
+            Console.Debug.println("Memory Dump:\n" + str);
+        }
     }
 
     public void configureProcessor(ActionEvent e) {
