@@ -3,6 +3,8 @@ package io.github.hds.pemu.compiler;
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.utils.StringUtils;
+import io.github.hds.pemu.utils.Token;
+import io.github.hds.pemu.utils.Tokenizer;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -11,6 +13,20 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class Compiler {
+
+    private static class Tokens {
+
+        public static final Token COMMENT  = new Token(";");
+        public static final Token LABEL    = new Token(":");
+        public static final Token COMPILER = new Token("#");
+        public static final Token STRING   = new Token("[\"']");
+        public static final Token ESCAPECH = new Token("\\\\");
+        public static final Token CONSTANT = new Token("@");
+        public static final Token SPACE    = new Token("\\s");
+
+        public static final Token[] ALL_TOKENS = new Token[] { COMMENT, LABEL, COMPILER, CONSTANT, STRING, ESCAPECH, SPACE };
+
+    }
 
     private static class LabelData {
         public static int NULL_PTR = -1;
@@ -25,7 +41,7 @@ public class Compiler {
         }
     }
 
-    public static boolean parseValue(ArrayList<Integer> program, HashMap<String, LabelData> labels, HashMap<String, Integer> constants, Tokenizer tokenizer) {
+    private static boolean parseValue(ArrayList<Integer> program, HashMap<String, LabelData> labels, HashMap<String, Integer> constants, Tokenizer tokenizer) {
         // Default value is 0
         int value = 0;
         // Get the value to parse

@@ -1,4 +1,4 @@
-package io.github.hds.pemu.compiler;
+package io.github.hds.pemu.utils;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

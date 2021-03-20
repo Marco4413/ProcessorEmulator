@@ -10,39 +10,44 @@ import java.awt.*;
 
 public class ProcessorConfigPanel extends JPanel {
 
-    private final @NotNull ProcessorConfig CONFIG;
+    private final @NotNull JSpinner BITS_SPINNER;
+    private final @NotNull JSpinner MEMORY_SPINNER;
+    private final @NotNull JSpinner CLOCK_SPINNER;
 
-    private final @NotNull JSpinner bitsSpinner;
-    private final @NotNull JSpinner memorySpinner;
-    private final @NotNull JSpinner clockSpinner;
-
-    public ProcessorConfigPanel(@NotNull ProcessorConfig config) {
+    protected ProcessorConfigPanel() {
         super();
+
         GridLayout layout = new GridLayout(3, 2);
         layout.setVgap(5);
         setLayout(layout);
 
-        CONFIG = config;
         add(new JLabel("Word Size (Bits): "));
-        SpinnerNumberModel bitsModel = new SpinnerNumberModel(CONFIG.bits, Word.SizeBit8, Word.SizeBit24, Byte.SIZE);
-        bitsSpinner = new JSpinner(bitsModel);
-        add(bitsSpinner);
+        SpinnerNumberModel bitsModel = new SpinnerNumberModel(Word.SizeBit8, Word.SizeBit8, Word.SizeBit24, Byte.SIZE);
+        BITS_SPINNER = new JSpinner(bitsModel);
+        add(BITS_SPINNER);
 
         add(new JLabel("Memory Size (Bytes): "));
-        SpinnerNumberModel memoryModel = new SpinnerNumberModel(CONFIG.memSize, Byte.SIZE, Word.MaskBit24, Byte.SIZE);
-        memorySpinner = new JSpinner(memoryModel);
-        add(memorySpinner);
+        SpinnerNumberModel memoryModel = new SpinnerNumberModel(Byte.SIZE, Byte.SIZE, Word.MaskBit24, Byte.SIZE);
+        MEMORY_SPINNER = new JSpinner(memoryModel);
+        add(MEMORY_SPINNER);
 
         add(new JLabel("Clock (Hz): "));
-        SpinnerNumberModel clockModel = new SpinnerNumberModel(CONFIG.clock, Clock.MIN_CLOCK, Clock.MAX_CLOCK, 1);
-        clockSpinner = new JSpinner(clockModel);
-        add(clockSpinner);
+        SpinnerNumberModel clockModel = new SpinnerNumberModel(Clock.MIN_CLOCK, Clock.MIN_CLOCK, Clock.MAX_CLOCK, 1);
+        CLOCK_SPINNER = new JSpinner(clockModel);
+        add(CLOCK_SPINNER);
     }
 
-    public @NotNull ProcessorConfig apply() {
-        CONFIG.bits = (int) bitsSpinner.getValue();
-        CONFIG.memSize = (int) memorySpinner.getValue();
-        CONFIG.clock = (int) clockSpinner.getValue();
-        return CONFIG;
+    public void setConfig(@NotNull ProcessorConfig config) {
+        BITS_SPINNER.setValue(config.bits);
+        MEMORY_SPINNER.setValue(config.memSize);
+        CLOCK_SPINNER.setValue(config.clock);
+    }
+
+    public @NotNull ProcessorConfig getConfig() {
+        return new ProcessorConfig(
+            (int) BITS_SPINNER.getValue(),
+            (int) MEMORY_SPINNER.getValue(),
+            (int) CLOCK_SPINNER.getValue()
+        );
     }
 }
