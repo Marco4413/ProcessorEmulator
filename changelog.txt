@@ -1,5 +1,11 @@
 
 -- Version (v0.8.0-RELEASE)
+-- Changes from commit @db98271
+
+Reorganized pemu.app package
+Moved pemu.compiler.Tokens into pemu.compiler.Compiler.Tokens and made it private
+Moved classes Tokenizer and Token from package pemu.compiler to pemu.utils
+
 -- Changes from commit @f563f54
 
 Now command line arguments can't be arbitrary numbers, they've got ranges and steps
