@@ -1,15 +1,12 @@
 
 JMP start
 
-@new_line 10
-
-str: #DS "Hello World!" #DW @new_line #DW 0
+str: #DS "Hello World!\n\0"
 str_ptr: #DW str
 
 _temp: #DW 0
 null: #DW 0
 
-_print_str_ptr: #DW 0
 _print_char: #DW 0
 f_print:
     POP _temp
@@ -17,8 +14,7 @@ f_print:
     PUSH _temp
 
     _f_print_char:
-    MOV _print_ptr _print_str_ptr
-    MOV _print_char _print_ptr: 0
+    MOV _print_char _print_str_ptr: 0
 
     CMP _print_char null
     JZ _f_print_end

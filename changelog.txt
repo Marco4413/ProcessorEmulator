@@ -1,5 +1,21 @@
 
 -- Version (v0.8.0-RELEASE)
+-- Changes from commit @885f40f
+
+Added Instruction: BRK
+Removed DumpMemory in favour of MemoryView
+Added Compiler specific exceptions: SyntaxError, ReferenceError, TypeError
+
+Added method Tokenizer#getConsumedCharacters
+Added overload for method Console.ConsoleElement#printStackTrace to ignore known exceptions
+
+Added class to InstructionSet: ExecutionData
+Now method InstructionSet#parseAndExecute returns an instance of InstructionSet.ExecutionData
+Now method Processor#run handles field Processor#HISTORY as it should've been from when it was introduced
+
+Hopefully made Memory class Thread-safe
+Made class Compiler.Tokens public
+
 -- Changes from commit @6c955a8
 
 Added buttons to pause, resume and step Processor in Processor Menu

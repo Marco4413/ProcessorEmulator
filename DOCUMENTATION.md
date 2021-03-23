@@ -12,6 +12,7 @@
    * [Compiler Instructions](#compiler-instructions)
  - [Instructions](#instructions)
    * [NULL](#null)
+   * [BRK](#brk)
    * [DATA](#data)
    * [MOV](#mov)
    * [SWP](#swp)
@@ -186,11 +187,19 @@ string: #DS "Hello World!\0"
 
 This instruction doesn't do anything and its code is 0, this is used to ignore empty memory.
 
+## BRK
+
+This instruction is a simple breakpoint, the processor can be resumed by going to Processor->Pause/Resume.
+This instruction shouldn't be used in the final program, it's just a way of debugging your code by automatically pausing
+the processor at a point in the program without having to press the pause button in the app.
+
 ## DATA
 
 `DATA addr val`
 
 Sets the value at `addr` to `val`.
+
+**Example:**
 
 ```Assembly
 ; Sets the contents of val to the value of the

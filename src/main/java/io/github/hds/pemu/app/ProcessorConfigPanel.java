@@ -17,7 +17,7 @@ public class ProcessorConfigPanel extends JPanel {
     protected ProcessorConfigPanel() {
         super();
 
-        GridLayout layout = new GridLayout(3, 2);
+        GridLayout layout = new GridLayout(0, 2);
         layout.setVgap(5);
         setLayout(layout);
 
