@@ -1,4 +1,10 @@
 
+-- Version (v0.9.0-RELEASE)
+-- Changes from commit @3924100
+
+Increased precision of MemoryView's update interval
+Now disposing MemoryView window
+
 -- Version (v0.8.0-RELEASE)
 -- Changes from commit @885f40f
 
