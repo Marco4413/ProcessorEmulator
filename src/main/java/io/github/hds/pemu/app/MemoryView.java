@@ -61,7 +61,7 @@ public class MemoryView extends JFrame {
         add(SHOW_POINTERS, firstRow, true);
 
         add(new JLabel("Update interval:"), firstRow, true);
-        SpinnerNumberModel updateDelayModel = new SpinnerNumberModel(1.0f, 0.1f, 5.0f, 0.1f);
+        SpinnerNumberModel updateDelayModel = new SpinnerNumberModel(1.0f, 0.01f, 5.0f, 0.01f);
         UPDATE_DELAY = new JSpinner(updateDelayModel);
         add(UPDATE_DELAY, firstRow, true);
 

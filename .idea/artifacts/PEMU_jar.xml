@@ -9,6 +9,9 @@
       <element id="dir-copy" path="$PROJECT_DIR$/src/main/resources" />
       <element id="file-copy" path="$PROJECT_DIR$/logo.png" />
       <element id="file-copy" path="$PROJECT_DIR$/DOCUMENTATION.md" />
+      <element id="file-copy" path="$PROJECT_DIR$/preview_main_window.png" />
+      <element id="file-copy" path="$PROJECT_DIR$/preview_memory_view.png" />
+      <element id="file-copy" path="$PROJECT_DIR$/preview_processor_config.png" />
     </root>
   </artifact>
 </component>

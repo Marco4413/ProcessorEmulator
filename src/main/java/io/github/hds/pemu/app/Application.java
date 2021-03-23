@@ -228,6 +228,7 @@ public class Application extends JFrame implements KeyListener {
 
     protected void close(ActionEvent e) {
         stopProcessor(null);
+        MEMORY_VIEW.dispose();
         dispose();
     }
 }
