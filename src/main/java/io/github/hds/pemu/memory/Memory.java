@@ -40,19 +40,19 @@ public class Memory {
         WORD = word;
     }
 
-    public String toString() {
+    public synchronized String toString() {
         return toString(true);
     }
 
-    public String toString(boolean divideByWord) {
+    public synchronized String toString(boolean divideByWord) {
         return toString(divideByWord, 8);
     }
 
-    public String toString(boolean divideByWord, int width) {
+    public synchronized String toString(boolean divideByWord, int width) {
         return toString(divideByWord, width, d -> d.builder.append(d.value));
     }
 
-    public String toString(boolean divideByWord, int width, Consumer<FormatterData> formatter) {
+    public synchronized String toString(boolean divideByWord, int width, Consumer<FormatterData> formatter) {
         StringBuilder builder = new StringBuilder();
         int size = divideByWord ? getSize() : MEMORY.length;
         for (int i = 0; i < size; i++) {
@@ -76,7 +76,7 @@ public class Memory {
             throw new IllegalArgumentException("Address must be within memory size!");
     }
 
-    public int setValueAt(int address, int value) {
+    public synchronized int setValueAt(int address, int value) {
         int index = getIndexFromAddress(address);
 
         validateAddress(address);
@@ -90,7 +90,7 @@ public class Memory {
         return oldValue;
     }
 
-    public int getValueAt(int address) {
+    public synchronized int getValueAt(int address) {
         int index = getIndexFromAddress(address);
         validateAddress(address);
 
@@ -102,7 +102,7 @@ public class Memory {
         return WORD.combineBytes(bytes);
     }
 
-    public int[] setValuesAt(int address, int[] values) {
+    public synchronized int[] setValuesAt(int address, int[] values) {
         validateAddress(address);
 
         if (values.length == 0) return values;
@@ -115,7 +115,7 @@ public class Memory {
         return oldValues;
     }
 
-    public int[] getValuesAt(int address, int size) {
+    public synchronized int[] getValuesAt(int address, int size) {
         validateAddress(address);
 
         if (size == 0) return new int[0];

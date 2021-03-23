@@ -8,6 +8,17 @@ public class Instructions {
 
     public static final Instruction NULL = new Instruction("NULL", 0);
 
+    public static final Instruction BRK = new Instruction("BRK", 0) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            if (!p.isPaused()) {
+                p.pause();
+                Console.Debug.println("Processor encountered a breakpoint.");
+            }
+            return false;
+        }
+    };
+
     public static final Instruction DATA = new Instruction("DATA", 2) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
@@ -293,7 +304,7 @@ public class Instructions {
     };
 
     public static final InstructionSet SET = new InstructionSet(
-            new Instruction[] { NULL, DATA, MOV, SWP, OUTI, OUTC, GETI, GETC, GETK, TS, TMS, INC, DEC, ADD, SUB, MUL, DIV, MOD, AND, OR, NOT, XOR, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
+            new Instruction[] { NULL, BRK, DATA, MOV, SWP, OUTI, OUTC, GETI, GETC, GETK, TS, TMS, INC, DEC, ADD, SUB, MUL, DIV, MOD, AND, OR, NOT, XOR, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
     );
 
 }

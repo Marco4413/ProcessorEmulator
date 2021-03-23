@@ -9,6 +9,7 @@ public class Tokenizer {
 
     private String[] tokens;
     private int nextToken = 0;
+    private int consumedCharacters = 0;
 
     public Tokenizer(@NotNull String str, boolean keepDelimiters, @NotNull String... delimiter) {
         String rule = String.join("", delimiter);
@@ -94,7 +95,11 @@ public class Tokenizer {
     }
 
     public @Nullable String consumeNext() {
-        return hasNext() ? tokens[nextToken++] : null;
+        if (hasNext()) {
+            consumedCharacters += tokens[nextToken].length();
+            return tokens[nextToken++];
+        }
+        return null;
     }
 
     public @Nullable String consumeNext(Token... tokenBlacklist) {
@@ -111,6 +116,10 @@ public class Tokenizer {
             if (isValid) return token;
         }
         return null;
+    }
+
+    public int getConsumedCharacters() {
+        return consumedCharacters;
     }
 
 }

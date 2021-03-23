@@ -14,7 +14,7 @@ import java.util.Scanner;
 
 public class Compiler {
 
-    private static class Tokens {
+    public static class Tokens {
 
         public static final Token COMMENT  = new Token(";");
         public static final Token LABEL    = new Token(":");
@@ -28,12 +28,11 @@ public class Compiler {
 
     }
 
-    private static class LabelData {
+    public static class LabelData {
         public static int NULL_PTR = -1;
 
         public int pointer = NULL_PTR;
         public ArrayList<Integer> occurrences = new ArrayList<>();
-
         public LabelData() { }
 
         public LabelData(int pointer) {
@@ -41,14 +40,32 @@ public class Compiler {
         }
     }
 
-    private static boolean parseValue(ArrayList<Integer> program, HashMap<String, LabelData> labels, HashMap<String, Integer> constants, Tokenizer tokenizer) {
+    public static class SyntaxError extends RuntimeException {
+        protected SyntaxError(@NotNull String expected, @NotNull String got, int currentLine, int currentChar) {
+            super(String.format("Syntax Error (%d:%d): Expected %s, got '%s'.", currentLine, currentChar, expected, got));
+        }
+    }
+
+    public static class ReferenceError extends RuntimeException {
+        protected ReferenceError(@NotNull String type, @NotNull String name, int currentLine, int currentChar) {
+            super(String.format("Reference Error (%d:%d): %s '%s' was not declared.", currentLine, currentChar, type, name));
+        }
+    }
+
+    public static class TypeError extends RuntimeException {
+        protected TypeError(@NotNull String message, int currentLine, int currentChar) {
+            super(String.format("Type Error (%d:%d): %s.", currentLine, currentChar, message));
+        }
+    }
+
+    private static boolean parseValue(ArrayList<Integer> program, HashMap<String, LabelData> labels, HashMap<String, Integer> constants, Tokenizer tokenizer, int currentLine) {
         // Default value is 0
         int value = 0;
         // Get the value to parse
         String valueToParse = tokenizer.consumeNext(Tokens.SPACE);
 
         // Throw if there's no value, because there MUST be one if this function is called
-        if (valueToParse == null) throw new IllegalStateException("Expected value got null.");
+        if (valueToParse == null) throw new SyntaxError("value", "null", currentLine, tokenizer.getConsumedCharacters());
 
         // Try to convert it into a number, if that didn't happen then the value must be either a label or constant
         try {
@@ -56,12 +73,12 @@ public class Compiler {
         } catch (Exception err) {
             String nextToken = tokenizer.peekNext(Tokens.SPACE);
             if (Tokens.CONSTANT.equals(valueToParse)) {
-                if (nextToken == null) throw new IllegalStateException("Expected constant's name, got null.");
+                if (nextToken == null) throw new SyntaxError("constant's name", "null", currentLine, tokenizer.getConsumedCharacters());
                 else if (constants.containsKey(nextToken)) {
                     // If the constant was defined put its value and consume the token
                     tokenizer.consumeNext(Tokens.SPACE);
                     program.add(constants.get(nextToken));
-                } else throw new IllegalStateException("Constant '" + nextToken + "' was never declared before.");
+                } else throw new ReferenceError("Constant", nextToken, currentLine, tokenizer.getConsumedCharacters());
             } else if (Tokens.LABEL.equals(nextToken)) {
                 // If a label is being declared consume the declaration token
                 tokenizer.consumeNext(Tokens.SPACE);
@@ -72,7 +89,7 @@ public class Compiler {
                         labelData.pointer = program.size();
                     else
                         // If the label has a valid pointer then it was already declared!
-                        throw new IllegalStateException("Label '" + valueToParse + "' was already declared.");
+                        throw new TypeError("Label '" + valueToParse + "' was already declared", currentLine, tokenizer.getConsumedCharacters());
                 } else
                     // If no label was created then create it
                     labels.put(valueToParse, new LabelData(program.size()));
@@ -108,10 +125,8 @@ public class Compiler {
         HashMap<String, LabelData>  labels = new HashMap<>();
         HashMap<String, Integer> constants = Constants.getDefaultConstants(); // Getting Default constants
 
-        while (reader.hasNextLine()) {
-            String line = reader.nextLine().trim();
-
-            Tokenizer tokenizer = new Tokenizer(line, true, Tokens.ALL_TOKENS);
+        for (int currentLine = 1; reader.hasNextLine(); currentLine++) {
+            Tokenizer tokenizer = new Tokenizer(reader.nextLine(), true, Tokens.ALL_TOKENS);
             tokenizer.removeEmpties();
 
             while (tokenizer.hasNext()) {
@@ -127,16 +142,16 @@ public class Compiler {
 
                     program.add(instructionCode);
                     for (int i = 0; i < instruction.ARGUMENTS; ) {
-                        if (parseValue(program, labels, constants, tokenizer)) i++;
+                        if (parseValue(program, labels, constants, tokenizer, currentLine)) i++;
                     }
                 } else if (Tokens.COMPILER.equals(token)) {
                     // Parsing Compiler Instructions
 
                     String compilerInstr = tokenizer.consumeNext(Tokens.SPACE);
                     if (compilerInstr == null)
-                        throw new IllegalStateException("Expected compiler instruction, got null.");
+                        throw new SyntaxError("compiler instruction", "null", currentLine, tokenizer.getConsumedCharacters());
                     else if (compilerInstr.equals("DW")) {
-                        parseValue(program, labels, constants, tokenizer);
+                        parseValue(program, labels, constants, tokenizer, currentLine);
                     } else if (compilerInstr.equals("DS")) {
                         String terminator = tokenizer.consumeNext(Tokens.SPACE);
                         if (Tokens.STRING.equals(terminator)) {
@@ -145,7 +160,7 @@ public class Compiler {
                             while (true) {
                                 String valueToAdd = tokenizer.consumeNext();
                                 if (valueToAdd == null)
-                                    throw new IllegalStateException("String '" + value.toString() + "' wasn't terminated properly.");
+                                    throw new SyntaxError("String terminator", String.valueOf(value.charAt(value.length() - 1)), currentLine, tokenizer.getConsumedCharacters());
                                 else if (escapeChar) {
                                     char escapedChar = valueToAdd.charAt(0);
                                     if (SpecialCharacters.SPECIAL_MAP.containsKey(escapedChar)) {
@@ -159,21 +174,21 @@ public class Compiler {
                                 else value.append(valueToAdd);
                             }
                             for (int i = 0; i < value.length(); i++) program.add((int) value.charAt(i));
-                        } else throw new IllegalStateException("String expected, got '" + terminator + "'");
-                    } else throw new IllegalStateException("Expected compiler instruction, got '" + compilerInstr + "'.");
+                        } else throw new SyntaxError("String", terminator == null ? "null" : terminator, currentLine, tokenizer.getConsumedCharacters());
+                    } else throw new SyntaxError("compiler instruction", compilerInstr, currentLine, tokenizer.getConsumedCharacters());
                 } else {
                     // Parsing Labels and Constants
                     boolean isConstant = Tokens.CONSTANT.equals(token);
                     if (isConstant) {
                         String constantName = tokenizer.consumeNext(Tokens.SPACE);
                         String constantValue = tokenizer.consumeNext(Tokens.SPACE);
-                        if (constantName == null) throw new IllegalStateException("Expected constant's name, got null.");
-                        else if (constantValue == null) throw new IllegalStateException("Expected value for constant '" + constantName + "', got null.");
+                        if (constantName == null) throw new SyntaxError("constant's name", "null", currentLine, tokenizer.getConsumedCharacters());
+                        else if (constantValue == null) throw new SyntaxError("static number", "null", currentLine, tokenizer.getConsumedCharacters());
 
                         try {
                             constants.put(constantName, StringUtils.parseInt(constantValue));
                         } catch (Exception err) {
-                            throw new IllegalStateException("Expected static number for constant '" + constantName + "', got '" + constantValue + "'.");
+                            throw new SyntaxError("static number", constantValue, currentLine, tokenizer.getConsumedCharacters());
                         }
                     } else {
                         boolean isLabel = Tokens.LABEL.equals(tokenizer.consumeNext(Tokens.SPACE));
@@ -183,10 +198,10 @@ public class Compiler {
                                 if (labelData.pointer == LabelData.NULL_PTR)
                                     labelData.pointer = program.size();
                                 else
-                                    throw new IllegalStateException("Label '" + token + "' was already declared.");
+                                    throw new TypeError("Label '" + token + "' was already declared", currentLine, tokenizer.getConsumedCharacters());
                             } else
                                 labels.put(token, new LabelData(program.size()));
-                        } else throw new IllegalStateException("Expected label declaration, got '" + token + "'.");
+                        } else throw new SyntaxError("label declaration", token, currentLine, tokenizer.getConsumedCharacters());
                     }
                 }
             }

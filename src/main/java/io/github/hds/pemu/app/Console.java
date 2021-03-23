@@ -1,5 +1,6 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.Main;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,6 +64,16 @@ public class Console {
 
         public void printStackTrace(@NotNull Exception err) {
             println(StringUtils.stackTraceAsString(err));
+        }
+
+        public void printStackTrace(@NotNull Exception err, boolean printBacktraceForKnownExceptions) {
+            if (printBacktraceForKnownExceptions)
+                printStackTrace(err);
+            else {
+                boolean isKnown = err.getClass().getPackage().getName().startsWith(Main.class.getPackage().getName());
+                if (isKnown) println(err.getMessage());
+                else printStackTrace(err);
+            }
         }
 
     }

@@ -27,6 +27,8 @@ public class Application extends JFrame implements KeyListener {
     protected @Nullable Processor currentProcessor = null;
     protected @NotNull ProcessorConfig processorConfig;
 
+    protected final MemoryView MEMORY_VIEW;
+
     private Application(@NotNull ProcessorConfig initialConfig) throws HeadlessException {
         super();
         processorConfig = initialConfig;
@@ -36,6 +38,8 @@ public class Application extends JFrame implements KeyListener {
 
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        MEMORY_VIEW = new MemoryView(this);
 
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -134,7 +138,7 @@ public class Application extends JFrame implements KeyListener {
             currentProcessor = new Processor(processorConfig);
         } catch (Exception err) {
             Console.Debug.println("Couldn't create processor.");
-            Console.Debug.printStackTrace(err);
+            Console.Debug.printStackTrace(err, false);
             return;
         }
 
@@ -143,8 +147,8 @@ public class Application extends JFrame implements KeyListener {
         try {
             compiledProgram = Compiler.compileFile(currentProgram, currentProcessor);
         } catch (Exception err) {
-            Console.Debug.println("Compilation error. (for file @'" + currentProgram.getAbsolutePath() + "')");
-            Console.Debug.printStackTrace(err);
+            Console.Debug.println("Compilation error (for file @'" + currentProgram.getAbsolutePath() + "'):");
+            Console.Debug.printStackTrace(err, false);
             return;
         }
 
@@ -159,7 +163,7 @@ public class Application extends JFrame implements KeyListener {
             currentProcessor.MEMORY.setValuesAt(0, compiledProgram);
         } catch (Exception err) {
             Console.Debug.println("Error while loading program into memory!");
-            Console.Debug.printStackTrace(err);
+            Console.Debug.printStackTrace(err, false);
             return;
         }
 
@@ -177,7 +181,7 @@ public class Application extends JFrame implements KeyListener {
                     } catch (Exception err) {
                         currentProcessor.stop(); // Make sure to stop the processor if it fails
                         Console.Debug.println("Error while running program!");
-                        Console.Debug.printStackTrace(err);
+                        Console.Debug.printStackTrace(err, false);
                     }
                     Console.Debug.println("Processor stopped!\n");
                 }
@@ -185,7 +189,7 @@ public class Application extends JFrame implements KeyListener {
             processorThread.start();
         } catch (Exception err) {
             Console.Debug.println("Error while starting processor's thread!");
-            Console.Debug.printStackTrace(err);
+            Console.Debug.printStackTrace(err, false);
         }
     }
 

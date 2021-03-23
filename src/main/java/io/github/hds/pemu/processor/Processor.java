@@ -71,8 +71,12 @@ public class Processor implements Runnable {
 
             if (CLOCK.update() && (stepping || !isPaused)) {
                 stepping = false;
-                int instructionLength = INSTRUCTIONSET.parseAndExecute(this, MEMORY, IP.value);
-                IP.value += instructionLength;
+                int lastIP = IP.value;
+
+                InstructionSet.ExecutionData executionData = INSTRUCTIONSET.parseAndExecute(this, MEMORY, IP.value);
+                HISTORY.put(lastIP, executionData.INSTRUCTION.KEYWORD);
+                if (!executionData.IGNORE_LENGTH)
+                    IP.value += executionData.LENGTH;
 
                 if (IP.value >= MEMORY.getSize()) stop();
             }
