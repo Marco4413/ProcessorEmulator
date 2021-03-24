@@ -108,8 +108,10 @@ public class ProcessorMenu extends JMenu {
     public void configureProcessor(ActionEvent e) {
         CONFIG_PANEL.setConfig(app.processorConfig);
         int result = JOptionPane.showConfirmDialog(this, CONFIG_PANEL, "Configure Processor", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (result == JOptionPane.OK_OPTION)
+        if (result == JOptionPane.OK_OPTION) {
             app.processorConfig = CONFIG_PANEL.getConfig();
+            if (app.currentProcessor != null) app.currentProcessor.CLOCK.setClock(app.processorConfig.clock);
+        }
     }
 
 }

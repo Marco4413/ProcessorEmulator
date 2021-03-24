@@ -1,5 +1,11 @@
 
 -- Version (v0.9.0-RELEASE)
+
+-- Version (v0.8.2-RELEASE)
+-- Changes from commit @fa97703
+
+Processor's Clock can now be changed at runtime
+
 -- Changes from commit @3924100
 
 Increased precision of MemoryView's update interval
