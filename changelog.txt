@@ -1,5 +1,15 @@
 
 -- Version (v0.9.0-RELEASE)
+-- Changes from commit @8555d71
+
+Added option to show values as characters in MemoryView
+Added label to MemoryView that shows the values of all Processor's Registries (and Flags)
+
+Renamed method MemoryView#updateTable to MemoryView#updateFrame
+Added method MemoryView#addComponent
+Removed method MemoryView#createConstraint
+
+Made Quit button do the same action as closing the Application
 
 -- Version (v0.8.2-RELEASE)
 -- Changes from commit @fa97703

@@ -12,28 +12,20 @@ import java.util.HashMap;
 
 public class MemoryView extends JFrame {
 
+    private static final String R_VALUES_FORMAT = "<html><table><tr><td>IP=%s</td><td>SP=%s</td></tr><tr><td>ZF=%s</td><td>CF=%s</td></tr></table>";
+    private static final String R_VALUES_UNKNOWN = "?";
+
     private final Application app;
 
     private final Timer UPDATE_TIMER;
     private final JTable MEMORY_TABLE;
 
     private final JSpinner DUMP_WIDTH_SPINNER;
+    private final JSpinner UPDATE_DELAY;
+    private final JCheckBox SHOW_AS_CHAR;
     private final JCheckBox SHOW_HISTORY;
     private final JCheckBox SHOW_POINTERS;
-    private final JSpinner UPDATE_DELAY;
-
-    private static GridBagConstraints createConstraint(int fill, int margin, int x, int y, int width, int height, float weightX, float weightY) {
-        GridBagConstraints constraint = new GridBagConstraints();
-        constraint.fill = fill;
-        constraint.insets = new Insets(margin, margin, margin, margin);
-        constraint.gridx = x;
-        constraint.gridy = y;
-        constraint.gridwidth = width;
-        constraint.gridheight = height;
-        constraint.weightx = weightX;
-        constraint.weighty = weightY;
-        return constraint;
-    }
+    private final JLabel REG_VALUES;
 
     protected MemoryView(@NotNull Application parentApp) {
         super("Memory View");
@@ -47,23 +39,27 @@ public class MemoryView extends JFrame {
         setLayout(new GridBagLayout());
 
         // Adding Options
-        GridBagConstraints firstRow = createConstraint(GridBagConstraints.BOTH, 5, 0, 0, 1, 1, 1.0f, 0.0f);
-
-        add(new JLabel("Words on each row:"), firstRow, true);
+        addComponent(new JLabel("Words on each row:", JLabel.RIGHT), 0, 0);
         SpinnerNumberModel dumpWidthModel = new SpinnerNumberModel(Byte.SIZE, Byte.SIZE, Byte.SIZE * Byte.SIZE, Byte.SIZE);
         DUMP_WIDTH_SPINNER = new JSpinner(dumpWidthModel);
-        add(DUMP_WIDTH_SPINNER, firstRow, true);
+        addComponent(DUMP_WIDTH_SPINNER, 1, 0);
 
-        SHOW_HISTORY = new JCheckBox("Show names of executed instructions.");
-        add(SHOW_HISTORY, firstRow, true);
-
-        SHOW_POINTERS = new JCheckBox("Show { Instruction } and [ Stack ] Pointers.");
-        add(SHOW_POINTERS, firstRow, true);
-
-        add(new JLabel("Update interval:"), firstRow, true);
+        addComponent(new JLabel("Update interval:", JLabel.RIGHT), 2, 0);
         SpinnerNumberModel updateDelayModel = new SpinnerNumberModel(1.0f, 0.01f, 5.0f, 0.01f);
         UPDATE_DELAY = new JSpinner(updateDelayModel);
-        add(UPDATE_DELAY, firstRow, true);
+        addComponent(UPDATE_DELAY, 3, 0);
+
+        SHOW_AS_CHAR = new JCheckBox("Show values as chars");
+        addComponent(SHOW_AS_CHAR, 0, 1);
+
+        SHOW_HISTORY = new JCheckBox("Show names of executed instructions");
+        addComponent(SHOW_HISTORY, 1, 1);
+
+        SHOW_POINTERS = new JCheckBox("Show { Instruction } and [ Stack ] Pointers");
+        addComponent(SHOW_POINTERS, 2, 1);
+
+        REG_VALUES = new JLabel();
+        addComponent(REG_VALUES, 3, 1);
 
         // Adding non-editable table
         MEMORY_TABLE = new JTable() {
@@ -79,18 +75,39 @@ public class MemoryView extends JFrame {
         DefaultTableCellRenderer tableCellRenderer = (DefaultTableCellRenderer) MEMORY_TABLE.getDefaultRenderer(String.class);
         tableCellRenderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
         // Adding table to Frame
-        add(new JScrollPane(MEMORY_TABLE), createConstraint(GridBagConstraints.BOTH, 0, 0, 1, firstRow.gridx, 1, 1.0f, 1.0f));
+        addComponent(new JScrollPane(MEMORY_TABLE), 0, 2, 4, 1, 1.0f, 1.0f);
 
-        UPDATE_TIMER = new Timer(0, this::updateTable);
+        UPDATE_TIMER = new Timer(0, this::updateFrame);
+        updateFrame(null);
         UPDATE_TIMER.start();
     }
 
-    public void add(@NotNull Component component, @NotNull GridBagConstraints constraints, boolean autoIncrementX) {
-        add(component, constraints);
-        if (autoIncrementX) constraints.gridx++;
+    public void addComponent(@NotNull Component component, int x, int y) {
+        addComponent(component, x, y, 1, 1);
     }
 
-    public void updateTable(ActionEvent e) {
+    public void addComponent(@NotNull Component component, int x, int y, int w, int h) {
+        addComponent(component, x, y, w, h, 1.0f, 0.0f);
+    }
+
+    public void addComponent(@NotNull Component component, int x, int y, int w, int h, float wX, float wY) {
+        addComponent(component, x, y, w, h, wX, wY, 5);
+    }
+
+    public void addComponent(@NotNull Component component, int x, int y, int w, int h, float wX, float wY, int margin) {
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.insets = new Insets(margin, margin, margin, margin);
+        constraints.gridx = x;
+        constraints.gridy = y;
+        constraints.gridwidth = w;
+        constraints.gridheight = h;
+        constraints.weightx = wX;
+        constraints.weighty = wY;
+        add(component, constraints);
+    }
+
+    public void updateFrame(ActionEvent e) {
         UPDATE_TIMER.setDelay((int) ((double) UPDATE_DELAY.getValue() * 1000.0f));
 
         if (!isVisible()) return;
@@ -100,6 +117,8 @@ public class MemoryView extends JFrame {
         if (processor == null) {
             model.setRowCount(0);
             model.setColumnCount(0);
+
+            REG_VALUES.setText(String.format(R_VALUES_FORMAT, R_VALUES_UNKNOWN, R_VALUES_UNKNOWN, R_VALUES_UNKNOWN, R_VALUES_UNKNOWN));
             return;
         }
 
@@ -108,6 +127,10 @@ public class MemoryView extends JFrame {
         HashMap<Integer, String> history = new HashMap<>(processor.HISTORY);
         int IP = processor.IP.value;
         int SP = processor.SP.value;
+        boolean ZF = processor.ZERO.value;
+        boolean CF = processor.CARRY.value;
+
+        REG_VALUES.setText(String.format(R_VALUES_FORMAT, IP, SP, ZF, CF));
 
         int width = (int) DUMP_WIDTH_SPINNER.getValue();
         int memSize = processor.MEMORY.getSize();
@@ -118,7 +141,9 @@ public class MemoryView extends JFrame {
             int x = i % width;
             int y = i / width;
 
-            String value = String.valueOf(processor.MEMORY.getValueAt(i));
+            String value = SHOW_AS_CHAR.isSelected() ?
+                    String.valueOf((char) processor.MEMORY.getValueAt(i)) : String.valueOf(processor.MEMORY.getValueAt(i));
+
             if (SHOW_HISTORY.isSelected() && history.containsKey(i))
                 value = history.get(i);
             if (SHOW_POINTERS.isSelected())
