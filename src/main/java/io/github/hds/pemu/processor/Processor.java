@@ -16,8 +16,8 @@ public class Processor implements Runnable {
     public final Registry IP = new Registry("Instruction Pointer");
     public final Registry SP = new Registry("Stack Pointer");
 
-    public final Flag ZERO  = new Flag(false, "Zero Bit");
-    public final Flag CARRY = new Flag(false, "Carry Bit");
+    public final Flag ZERO  = new Flag(false, "Zero Flag");
+    public final Flag CARRY = new Flag(false, "Carry Flag");
 
     public final Memory MEMORY;
     public final Clock CLOCK;
