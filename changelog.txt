@@ -1,5 +1,11 @@
 
 -- Version (v0.9.0-RELEASE)
+-- Changes from commit @bbca553
+
+Added cell selection to MemoryView and set to multiple intervals mode
+Made MemoryView clear its table's selection if it loses focus or if clicked outside of it
+Made MemoryView update its table column and row count only when needed (Selection isn't cleared on each update anymore)
+
 -- Changes from commit @8555d71
 
 Added option to show values as characters in MemoryView
