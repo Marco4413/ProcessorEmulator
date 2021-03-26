@@ -7,7 +7,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.*;
 import java.util.HashMap;
 
 public class MemoryView extends JFrame {
@@ -20,7 +20,7 @@ public class MemoryView extends JFrame {
     private final Timer UPDATE_TIMER;
     private final JTable MEMORY_TABLE;
 
-    private final JSpinner DUMP_WIDTH_SPINNER;
+    private final JSpinner COLS_SPINNER;
     private final JSpinner UPDATE_DELAY;
     private final JCheckBox SHOW_AS_CHAR;
     private final JCheckBox SHOW_HISTORY;
@@ -40,9 +40,9 @@ public class MemoryView extends JFrame {
 
         // Adding Options
         addComponent(new JLabel("Words on each row:", JLabel.RIGHT), 0, 0);
-        SpinnerNumberModel dumpWidthModel = new SpinnerNumberModel(Byte.SIZE, Byte.SIZE, Byte.SIZE * Byte.SIZE, Byte.SIZE);
-        DUMP_WIDTH_SPINNER = new JSpinner(dumpWidthModel);
-        addComponent(DUMP_WIDTH_SPINNER, 1, 0);
+        SpinnerNumberModel colsModel = new SpinnerNumberModel(Byte.SIZE, Byte.SIZE, Byte.SIZE * Byte.SIZE, Byte.SIZE);
+        COLS_SPINNER = new JSpinner(colsModel);
+        addComponent(COLS_SPINNER, 1, 0);
 
         addComponent(new JLabel("Update interval:", JLabel.RIGHT), 2, 0);
         SpinnerNumberModel updateDelayModel = new SpinnerNumberModel(1.0f, 0.01f, 5.0f, 0.01f);
@@ -68,12 +68,47 @@ public class MemoryView extends JFrame {
                 return false;
             }
         };
+
+        // We want to clear the selection if another component is focused
+        //  Or if this Frame loses focus which makes the table lose focus
+        MEMORY_TABLE.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                MEMORY_TABLE.clearSelection();
+            }
+        });
+
+        // And we also want to clear the selection if we click outside the table
+        //  In an empty spot of the Frame, I'm not sure if this is the best way of doing it
+        final boolean[] isOutsideTable = { false };
+        MEMORY_TABLE.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                isOutsideTable[0] = false;
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                isOutsideTable[0] = true;
+            }
+        });
+
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (isOutsideTable[0]) MEMORY_TABLE.clearSelection();
+            }
+        });
+
         // Removing table header and adding auto-resize
         MEMORY_TABLE.setTableHeader(null);
         MEMORY_TABLE.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         // Setting renderer for strings
         DefaultTableCellRenderer tableCellRenderer = (DefaultTableCellRenderer) MEMORY_TABLE.getDefaultRenderer(String.class);
         tableCellRenderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
+        // Setting selection mode
+        MEMORY_TABLE.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        MEMORY_TABLE.setCellSelectionEnabled(true);
         // Adding table to Frame
         addComponent(new JScrollPane(MEMORY_TABLE), 0, 2, 4, 1, 1.0f, 1.0f);
 
@@ -132,14 +167,19 @@ public class MemoryView extends JFrame {
 
         REG_VALUES.setText(String.format(R_VALUES_FORMAT, IP, SP, ZF, CF));
 
-        int width = (int) DUMP_WIDTH_SPINNER.getValue();
         int memSize = processor.MEMORY.getSize();
-        model.setRowCount((int) Math.ceil(memSize / (float) width));
-        model.setColumnCount(width);
+        int cols = (int) COLS_SPINNER.getValue();
+        int rows = (int) Math.ceil(memSize / (float) cols);
+
+        if (model.getColumnCount() != cols)
+            model.setColumnCount(cols);
+
+        if (model.getRowCount() != rows)
+            model.setRowCount(rows);
 
         for (int i = 0; i < memSize; i++) {
-            int x = i % width;
-            int y = i / width;
+            int x = i % cols;
+            int y = i / cols;
 
             String value = SHOW_AS_CHAR.isSelected() ?
                     String.valueOf((char) processor.MEMORY.getValueAt(i)) : String.valueOf(processor.MEMORY.getValueAt(i));
