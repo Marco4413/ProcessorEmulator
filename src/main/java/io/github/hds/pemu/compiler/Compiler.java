@@ -241,4 +241,20 @@ public class Compiler {
         return primitiveIntProgram;
     }
 
+    public static @NotNull String obfuscateProgram(int[] program) {
+        switch (program.length) {
+            case 0: return "";
+            case 1: return "#DW " + program[0];
+            default: {
+                StringBuilder obfProgram = new StringBuilder();
+                obfProgram.append("#DA { ");
+                for (int value : program) {
+                    obfProgram.append(value).append(' ');
+                }
+                obfProgram.append("}");
+                return obfProgram.toString();
+            }
+        }
+    }
+
 }

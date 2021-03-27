@@ -1,5 +1,15 @@
 
 -- Version (v0.9.0-RELEASE)
+-- Changes from commit @5525d57
+
+Added Program Menu
+Now Memory Size is handled as Words
+Now Processor's clock is included in its info
+
+Added methods to Application: compileProgram, verifyProgram, obfuscateProgram
+Added method Compiler.obfuscateProgram
+Added class TJMenuItem (Toggleable JMenuItem)
+
 -- Changes from commit @9e5ad4e
 
 Added Compiler Instruction: #DA

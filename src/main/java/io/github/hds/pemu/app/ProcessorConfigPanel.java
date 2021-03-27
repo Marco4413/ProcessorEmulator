@@ -26,7 +26,7 @@ public class ProcessorConfigPanel extends JPanel {
         BITS_SPINNER = new JSpinner(bitsModel);
         add(BITS_SPINNER);
 
-        add(new JLabel("Memory Size (Bytes): "));
+        add(new JLabel("Memory Size (Words): "));
         SpinnerNumberModel memoryModel = new SpinnerNumberModel(Byte.SIZE, Byte.SIZE, Word.MaskBit24, Byte.SIZE);
         MEMORY_SPINNER = new JSpinner(memoryModel);
         add(MEMORY_SPINNER);

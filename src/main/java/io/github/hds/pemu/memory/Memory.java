@@ -34,7 +34,7 @@ public class Memory {
 
     public Memory(int size, Word word) {
         if (size < 0) throw new IllegalArgumentException("Memory size can't be negative!");
-        MEMORY = new byte[size];
+        MEMORY = new byte[word.BYTES * size];
 
         MAX_VALUE = word.MASK;
         WORD = word;

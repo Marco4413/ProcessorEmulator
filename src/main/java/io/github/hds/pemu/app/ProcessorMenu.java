@@ -11,12 +11,12 @@ public class ProcessorMenu extends JMenu {
 
     private final Application app;
 
-    private final JMenuItem RUN;
-    private final JMenuItem STOP;
-    private final JMenuItem CONFIGURE;
-    private final JMenuItem OPEN_MEMORY_VIEW;
-    private final JMenuItem PAUSE_RESUME;
-    private final JMenuItem STEP;
+    private final TJMenuItem RUN;
+    private final TJMenuItem STOP;
+    private final TJMenuItem CONFIGURE;
+    private final TJMenuItem OPEN_MEMORY_VIEW;
+    private final TJMenuItem PAUSE_RESUME;
+    private final TJMenuItem STEP;
 
     private final ImageIcon ICON_RUN;
     private final ImageIcon ICON_STOP;
@@ -39,7 +39,7 @@ public class ProcessorMenu extends JMenu {
                         .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
         );
 
-        RUN = new JMenuItem("Run", 'R');
+        RUN = new TJMenuItem("Run", 'R', i -> app.currentProgram != null && (app.currentProcessor == null || !app.currentProcessor.isRunning()));
         RUN.setIcon(ICON_RUN);
         RUN.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
         RUN.addActionListener(app::runProcessor);
@@ -50,7 +50,7 @@ public class ProcessorMenu extends JMenu {
                         .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
         );
 
-        STOP = new JMenuItem("Stop", 'S');
+        STOP = new TJMenuItem("Stop", 'S', i -> app.currentProcessor != null && app.currentProcessor.isRunning());
         STOP.setIcon(ICON_STOP);
         STOP.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
         STOP.addActionListener(app::stopProcessor);
@@ -61,7 +61,7 @@ public class ProcessorMenu extends JMenu {
                         .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
         );
 
-        CONFIGURE = new JMenuItem("Configure", 'C');
+        CONFIGURE = new TJMenuItem("Configure", 'C', null);
         CONFIGURE.setIcon(ICON_CONFIGURE);
         CONFIGURE.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
         CONFIGURE.addActionListener(this::configureProcessor);
@@ -72,7 +72,7 @@ public class ProcessorMenu extends JMenu {
                         .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
         );
 
-        OPEN_MEMORY_VIEW = new JMenuItem("Open Memory View", 'M');
+        OPEN_MEMORY_VIEW = new TJMenuItem("Open Memory View", 'M', i -> app.currentProcessor != null);
         OPEN_MEMORY_VIEW.setIcon(ICON_OPEN_MEMORY_VIEW);
         OPEN_MEMORY_VIEW.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK));
         OPEN_MEMORY_VIEW.addActionListener(this::openMemoryView);
@@ -83,7 +83,7 @@ public class ProcessorMenu extends JMenu {
                         .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
         );
 
-        PAUSE_RESUME = new JMenuItem("Pause/Resume", 'P');
+        PAUSE_RESUME = new TJMenuItem("Pause/Resume", 'P', i -> app.currentProcessor != null && app.currentProcessor.isRunning());
         PAUSE_RESUME.setIcon(ICON_PAUSE_RESUME);
         PAUSE_RESUME.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.SHIFT_DOWN_MASK));
         PAUSE_RESUME.addActionListener(app::toggleProcessorExecution);
@@ -94,7 +94,7 @@ public class ProcessorMenu extends JMenu {
                         .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
         );
 
-        STEP = new JMenuItem("Step", 'S');
+        STEP = new TJMenuItem("Step", 'S', i -> app.currentProcessor != null && app.currentProcessor.isRunning() &&  app.currentProcessor.isPaused());
         STEP.setIcon(ICON_STEP);
         STEP.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.SHIFT_DOWN_MASK));
         STEP.addActionListener(app::stepProcessor);

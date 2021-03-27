@@ -4,8 +4,7 @@ JMP start
 str: #DS "Hello World!\n\0"
 str_ptr: #DW str
 
-_temp: #DW 0
-null: #DW 0
+#DA { _temp: 0 null: 0 }
 
 _print_char: #DW 0
 f_print:
