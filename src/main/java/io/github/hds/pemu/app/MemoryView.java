@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public class MemoryView extends JFrame {
 
-    private static final String R_VALUES_FORMAT = "<html><table><tr><td>IP=%s</td><td>SP=%s</td></tr><tr><td>ZF=%s</td><td>CF=%s</td></tr></table>";
+    private static final String R_VALUES_FORMAT = "<html><table><tr><td>IP=%s</td><td>SP=%s</td></tr><tr><td>ZF=%s</td><td>CF=%s</td></tr></table></html>";
     private static final String R_VALUES_UNKNOWN = "?";
 
     private final Application app;

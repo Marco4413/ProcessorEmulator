@@ -20,6 +20,7 @@ public class Application extends JFrame implements KeyListener {
     private static final String APP_TITLE = "PEMU";
 
     protected final FileMenu FILE_MENU;
+    protected final ProgramMenu PROGRAM_MENU;
     protected final ProcessorMenu PROCESSOR_MENU;
     protected final AboutMenu ABOUT_MENU;
 
@@ -47,6 +48,10 @@ public class Application extends JFrame implements KeyListener {
         // FILE MENU
         FILE_MENU = new FileMenu(this);
         menuBar.add(FILE_MENU);
+
+        // PROGRAM MENU
+        PROGRAM_MENU = new ProgramMenu(this);
+        menuBar.add(PROGRAM_MENU);
 
         // PROCESSOR MENU
         PROCESSOR_MENU = new ProcessorMenu(this);
@@ -119,6 +124,40 @@ public class Application extends JFrame implements KeyListener {
             currentProcessor.pressedKey = KeyEvent.VK_UNDEFINED;
     }
 
+    public int[] compileProgram() {
+        if (currentProgram == null) {
+            Console.Debug.println("No program specified!");
+            return null;
+        }
+
+        try {
+            return Compiler.compileFile(currentProgram, processorConfig.instructionSet);
+        } catch (Exception err) {
+            Console.Debug.println("Compilation error (for file @'" + currentProgram.getAbsolutePath() + "'):");
+            Console.Debug.printStackTrace(err, false);
+        }
+
+        return null;
+    }
+
+    public void verifyProgram(ActionEvent e) {
+        int[] compiledProgram = compileProgram();
+
+        if (compiledProgram != null)
+            Console.Debug.println(
+                    String.format("The specified program compiled successfully!\nIt occupies %d Word%s.", compiledProgram.length, compiledProgram.length == 1 ? "" : "s")
+            );
+    }
+
+    public void obfuscateProgram(ActionEvent e) {
+        int[] compiledProgram = compileProgram();
+
+        if (compiledProgram != null) {
+            Console.Debug.println("Program obfuscated successfully:");
+            Console.Debug.println(Compiler.obfuscateProgram(compiledProgram));
+        }
+    }
+
     public void runProcessor(ActionEvent e) {
         // Make sure that the last thread is dead
         if (currentProcessor != null && currentProcessor.isRunning()) {
@@ -143,19 +182,12 @@ public class Application extends JFrame implements KeyListener {
         }
 
         // Compile the selected program
-        int[] compiledProgram;
-        try {
-            compiledProgram = Compiler.compileFile(currentProgram, processorConfig.instructionSet);
-        } catch (Exception err) {
-            Console.Debug.println("Compilation error (for file @'" + currentProgram.getAbsolutePath() + "'):");
-            Console.Debug.printStackTrace(err, false);
-            return;
-        }
+        int[] compiledProgram = compileProgram();
+        if (compiledProgram == null) return;
 
         Console.Debug.println(
                 "Compiled file (" + currentProgram.getName() + ") occupies "
-                        + compiledProgram.length * currentProcessor.MEMORY.WORD.BYTES + " / "
-                        + currentProcessor.MEMORY.getSize() * currentProcessor.MEMORY.WORD.BYTES + " Bytes"
+                        + compiledProgram.length + " / " + currentProcessor.MEMORY.getSize() + " Words"
         );
 
         // Load compiled program into memory

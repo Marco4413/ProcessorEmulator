@@ -49,7 +49,8 @@ public class Processor implements Runnable {
     }
 
     public @NotNull String getInfo() {
-        return "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.WORD.BYTES + " Bytes\n" +
+        return "\tClock:\t" + CLOCK.getClock() + "Hz\n" +
+               "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.WORD.BYTES + " Bytes\n" +
                "\tInstructions:\t" + INSTRUCTIONSET.getSize() + "\n";
     }
 
