@@ -11,8 +11,8 @@ public class Tokenizer {
     private int nextToken = 0;
     private int consumedCharacters = 0;
 
-    public Tokenizer(@NotNull String str, boolean keepDelimiters, @NotNull String... delimiter) {
-        String rule = String.join("", delimiter);
+    public Tokenizer(@NotNull String str, boolean keepDelimiters, @NotNull String... delimiters) {
+        String rule = String.join("", delimiters);
         String regex = keepDelimiters ?
                 "((?<=[" + rule + "])|(?=[" + rule + "]))" :
                 "[" + rule + "]+";
