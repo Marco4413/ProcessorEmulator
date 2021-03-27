@@ -1,7 +1,7 @@
 package io.github.hds.pemu.compiler;
 
 import io.github.hds.pemu.instructions.Instruction;
-import io.github.hds.pemu.processor.Processor;
+import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.utils.StringUtils;
 import io.github.hds.pemu.utils.Token;
 import io.github.hds.pemu.utils.Tokenizer;
@@ -16,15 +16,17 @@ public class Compiler {
 
     public static class Tokens {
 
-        public static final Token COMMENT  = new Token(";");
-        public static final Token LABEL    = new Token(":");
-        public static final Token COMPILER = new Token("#");
-        public static final Token STRING   = new Token("[\"']");
-        public static final Token ESCAPECH = new Token("\\\\");
-        public static final Token CONSTANT = new Token("@");
-        public static final Token SPACE    = new Token("\\s");
+        public static final Token COMMENT   = new Token(";");
+        public static final Token CONSTANT  = new Token("@");
+        public static final Token LABEL     = new Token(":");
+        public static final Token COMPILER  = new Token("#");
+        public static final Token STRING    = new Token("\"'");
+        public static final Token ESCAPECH  = new Token("\\\\");
+        public static final Token ARR_START = new Token("{");
+        public static final Token ARR_END   = new Token("}");
+        public static final Token SPACE     = new Token("\\s");
 
-        public static final Token[] ALL_TOKENS = new Token[] { COMMENT, LABEL, COMPILER, CONSTANT, STRING, ESCAPECH, SPACE };
+        public static final Token[] ALL_TOKENS = new Token[] { COMMENT, CONSTANT, LABEL, COMPILER, STRING, ESCAPECH, ARR_START, ARR_END, SPACE };
 
     }
 
@@ -77,7 +79,7 @@ public class Compiler {
                 else if (constants.containsKey(nextToken)) {
                     // If the constant was defined put its value and consume the token
                     tokenizer.consumeNext(Tokens.SPACE);
-                    program.add(constants.get(nextToken));
+                    value = constants.get(nextToken);
                 } else throw new ReferenceError("Constant", nextToken, currentLine, tokenizer.getConsumedCharacters());
             } else if (Tokens.LABEL.equals(nextToken)) {
                 // If a label is being declared consume the declaration token
@@ -110,7 +112,7 @@ public class Compiler {
         return true;
     }
 
-    public static int[] compileFile(@NotNull File file, @NotNull Processor processor) {
+    public static int[] compileFile(@NotNull File file, @NotNull InstructionSet instructionSet) {
         if (!file.exists()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file doesn't exist.");
         if (!file.canRead()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file can't be read.");
 
@@ -134,8 +136,8 @@ public class Compiler {
                 String token = tokenizer.consumeNext(Tokens.SPACE);
                 if (token == null || Tokens.COMMENT.equals(token)) break;
 
-                int instructionCode = processor.INSTRUCTIONSET.getKeyCode(token);
-                Instruction instruction = processor.INSTRUCTIONSET.getInstruction(instructionCode);
+                int instructionCode = instructionSet.getKeyCode(token);
+                Instruction instruction = instructionSet.getInstruction(instructionCode);
 
                 if (instruction != null) {
                     // If an instruction was found add it to the memory
@@ -160,7 +162,7 @@ public class Compiler {
                             while (true) {
                                 String valueToAdd = tokenizer.consumeNext();
                                 if (valueToAdd == null)
-                                    throw new SyntaxError("String terminator", String.valueOf(value.charAt(value.length() - 1)), currentLine, tokenizer.getConsumedCharacters());
+                                    throw new SyntaxError("String terminator ('" + terminator + "')", String.valueOf(value.charAt(value.length() - 1)), currentLine, tokenizer.getConsumedCharacters());
                                 else if (escapeChar) {
                                     char escapedChar = valueToAdd.charAt(0);
                                     if (SpecialCharacters.SPECIAL_MAP.containsKey(escapedChar)) {
@@ -175,6 +177,25 @@ public class Compiler {
                             }
                             for (int i = 0; i < value.length(); i++) program.add((int) value.charAt(i));
                         } else throw new SyntaxError("String", terminator == null ? "null" : terminator, currentLine, tokenizer.getConsumedCharacters());
+                    } else if (compilerInstr.equals("DA")) {
+                        // Be sure that there's the character that starts the array
+                        String arrayStart = tokenizer.consumeNext(Tokens.SPACE);
+                        if (Tokens.ARR_START.equals(arrayStart)) {
+                            while (true) {
+                                // For each value in the array, check if the next value is the array closer character
+                                String nextToken = tokenizer.peekNext(Tokens.SPACE);
+                                if (Tokens.ARR_END.equals(nextToken)) {
+                                    tokenizer.consumeNext(Tokens.SPACE);
+                                    break;
+                                }
+
+                                try {
+                                    parseValue(program, labels, constants, tokenizer, currentLine);
+                                } catch (Exception err) {
+                                    throw new SyntaxError("Array terminator ('}')", tokenizer.getLast() == null ? "null" : tokenizer.getLast(), currentLine, tokenizer.getConsumedCharacters());
+                                }
+                            }
+                        } else throw new SyntaxError("Array", arrayStart == null ? "null" : arrayStart, currentLine, tokenizer.getConsumedCharacters());
                     } else throw new SyntaxError("compiler instruction", compilerInstr, currentLine, tokenizer.getConsumedCharacters());
                 } else {
                     // Parsing Labels and Constants

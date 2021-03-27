@@ -145,7 +145,7 @@ public class Application extends JFrame implements KeyListener {
         // Compile the selected program
         int[] compiledProgram;
         try {
-            compiledProgram = Compiler.compileFile(currentProgram, currentProcessor);
+            compiledProgram = Compiler.compileFile(currentProgram, processorConfig.instructionSet);
         } catch (Exception err) {
             Console.Debug.println("Compilation error (for file @'" + currentProgram.getAbsolutePath() + "'):");
             Console.Debug.printStackTrace(err, false);

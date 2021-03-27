@@ -169,6 +169,8 @@ These instructions are useful to put values into memory where there's no process
 They are 2 and always have an `#` in front of them:
  - \#DW (Define Word): Can be followed by a [constant](#constants), a [label](#labels) or a numeric value.
  - \#DS (Define String): Can only be followed by a string (`"\"This is a string\""` or `'"This is a string"'`).
+ - \#DA (Define Array): Can only be followed by an array (`{ 10, 3, 2, @VK_ENTER }`), said array can also contain
+   constants and labels.
 
 ```Assembly
 ; This declares a label called "number" that points to
@@ -179,6 +181,12 @@ number: #DW 30
 ;  is only pointing to the first character ("H")
 string: #DS "Hello World!\0"
 ; #DS also supports common special characters: '\0', '\n', '\t'
+
+; #DA adds all elements in the array to memory, constants can be used too
+;  and labels can be defined pointing to a certain element
+array: #DA { 10, 3, 2, enter_key: @VK_ENTER }
+; This is useful to define multiple words without using multiple define
+;  word instructions 
 ```
 
 # Instructions

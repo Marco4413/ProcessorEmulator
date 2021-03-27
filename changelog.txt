@@ -1,5 +1,12 @@
 
 -- Version (v0.9.0-RELEASE)
+-- Changes from commit @9e5ad4e
+
+Added Compiler Instruction: #DA
+
+Fixed constants appending an additional 0 to the program
+Now method Compiler.compileFile wants an instance of InstructionSet instead of a Processor
+
 -- Changes from commit @bbca553
 
 Added cell selection to MemoryView and set to multiple intervals mode
