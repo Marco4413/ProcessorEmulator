@@ -1,6 +1,7 @@
 package io.github.hds.pemu.app;
 
 import io.github.hds.pemu.processor.Processor;
+import io.github.hds.pemu.utils.IconUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -31,7 +32,7 @@ public class MemoryView extends JFrame {
         super("Memory View");
         app = parentApp;
 
-        setIconImage(new ImageIcon(System.class.getResource("/assets/memory_view.png")).getImage());
+        setIconImage(IconUtils.importIcon("/assets/memory_view.png", Application.FRAME_ICON_SIZE).getImage());
 
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);

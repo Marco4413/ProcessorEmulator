@@ -1,9 +1,9 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.utils.IconUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
@@ -34,10 +34,7 @@ public class ProcessorMenu extends JMenu {
 
         setMnemonic('P');
 
-        ICON_RUN = new ImageIcon(
-                new ImageIcon(System.class.getResource("/assets/run.png"))
-                        .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
-        );
+        ICON_RUN = IconUtils.importIcon("/assets/run.png", Application.MENU_ITEM_ICON_SIZE);
 
         RUN = new TJMenuItem("Run", 'R', i -> app.currentProgram != null && (app.currentProcessor == null || !app.currentProcessor.isRunning()));
         RUN.setIcon(ICON_RUN);
@@ -45,10 +42,7 @@ public class ProcessorMenu extends JMenu {
         RUN.addActionListener(app::runProcessor);
         add(RUN);
 
-        ICON_STOP = new ImageIcon(
-                new ImageIcon(System.class.getResource("/assets/stop.png"))
-                        .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
-        );
+        ICON_STOP = IconUtils.importIcon("/assets/stop.png", Application.MENU_ITEM_ICON_SIZE);
 
         STOP = new TJMenuItem("Stop", 'S', i -> app.currentProcessor != null && app.currentProcessor.isRunning());
         STOP.setIcon(ICON_STOP);
@@ -56,10 +50,7 @@ public class ProcessorMenu extends JMenu {
         STOP.addActionListener(app::stopProcessor);
         add(STOP);
 
-        ICON_CONFIGURE = new ImageIcon(
-                new ImageIcon(System.class.getResource("/assets/configure.png"))
-                        .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
-        );
+        ICON_CONFIGURE = IconUtils.importIcon("/assets/configure.png", Application.MENU_ITEM_ICON_SIZE);
 
         CONFIGURE = new TJMenuItem("Configure", 'C', null);
         CONFIGURE.setIcon(ICON_CONFIGURE);
@@ -67,10 +58,7 @@ public class ProcessorMenu extends JMenu {
         CONFIGURE.addActionListener(this::configureProcessor);
         add(CONFIGURE);
 
-        ICON_OPEN_MEMORY_VIEW = new ImageIcon(
-                new ImageIcon(System.class.getResource("/assets/memory_view.png"))
-                        .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
-        );
+        ICON_OPEN_MEMORY_VIEW = IconUtils.importIcon("/assets/memory_view.png", Application.MENU_ITEM_ICON_SIZE);
 
         OPEN_MEMORY_VIEW = new TJMenuItem("Open Memory View", 'M', i -> app.currentProcessor != null);
         OPEN_MEMORY_VIEW.setIcon(ICON_OPEN_MEMORY_VIEW);
@@ -78,10 +66,7 @@ public class ProcessorMenu extends JMenu {
         OPEN_MEMORY_VIEW.addActionListener(this::openMemoryView);
         add(OPEN_MEMORY_VIEW);
 
-        ICON_PAUSE_RESUME = new ImageIcon(
-                new ImageIcon(System.class.getResource("/assets/pause_resume.png"))
-                        .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
-        );
+        ICON_PAUSE_RESUME = IconUtils.importIcon("/assets/pause_resume.png", Application.MENU_ITEM_ICON_SIZE);;
 
         PAUSE_RESUME = new TJMenuItem("Pause/Resume", 'P', i -> app.currentProcessor != null && app.currentProcessor.isRunning());
         PAUSE_RESUME.setIcon(ICON_PAUSE_RESUME);
@@ -89,10 +74,7 @@ public class ProcessorMenu extends JMenu {
         PAUSE_RESUME.addActionListener(app::toggleProcessorExecution);
         add(PAUSE_RESUME);
 
-        ICON_STEP = new ImageIcon(
-                new ImageIcon(System.class.getResource("/assets/step.png"))
-                        .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
-        );
+        ICON_STEP = IconUtils.importIcon("/assets/step.png", Application.MENU_ITEM_ICON_SIZE);;
 
         STEP = new TJMenuItem("Step", 'S', i -> app.currentProcessor != null && app.currentProcessor.isRunning() &&  app.currentProcessor.isPaused());
         STEP.setIcon(ICON_STEP);

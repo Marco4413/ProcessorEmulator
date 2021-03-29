@@ -1,50 +1,111 @@
 package io.github.hds.pemu.app;
 
 import io.github.hds.pemu.Main;
+import io.github.hds.pemu.utils.IconUtils;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.*;
+import java.util.function.Function;
 
 public class Console {
 
-    public static final @NotNull ConsoleElement POutput = new ConsoleElement(new JTextArea());
-    public static final @NotNull ConsoleElement Debug = new ConsoleElement(new JTextArea());
+    public static final @NotNull ConsoleComponent POutput = new ConsoleComponent();
+    public static final @NotNull ConsoleComponent Debug = new ConsoleComponent();
+    public static final @NotNull ConsoleContextualMenu CTX_MENU = new ConsoleContextualMenu();
 
-    public static class ConsoleElement {
+    private static class ConsoleContextualMenu extends JPopupMenu {
+        private final TJMenuItem SAVE;
+        private final TJMenuItem CLEAR;
 
-        public final @NotNull JTextArea ELEMENT;
+        private final ImageIcon ICON_CLEAR;
 
-        public ConsoleElement(JTextArea textArea) {
-            textArea.setEditable(false);
-            textArea.setFont(new Font("Consolas", Font.PLAIN, 12));
+        protected ConsoleContextualMenu() {
+            super();
 
-            DefaultCaret caret = (DefaultCaret) textArea.getCaret();
+            Function<TJMenuItem, Boolean> enableCondition = i -> getInvoker() instanceof ConsoleComponent && ((ConsoleComponent) getInvoker()).getText().length() > 0;
+            SAVE = new TJMenuItem("Save", 'S', enableCondition);
+            SAVE.setIcon(GFileDialog.ICON_SAVE);
+            SAVE.addActionListener(this::saveConsole);
+            add(SAVE);
+
+            ICON_CLEAR = IconUtils.importIcon("/assets/clear.png", Application.MENU_ITEM_ICON_SIZE);
+
+            CLEAR = new TJMenuItem("Clear", 'C', enableCondition);
+            CLEAR.setIcon(ICON_CLEAR);
+            CLEAR.addActionListener(this::clearConsole);
+            add(CLEAR);
+        }
+
+        public void saveConsole(ActionEvent e) {
+            if (!(getInvoker() instanceof  ConsoleComponent)) return;
+            GFileDialog gFileDialog = GFileDialog.getInstance();
+            if (gFileDialog.showSaveDialog(this, GFileDialog.TEXT_FILES) == JFileChooser.APPROVE_OPTION) {
+                File file = gFileDialog.getSelectedFile();
+                try {
+                    PrintWriter writer = new PrintWriter(file, "UTF-8");
+                    writer.print(((ConsoleComponent) getInvoker()).getText());
+                    writer.close();
+                    throw new IllegalStateException("File error");
+                } catch (Exception err) {
+                    JOptionPane.showMessageDialog(
+                            this, file.getName() + '\n' + "Couldn't write to file:\n" + err.getMessage(),
+                            "Error " + gFileDialog.getDialogTitle(), JOptionPane.ERROR_MESSAGE
+                    );
+                }
+            }
+        }
+
+        public void clearConsole(ActionEvent e) {
+            if (!(getInvoker() instanceof  ConsoleComponent)) return;
+            ((ConsoleComponent) getInvoker()).clear();
+        }
+    }
+
+    public static class ConsoleComponent extends JTextArea {
+
+        public ConsoleComponent() {
+            super();
+
+            setEditable(false);
+            setFont(new Font("Consolas", Font.PLAIN, 12));
+
+            DefaultCaret caret = (DefaultCaret) getCaret();
             caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
-            ELEMENT = textArea;
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getButton() == MouseEvent.BUTTON3)
+                        CTX_MENU.show(ConsoleComponent.this, e.getX(), e.getY());
+                }
+            });
         }
 
         public void clear() {
-            ELEMENT.setText("");
+            setText("");
         }
 
         public void print(String... strings) {
             for (String string : strings)
-                ELEMENT.append(string);
+                append(string);
         }
 
         public void print(char... characters) {
             for (char character : characters)
                 if (character != '\0')
-                    ELEMENT.append(String.valueOf(character));
+                    append(String.valueOf(character));
         }
 
         public void print(int... integers) {
             for (int integer : integers)
-                ELEMENT.append(String.valueOf(integer));
+                append(String.valueOf(integer));
         }
 
         public void println(String... strings) {

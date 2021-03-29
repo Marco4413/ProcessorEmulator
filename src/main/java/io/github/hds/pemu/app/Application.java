@@ -3,6 +3,7 @@ package io.github.hds.pemu.app;
 import io.github.hds.pemu.compiler.Compiler;
 import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.processor.ProcessorConfig;
+import io.github.hds.pemu.utils.IconUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +16,9 @@ import java.io.File;
 
 public class Application extends JFrame implements KeyListener {
 
+    public static final int FRAME_ICON_SIZE = 32;
     public static final int MENU_ITEM_ICON_SIZE = 20;
+
     private static Application INSTANCE;
     private static final String APP_TITLE = "PEMU";
 
@@ -35,7 +38,7 @@ public class Application extends JFrame implements KeyListener {
         processorConfig = initialConfig;
         updateTitle();
 
-        setIconImage(new ImageIcon(System.class.getResource("/assets/icon.png")).getImage());
+        setIconImage(IconUtils.importIcon("/assets/icon.png", FRAME_ICON_SIZE).getImage());
 
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -61,12 +64,12 @@ public class Application extends JFrame implements KeyListener {
         ABOUT_MENU = new AboutMenu(this);
         menuBar.add(ABOUT_MENU);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(Console.POutput.ELEMENT), new JScrollPane(Console.Debug.ELEMENT));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(Console.POutput), new JScrollPane(Console.Debug));
         splitPane.setResizeWeight(0.5d);
         splitPane.resetToPreferredSizes();
         add(splitPane);
 
-        Console.POutput.ELEMENT.addKeyListener(this);
+        Console.POutput.addKeyListener(this);
     }
 
     public void updateTitle() {

@@ -2,6 +2,9 @@ package io.github.hds.pemu.utils;
 
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -30,6 +33,22 @@ public class StringUtils {
         StringWriter str = new StringWriter();
         err.printStackTrace(new PrintWriter(str));
         return str.toString();
+    }
+
+    public static @NotNull String[] getFileExtFromFilter(@NotNull FileFilter filter) {
+        if (filter instanceof FileNameExtensionFilter)
+            return ((FileNameExtensionFilter) filter).getExtensions();
+        return new String[0];
+    }
+
+    public static @NotNull String getFilePathWExt(@NotNull File file, @NotNull String[] extensions) {
+        String path = file.getAbsolutePath();
+        if (extensions.length == 0) return path;
+
+        for (String extension : extensions) {
+            if (path.endsWith("." + extension)) return path;
+        }
+        return path + "." + extensions[0];
     }
 
 }
