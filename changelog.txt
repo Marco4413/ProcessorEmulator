@@ -1,4 +1,21 @@
 
+-- Version (v1.0.0-RELEASE)
+-- Changes from commit @989bbb3
+
+Added ContextualMenu to Console.POutput and Console.Debug
+Now Consoles can be saved and cleared by the user
+
+Added class GFileDialog which is used as a Global File Dialog (can be used by all classes in the app)
+Added static methods to StringUtils: getFileExtFromFilter, getFilePathWExt
+
+Added class IconUtils
+Now using method IconUtils.importIcon to load all icons
+Fixed icons on the top-left corner of the main window and memory view panel looking "low res"
+
+Added field Application.FRAME_ICON_SIZE
+Renamed class Console.ConsoleElement to ConsoleComponent
+Now class Console.ConsoleComponent extends JTextArea and removed its ELEMENT field
+
 -- Version (v0.9.0-RELEASE)
 -- Changes from commit @5525d57
 

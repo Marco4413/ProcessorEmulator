@@ -1,9 +1,9 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.utils.IconUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyEvent;
 
 public class ProgramMenu extends JMenu {
@@ -20,10 +20,7 @@ public class ProgramMenu extends JMenu {
         super("Program");
         app = parentApp;
 
-        ICON_VERIFY = new ImageIcon(
-                new ImageIcon(System.class.getResource("/assets/verify.png"))
-                        .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
-        );
+        ICON_VERIFY = IconUtils.importIcon("/assets/verify.png", Application.MENU_ITEM_ICON_SIZE);;
 
         VERIFY = new TJMenuItem("Verify", 'V', i -> app.currentProgram != null);
         VERIFY.setIcon(ICON_VERIFY);
@@ -31,10 +28,7 @@ public class ProgramMenu extends JMenu {
         VERIFY.addActionListener(app::verifyProgram);
         add(VERIFY);
 
-        ICON_OBFUSCATE = new ImageIcon(
-                new ImageIcon(System.class.getResource("/assets/obfuscate.png"))
-                        .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
-        );
+        ICON_OBFUSCATE = IconUtils.importIcon("/assets/obfuscate.png", Application.MENU_ITEM_ICON_SIZE);;
 
         OBFUSCATE = new TJMenuItem("Obfuscate", 'O', i -> app.currentProgram != null);
         OBFUSCATE.setIcon(ICON_OBFUSCATE);
