@@ -60,7 +60,7 @@ HLT
 ```
 
 We don't want to execute that because it's not intended to be an instruction, a fix for that would be adding a label
-which indicates where the program starts and defining variables before that:
+which indicates where the program starts and declaring variables before that:
 
 ```Assembly
 JMP start
@@ -92,11 +92,11 @@ lock the emulator if the program has an uncapped loop that writes to the console
 Constants can be declared as follows:
 
 ```Assembly
-@const 10
+@constVariable 10
 ```
 
 Constants are values, they don't point to anything in memory, so they are rarely used as arguments for instructions (see [DATA](#data)).
-Though they are useful in one case, since they don't change the memory where they are defined, you can use them to put
+Though they are useful in one case, since they don't change the memory where they are declared, you can use them to put
 config options at the top of your program and add them later to memory:
 
 ```Assembly
@@ -112,11 +112,11 @@ HLT
 key: #DW @time_till_stop
 ```
 
-Constants are parsed as they come up, so if you redefine one, values where said constant is used depend on its
-last defined value.
-There are some constants that are already defined, such as virtual keys (or VK), the emulator uses reflection to get
+Constants are parsed as they come up, so if you redeclare one, values where said constant is used depend on its
+last declared value.
+There are some constants that are already declared, such as virtual keys (or VK), the emulator uses reflection to get
 all VKs from the [KeyEvent](https://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html) class that then get
-used as a base template for constants. So if you want to define a variable that stores the value of a virtual key, you
+used as a base template for constants. So if you want to declare a variable that stores the value of a virtual key, you
 can go to the above linked class's docs and search if there's the field (starting with `VK_`) that you want to use:
 
 ```Assembly
@@ -141,8 +141,8 @@ OUTC char
 char: #DS 'C'
 ```
 
-Labels are declared by putting `:` in front of a name and used by using only the name, because they aren't declared and
-used using the same syntax, if the compiler sees `:` after a name will always try to turn it into a label:
+Labels are declared by putting `:` in front of a name and used by their name, because they aren't declared and
+used using the same syntax, if the compiler sees `:` after a name, it will always try to turn it into a label:
 
 ```Assembly
 ; Moving the contents of str_ptr to arg
@@ -166,7 +166,7 @@ These instructions are useful to put values into memory where there's no process
 #DW 10
 ```
 
-They are 2 and always have an `#` in front of them:
+They are 3 and always have an `#` in front of them:
  - \#DW (Define Word): Can be followed by a [constant](#constants), a [label](#labels) or a numeric value.
  - \#DS (Define String): Can only be followed by a string (`"\"This is a string\""` or `'"This is a string"'`).
  - \#DA (Define Array): Can only be followed by an array (`{ 10, 3, 2, @VK_ENTER }`), said array can also contain
@@ -183,7 +183,7 @@ string: #DS "Hello World!\0"
 ; #DS also supports common special characters: '\0', '\n', '\t'
 
 ; #DA adds all elements in the array to memory, constants can be used too
-;  and labels can be defined pointing to a certain element
+;  and labels can be declared pointing to a certain element
 array: #DA { 10, 3, 2, enter_key: @VK_ENTER }
 ; This is useful to define multiple words without using multiple define
 ;  word instructions 

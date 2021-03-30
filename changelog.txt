@@ -1,5 +1,11 @@
 
 -- Version (v1.0.0-RELEASE)
+-- Changes from commit @6eb49f7
+
+Added example_obfuscated.pemu
+Updated preview images
+Fixed some errors in Docs
+
 -- Changes from commit @989bbb3
 
 Added ContextualMenu to Console.POutput and Console.Debug
