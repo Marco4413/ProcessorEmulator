@@ -1,0 +1,67 @@
+"application.noProgramSelected" = "(Nessun Programma Selezionato)"
+"application.programSelected"   = "({0})"
+
+"fileMenu._text"                 = "File"
+"fileMenu._mnemonic"             = 'F'
+"fileMenu.openProgram._text"     = "Apri Programma"
+"fileMenu.openProgram._mnemonic" = 'A'
+"fileMenu.quit._text"            = "Esci"
+"fileMenu.quit._mnemonic"        = 'E'
+
+"programMenu._text"               = "Programma"
+"programMenu._mnemonic"           = 'P'
+"programMenu.verify._text"        = "Verifica"
+"programMenu.verify._mnemonic"    = 'V'
+"programMenu.obfuscate._text"     = "Offusca"
+"programMenu.obfuscate._mnemonic" = 'O'
+
+"processorMenu._text"                    = "Processore"
+"processorMenu._mnemonic"                = 'P'
+"processorMenu.run._text"                = "Avvia"
+"processorMenu.run._mnemonic"            = 'A'
+"processorMenu.stop._text"               = "Ferma"
+"processorMenu.stop._mnemonic"           = 'F'
+"processorMenu.configure._text"          = "Configura"
+"processorMenu.configure._mnemonic"      = 'C'
+"processorMenu.configPanelTitle"         = "Configurazione Processore"
+"processorMenu.openMemoryView._text"     = "Apri il Pannello Memoria"
+"processorMenu.openMemoryView._mnemonic" = 'M'
+"processorMenu.pauseResume._text"        = "Pausa/Riprendi"
+"processorMenu.pauseResume._mnemonic"    = 'P'
+"processorMenu.step._text"               = "Step"
+"processorMenu.step._mnemonic"           = 'S'
+
+"processorConfigPanel.bitsLabel._text"   = "Grandezza Word (Bits): "
+"processorConfigPanel.memoryLabel._text" = "Grandezza Memoria (Words): "
+"processorConfigPanel.clockLabel._text"  = "Clock (Hz): "
+
+"aboutMenu._text"                 = "About"
+"aboutMenu._mnemonic"             = 'A'
+"aboutMenu.openWebpage._text"     = "Apri Pagina Web"
+"aboutMenu.openWebpage._mnemonic" = 'W'
+"aboutMenu.openLinkErrorTitle"    = "Apertura pagina Web fallita."
+"aboutMenu.openLinkErrorMsg"      = "Non è stato possibile aprire il seguente link: {0}"
+
+"memoryView._title"                    = "Pannello Memoria"
+"memoryView.colsLabel._text"           = "Word per riga: "
+"memoryView.updateIntervalLabel._text" = "Intervallo di aggiornamento: "
+"memoryView.showAsChar._text"          = "Mostra valori come caratteri"
+"memoryView.showHistory._text"         = "Mostra nomi delle istruzioni eseguite"
+"memoryView.showPointers"              = "Mostra Puntatore di {0} Istruzione {1} e di {2} Stack {3}"
+
+"gFileDialog.textFileDesc"        = "File di testo"
+"gFileDialog.PEMUFileDesc"        = "Programmi PEMU"
+"gFileDialog.openDialogTitle"     = "Apri"
+"gFileDialog.saveDialogTitle"     = "Salva Come"
+"gFileDialog.overwritePanelTitle" = "Conferma {0}"
+"gFileDialog.overwritePanelMsg"   = "{0} esiste già.\nLo vuoi sovrascrivere?"
+"gFileDialog.fileIsReadOnly"      = "Il file è a sola lettura."
+"gFileDialog.fileIsLocked"        = "Il file è bloccato."
+"gFileDialog.cantWritePanelMsg"   = "{0}\n{1}\nProva con un altro nome."
+
+"consoleContextualMenu.save._text"          = "Salva"
+"consoleContextualMenu.save._mnemonic"      = 'S'
+"consoleContextualMenu.clear._text"         = "Cancella"
+"consoleContextualMenu.clear._mnemonic"     = 'C'
+"consoleContextualMenu.saveErrorPanelTitle" = "Errore {0}"
+"consoleContextualMenu.saveErrorPanelMsg"   = "{0}\nNon è stato possibile scrivere sul file:\n{1}"

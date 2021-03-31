@@ -165,8 +165,8 @@ public class Compiler {
                                     throw new SyntaxError("String terminator ('" + terminator + "')", String.valueOf(value.charAt(value.length() - 1)), currentLine, tokenizer.getConsumedCharacters());
                                 else if (escapeChar) {
                                     char escapedChar = valueToAdd.charAt(0);
-                                    if (SpecialCharacters.SPECIAL_MAP.containsKey(escapedChar)) {
-                                        value.append(SpecialCharacters.SPECIAL_MAP.get(escapedChar));
+                                    if (StringUtils.SpecialCharacters.MAP.containsKey(escapedChar)) {
+                                        value.append(StringUtils.SpecialCharacters.MAP.get(escapedChar));
                                         if (valueToAdd.length() > 1)
                                             value.append(valueToAdd.substring(1));
                                     } else value.append(valueToAdd);

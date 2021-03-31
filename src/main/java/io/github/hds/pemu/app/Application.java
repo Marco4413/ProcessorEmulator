@@ -3,7 +3,7 @@ package io.github.hds.pemu.app;
 import io.github.hds.pemu.compiler.Compiler;
 import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.processor.ProcessorConfig;
-import io.github.hds.pemu.utils.IconUtils;
+import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,8 +14,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
 
-public class Application extends JFrame implements KeyListener {
+public class Application extends JFrame implements KeyListener, ITranslatable {
 
+    public static final int FRAME_WIDTH = 800;
+    public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
     public static final int MENU_ITEM_ICON_SIZE = 20;
 
@@ -33,15 +35,21 @@ public class Application extends JFrame implements KeyListener {
 
     protected final MemoryView MEMORY_VIEW;
 
-    private Application(@NotNull ProcessorConfig initialConfig) throws HeadlessException {
+    private @NotNull String localeNoProgramSelected = "";
+    private @NotNull String localeProgramSelected = "";
+
+    private Application() throws HeadlessException {
         super();
-        processorConfig = initialConfig;
-        updateTitle();
+        processorConfig = new ProcessorConfig();
+        setTitle(APP_TITLE);
 
         setIconImage(IconUtils.importIcon("/assets/icon.png", FRAME_ICON_SIZE).getImage());
 
-        setSize(800, 600);
+        setSize(FRAME_WIDTH, FRAME_HEIGHT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        TranslationManager.addTranslationListener(this);
+        GFileDialog.getInstance();
 
         MEMORY_VIEW = new MemoryView(this);
 
@@ -72,11 +80,23 @@ public class Application extends JFrame implements KeyListener {
         Console.POutput.addKeyListener(this);
     }
 
+    public static @NotNull Application getInstance() {
+        if (INSTANCE == null) INSTANCE = new Application();
+        return INSTANCE;
+    }
+
+    @Override
+    public void updateTranslations(@NotNull Translation translation) {
+        localeNoProgramSelected = translation.getOrDefault("application.noProgramSelected");
+        localeProgramSelected = translation.getOrDefault("application.programSelected");
+        updateTitle();
+    }
+
     public void updateTitle() {
         if (currentProgram == null)
-            setTitle(APP_TITLE + " (No Program Selected)");
+            setTitle(APP_TITLE + " " + localeNoProgramSelected);
         else
-            setTitle(APP_TITLE + " (" + currentProgram.getAbsolutePath() + ")");
+            setTitle(APP_TITLE + " " + StringUtils.format(localeProgramSelected, currentProgram.getAbsolutePath()));
     }
 
     public void setCurrentProgram(@NotNull File program) {
@@ -86,16 +106,9 @@ public class Application extends JFrame implements KeyListener {
         updateTitle();
     }
 
-    public static @NotNull Application getInstance(ProcessorConfig initialConfig) {
-        if (INSTANCE == null)
-            INSTANCE = new Application(initialConfig);
-        return INSTANCE;
-    }
-
-    public static @NotNull Application getInstance() {
-        if (INSTANCE == null)
-            INSTANCE = new Application(new ProcessorConfig());
-        return INSTANCE;
+    public void setProcessorConfig(@NotNull ProcessorConfig config) {
+        processorConfig = config;
+        if (currentProcessor != null) currentProcessor.CLOCK.setClock(processorConfig.clock);
     }
 
     @Override

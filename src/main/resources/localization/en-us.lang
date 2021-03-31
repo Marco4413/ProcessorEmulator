@@ -1,0 +1,67 @@
+"application.noProgramSelected" = "(No Program Selected)"
+"application.programSelected"   = "({0})"
+
+"fileMenu._text"                 = "File"
+"fileMenu._mnemonic"             = 'F'
+"fileMenu.openProgram._text"     = "Open Program"
+"fileMenu.openProgram._mnemonic" = 'O'
+"fileMenu.quit._text"            = "Quit"
+"fileMenu.quit._mnemonic"        = 'Q'
+
+"programMenu._text"               = "Program"
+"programMenu._mnemonic"           = 'P'
+"programMenu.verify._text"        = "Verify"
+"programMenu.verify._mnemonic"    = 'V'
+"programMenu.obfuscate._text"     = "Obfuscate"
+"programMenu.obfuscate._mnemonic" = 'O'
+
+"processorMenu._text"                    = "Processor"
+"processorMenu._mnemonic"                = 'P'
+"processorMenu.run._text"                = "Run"
+"processorMenu.run._mnemonic"            = 'R'
+"processorMenu.stop._text"               = "Stop"
+"processorMenu.stop._mnemonic"           = 'S'
+"processorMenu.configure._text"          = "Configure"
+"processorMenu.configure._mnemonic"      = 'C'
+"processorMenu.configPanelTitle"         = "Configure Processor"
+"processorMenu.openMemoryView._text"     = "Open Memory View"
+"processorMenu.openMemoryView._mnemonic" = 'M'
+"processorMenu.pauseResume._text"        = "Pause/Resume"
+"processorMenu.pauseResume._mnemonic"    = 'P'
+"processorMenu.step._text"               = "Step"
+"processorMenu.step._mnemonic"           = 'S'
+
+"processorConfigPanel.bitsLabel._text"   = "Word Size (Bits): "
+"processorConfigPanel.memoryLabel._text" = "Memory Size (Words): "
+"processorConfigPanel.clockLabel._text"  = "Clock (Hz): "
+
+"aboutMenu._text"                 = "About"
+"aboutMenu._mnemonic"             = 'A'
+"aboutMenu.openWebpage._text"     = "Open Webpage"
+"aboutMenu.openWebpage._mnemonic" = 'O'
+"aboutMenu.openLinkErrorTitle"    = "Failed to open Webpage."
+"aboutMenu.openLinkErrorMsg"      = "Couldn't open link: {0}"
+
+"memoryView._title"                    = "Memory View"
+"memoryView.colsLabel._text"           = "Words on each row: "
+"memoryView.updateIntervalLabel._text" = "Update interval: "
+"memoryView.showAsChar._text"          = "Show values as chars"
+"memoryView.showHistory._text"         = "Show names of executed instructions"
+"memoryView.showPointers"              = "Show {0} Instruction {1} and {2} Stack {3} Pointers"
+
+"gFileDialog.textFileDesc"        = "Text files"
+"gFileDialog.PEMUFileDesc"        = "PEMU programs"
+"gFileDialog.openDialogTitle"     = "Open"
+"gFileDialog.saveDialogTitle"     = "Save As"
+"gFileDialog.overwritePanelTitle" = "Confirm {0}"
+"gFileDialog.overwritePanelMsg"   = "{0} already exists.\nDo you want to overwrite it?"
+"gFileDialog.fileIsReadOnly"      = "File is read-only."
+"gFileDialog.fileIsLocked"        = "File is locked."
+"gFileDialog.cantWritePanelMsg"   = "{0}\n{1}\nTry with another name."
+
+"consoleContextualMenu.save._text"          = "Save"
+"consoleContextualMenu.save._mnemonic"      = 'S'
+"consoleContextualMenu.clear._text"         = "Clear"
+"consoleContextualMenu.clear._mnemonic"     = 'C'
+"consoleContextualMenu.saveErrorPanelTitle" = "Error {0}"
+"consoleContextualMenu.saveErrorPanelMsg"   = "{0}\nCouldn't write to file:\n{1}"

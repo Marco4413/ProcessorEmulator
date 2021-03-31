@@ -1,7 +1,6 @@
 package io.github.hds.pemu.app;
 
-import io.github.hds.pemu.utils.IconUtils;
-import io.github.hds.pemu.utils.StringUtils;
+import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -9,17 +8,28 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 
-public class GFileDialog extends JFileChooser {
+public class GFileDialog extends JFileChooser implements ITranslatable {
 
-    public static final FileNameExtensionFilter TEXT_FILES = new FileNameExtensionFilter("Text file", "txt");
-    public static final FileNameExtensionFilter PEMU_FILES = new FileNameExtensionFilter("PEMU program", "pemu");
     public static final ImageIcon ICON_SAVE = IconUtils.importIcon("/assets/save.png", Application.MENU_ITEM_ICON_SIZE);
     public static final ImageIcon ICON_OPEN = IconUtils.importIcon("/assets/open_file.png", Application.MENU_ITEM_ICON_SIZE);
 
     private static GFileDialog INSTANCE;
 
+    private static @NotNull String localeTextFileDesc = "";
+    private static @NotNull String localePEMUFileDesc = "";
+
+    private @NotNull String localeOpenDialogTitle;
+    private @NotNull String localeSaveDialogTitle = "";
+    private @NotNull String localeOverwritePanelTitle = "";
+    private @NotNull String localeOverwritePanelMsg = "";
+    private @NotNull String localeFileIsReadOnly = "";
+    private @NotNull String localeFileIsLocked = "";
+    private @NotNull String localeCantWritePanelMsg = "";
+
     private GFileDialog() {
         super();
+
+        TranslationManager.addTranslationListener(this);
 
         setCurrentDirectory(new File("./"));
         setMultiSelectionEnabled(false);
@@ -27,9 +37,30 @@ public class GFileDialog extends JFileChooser {
     }
 
     public static @NotNull GFileDialog getInstance() {
-        if (INSTANCE == null)
-            INSTANCE = new GFileDialog();
+        if (INSTANCE == null) INSTANCE = new GFileDialog();
         return INSTANCE;
+    }
+
+    public static @NotNull FileNameExtensionFilter getTextFileFilter() {
+        return new FileNameExtensionFilter(localeTextFileDesc, "txt");
+    }
+
+    public static @NotNull FileNameExtensionFilter getPEMUFileFilter() {
+        return new FileNameExtensionFilter(localePEMUFileDesc, "pemu");
+    }
+
+    @Override
+    public void updateTranslations(@NotNull Translation translation) {
+        localeTextFileDesc = translation.getOrDefault("gFileDialog.textFileDesc");
+        localePEMUFileDesc = translation.getOrDefault("gFileDialog.PEMUFileDesc");
+
+        localeOpenDialogTitle = translation.getOrDefault("gFileDialog.openDialogTitle");
+        localeSaveDialogTitle = translation.getOrDefault("gFileDialog.saveDialogTitle");
+        localeOverwritePanelTitle = translation.getOrDefault("gFileDialog.overwritePanelTitle");
+        localeOverwritePanelMsg = translation.getOrDefault("gFileDialog.overwritePanelMsg");
+        localeFileIsReadOnly = translation.getOrDefault("gFileDialog.fileIsReadOnly");
+        localeFileIsLocked = translation.getOrDefault("gFileDialog.fileIsLocked");
+        localeCantWritePanelMsg = translation.getOrDefault("gFileDialog.cantWritePanelMsg");
     }
 
     public int showOpenDialog(Component parent, FileNameExtensionFilter filter) throws HeadlessException {
@@ -40,7 +71,7 @@ public class GFileDialog extends JFileChooser {
 
     @Override
     public int showOpenDialog(Component parent) throws HeadlessException {
-        setDialogTitle("Open");
+        setDialogTitle(localeOpenDialogTitle);
         return super.showOpenDialog(parent);
     }
 
@@ -53,7 +84,7 @@ public class GFileDialog extends JFileChooser {
 
     @Override
     public int showSaveDialog(Component parent) throws HeadlessException {
-        setDialogTitle("Save As");
+        setDialogTitle(localeSaveDialogTitle);
         return super.showSaveDialog(parent);
     }
 
@@ -80,12 +111,12 @@ public class GFileDialog extends JFileChooser {
             if (file.exists()) {
                 if (file.canWrite()) {
                     if (JOptionPane.showConfirmDialog(
-                            this, file.getName() + " already exists.\nDo you want to overwrite it?",
-                            "Confirm " + getDialogTitle(), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE
+                            this, StringUtils.format(localeOverwritePanelMsg, file.getName()),
+                            StringUtils.format(localeOverwritePanelTitle, getDialogTitle()), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE
                         ) == JOptionPane.OK_OPTION) super.approveSelection();
                 } else
                     JOptionPane.showMessageDialog(
-                            this, file.getName() + '\n' + (file.canRead() ? "File is read-only." : "File is locked.") + "\nTry with another name.",
+                            this, StringUtils.format(localeCantWritePanelMsg, file.getName(), (file.canRead() ? localeFileIsReadOnly : localeFileIsLocked)),
                             getDialogTitle(), JOptionPane.WARNING_MESSAGE
                     );
             } else super.approveSelection();

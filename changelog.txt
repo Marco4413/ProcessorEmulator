@@ -1,5 +1,17 @@
 
 -- Version (v1.0.0-RELEASE)
+-- Changes from commit @d3067cf
+
+Laid down translations support
+Now all classes in the pemu.app package use TranslationManager to translate themselves
+
+Added classes ITranslatable, Translation, TranslationManager, KeyValueParser
+Moved class SpecialCharacters from package pemu.compiler to class StringUtils.SpecialCharacters
+Added method StringUtils.format
+
+Added method Application#setProcessorConfig
+Removed overload for method Application.getInstance that took as its first argument a ProcessorConfig instance
+
 -- Changes from commit @6eb49f7
 
 Added example_obfuscated.pemu

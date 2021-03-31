@@ -1,13 +1,16 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.utils.ITranslatable;
 import io.github.hds.pemu.utils.IconUtils;
+import io.github.hds.pemu.utils.Translation;
+import io.github.hds.pemu.utils.TranslationManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-public class FileMenu extends JMenu {
+public class FileMenu extends JMenu implements ITranslatable {
 
     private final Application app;
 
@@ -17,12 +20,12 @@ public class FileMenu extends JMenu {
     private final ImageIcon ICON_QUIT;
 
     protected FileMenu(@NotNull Application parentApp) {
-        super("File");
+        super();
         app = parentApp;
 
-        setMnemonic('F');
+        TranslationManager.addTranslationListener(this);
 
-        OPEN_PROGRAM = new JMenuItem("Open Program", 'O');
+        OPEN_PROGRAM = new JMenuItem();
         OPEN_PROGRAM.setIcon(GFileDialog.ICON_OPEN);
         OPEN_PROGRAM.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
         OPEN_PROGRAM.addActionListener(this::openProgram);
@@ -30,16 +33,23 @@ public class FileMenu extends JMenu {
 
         ICON_QUIT = IconUtils.importIcon("/assets/quit.png", Application.MENU_ITEM_ICON_SIZE);;
 
-        QUIT = new JMenuItem("Quit", 'Q');
+        QUIT = new JMenuItem();
         QUIT.setIcon(ICON_QUIT);
         QUIT.addActionListener(app::close);
         add(QUIT);
     }
 
-    private void openProgram(ActionEvent e) {
-        GFileDialog gFileDialog = GFileDialog.getInstance();
-        if (gFileDialog.showOpenDialog(this, GFileDialog.PEMU_FILES) == JFileChooser.APPROVE_OPTION)
-            app.setCurrentProgram(gFileDialog.getSelectedFile());
+    @Override
+    public void updateTranslations(@NotNull Translation translation) {
+        translation.translateComponent("fileMenu", this);
+        translation.translateComponent("fileMenu.openProgram", OPEN_PROGRAM);
+        translation.translateComponent("fileMenu.quit", QUIT);
+
     }
 
+    private void openProgram(ActionEvent e) {
+        GFileDialog gFileDialog = GFileDialog.getInstance();
+        if (gFileDialog.showOpenDialog(this, GFileDialog.getPEMUFileFilter()) == JFileChooser.APPROVE_OPTION)
+            app.setCurrentProgram(gFileDialog.getSelectedFile());
+    }
 }
