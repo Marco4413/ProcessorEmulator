@@ -1,8 +1,7 @@
 package io.github.hds.pemu.app;
 
 import io.github.hds.pemu.Main;
-import io.github.hds.pemu.utils.IconUtils;
-import io.github.hds.pemu.utils.StringUtils;
+import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -20,43 +19,56 @@ public class Console {
     public static final @NotNull ConsoleComponent Debug = new ConsoleComponent();
     public static final @NotNull ConsoleContextualMenu CTX_MENU = new ConsoleContextualMenu();
 
-    private static class ConsoleContextualMenu extends JPopupMenu {
+    private static class ConsoleContextualMenu extends JPopupMenu implements ITranslatable {
         private final TJMenuItem SAVE;
         private final TJMenuItem CLEAR;
 
         private final ImageIcon ICON_CLEAR;
 
+        private @NotNull String localeSaveErrorPanelTitle = "";
+        private @NotNull String localeSaveErrorPanelMsg = "";
+
         protected ConsoleContextualMenu() {
             super();
 
+            TranslationManager.addTranslationListener(this);
+
             Function<TJMenuItem, Boolean> enableCondition = i -> getInvoker() instanceof ConsoleComponent && ((ConsoleComponent) getInvoker()).getText().length() > 0;
-            SAVE = new TJMenuItem("Save", 'S', enableCondition);
+            SAVE = new TJMenuItem(enableCondition);
             SAVE.setIcon(GFileDialog.ICON_SAVE);
             SAVE.addActionListener(this::saveConsole);
             add(SAVE);
 
             ICON_CLEAR = IconUtils.importIcon("/assets/clear.png", Application.MENU_ITEM_ICON_SIZE);
 
-            CLEAR = new TJMenuItem("Clear", 'C', enableCondition);
+            CLEAR = new TJMenuItem(enableCondition);
             CLEAR.setIcon(ICON_CLEAR);
             CLEAR.addActionListener(this::clearConsole);
             add(CLEAR);
         }
 
+        @Override
+        public void updateTranslations(@NotNull Translation translation) {
+            translation.translateComponent("consoleContextualMenu.save", SAVE);
+            translation.translateComponent("consoleContextualMenu.clear", CLEAR);
+
+            localeSaveErrorPanelTitle = translation.getOrDefault("consoleContextualMenu.saveErrorPanelTitle");
+            localeSaveErrorPanelMsg = translation.getOrDefault("consoleContextualMenu.saveErrorPanelMsg");
+        }
+
         public void saveConsole(ActionEvent e) {
             if (!(getInvoker() instanceof  ConsoleComponent)) return;
             GFileDialog gFileDialog = GFileDialog.getInstance();
-            if (gFileDialog.showSaveDialog(this, GFileDialog.TEXT_FILES) == JFileChooser.APPROVE_OPTION) {
+            if (gFileDialog.showSaveDialog(this, GFileDialog.getTextFileFilter()) == JFileChooser.APPROVE_OPTION) {
                 File file = gFileDialog.getSelectedFile();
                 try {
                     PrintWriter writer = new PrintWriter(file, "UTF-8");
                     writer.print(((ConsoleComponent) getInvoker()).getText());
                     writer.close();
-                    throw new IllegalStateException("File error");
                 } catch (Exception err) {
                     JOptionPane.showMessageDialog(
-                            this, file.getName() + '\n' + "Couldn't write to file:\n" + err.getMessage(),
-                            "Error " + gFileDialog.getDialogTitle(), JOptionPane.ERROR_MESSAGE
+                            this, StringUtils.format(localeSaveErrorPanelMsg, file.getName(), err.getMessage()),
+                            StringUtils.format(localeSaveErrorPanelTitle, gFileDialog.getDialogTitle()), JOptionPane.ERROR_MESSAGE
                     );
                 }
             }

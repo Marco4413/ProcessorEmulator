@@ -1,7 +1,7 @@
 package io.github.hds.pemu.app;
 
 import io.github.hds.pemu.processor.Processor;
-import io.github.hds.pemu.utils.IconUtils;
+import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -11,7 +11,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
 
-public class MemoryView extends JFrame {
+public class MemoryView extends JFrame implements ITranslatable {
 
     private static final String R_VALUES_FORMAT = "<html><table><tr><td>IP=%s</td><td>SP=%s</td></tr><tr><td>ZF=%s</td><td>CF=%s</td></tr></table></html>";
     private static final String R_VALUES_UNKNOWN = "?";
@@ -21,42 +21,49 @@ public class MemoryView extends JFrame {
     private final Timer UPDATE_TIMER;
     private final JTable MEMORY_TABLE;
 
+    private final JLabel COLS_LABEL;
+    private final JLabel UPDATE_INTEVAL_LABEL;
+
     private final JSpinner COLS_SPINNER;
-    private final JSpinner UPDATE_DELAY;
+    private final JSpinner UPDATE_INTERVAL_SPINNER;
     private final JCheckBox SHOW_AS_CHAR;
     private final JCheckBox SHOW_HISTORY;
     private final JCheckBox SHOW_POINTERS;
     private final JLabel REG_VALUES;
 
     protected MemoryView(@NotNull Application parentApp) {
-        super("Memory View");
+        super();
         app = parentApp;
 
         setIconImage(IconUtils.importIcon("/assets/memory_view.png", Application.FRAME_ICON_SIZE).getImage());
 
-        setSize(800, 600);
+        setSize(Application.FRAME_WIDTH, Application.FRAME_HEIGHT);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+
+        TranslationManager.addTranslationListener(this);
 
         setLayout(new GridBagLayout());
 
         // Adding Options
-        addComponent(new JLabel("Words on each row:", JLabel.RIGHT), 0, 0);
+        COLS_LABEL = new JLabel("", JLabel.RIGHT);
+        addComponent(COLS_LABEL, 0, 0);
         SpinnerNumberModel colsModel = new SpinnerNumberModel(Byte.SIZE, Byte.SIZE, Byte.SIZE * Byte.SIZE, Byte.SIZE);
         COLS_SPINNER = new JSpinner(colsModel);
         addComponent(COLS_SPINNER, 1, 0);
 
-        addComponent(new JLabel("Update interval:", JLabel.RIGHT), 2, 0);
+        UPDATE_INTEVAL_LABEL = new JLabel("", JLabel.RIGHT);
+        addComponent(UPDATE_INTEVAL_LABEL, 2, 0);
         SpinnerNumberModel updateDelayModel = new SpinnerNumberModel(1.0f, 0.01f, 5.0f, 0.01f);
-        UPDATE_DELAY = new JSpinner(updateDelayModel);
-        addComponent(UPDATE_DELAY, 3, 0);
+        UPDATE_INTERVAL_SPINNER = new JSpinner(updateDelayModel);
+        addComponent(UPDATE_INTERVAL_SPINNER, 3, 0);
 
-        SHOW_AS_CHAR = new JCheckBox("Show values as chars");
+        SHOW_AS_CHAR = new JCheckBox();
         addComponent(SHOW_AS_CHAR, 0, 1);
 
-        SHOW_HISTORY = new JCheckBox("Show names of executed instructions");
+        SHOW_HISTORY = new JCheckBox();
         addComponent(SHOW_HISTORY, 1, 1);
 
-        SHOW_POINTERS = new JCheckBox("Show { Instruction } and [ Stack ] Pointers");
+        SHOW_POINTERS = new JCheckBox();
         addComponent(SHOW_POINTERS, 2, 1);
 
         REG_VALUES = new JLabel();
@@ -118,6 +125,17 @@ public class MemoryView extends JFrame {
         UPDATE_TIMER.start();
     }
 
+    @Override
+    public void updateTranslations(@NotNull Translation translation) {
+        translation.translateFrame("memoryView", this);
+        translation.translateComponent("memoryView.colsLabel", COLS_LABEL);
+        translation.translateComponent("memoryView.updateIntervalLabel", UPDATE_INTEVAL_LABEL);
+        translation.translateComponent("memoryView.showAsChar", SHOW_AS_CHAR);
+        translation.translateComponent("memoryView.showHistory", SHOW_HISTORY);
+        translation.translateComponent("memoryView.showPointers", SHOW_POINTERS);
+        SHOW_POINTERS.setText(StringUtils.format(translation.getOrDefault("memoryView.showPointers"), "{", "}", "[", "]"));
+    }
+
     public void addComponent(@NotNull Component component, int x, int y) {
         addComponent(component, x, y, 1, 1);
     }
@@ -144,7 +162,7 @@ public class MemoryView extends JFrame {
     }
 
     public void updateFrame(ActionEvent e) {
-        UPDATE_TIMER.setDelay((int) ((double) UPDATE_DELAY.getValue() * 1000.0f));
+        UPDATE_TIMER.setDelay((int) ((double) UPDATE_INTERVAL_SPINNER.getValue() * 1000.0f));
 
         if (!isVisible()) return;
 
@@ -194,5 +212,4 @@ public class MemoryView extends JFrame {
             model.setValueAt(value, y, x);
         }
     }
-
 }

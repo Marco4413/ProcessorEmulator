@@ -1,12 +1,13 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
 
-public class AboutMenu extends JMenu {
+public class AboutMenu extends JMenu implements ITranslatable {
 
     private final Application app;
     private static final String WEBPAGE = "https://github.com/hds536jhmk/ProcessorEmulator";
@@ -15,18 +16,18 @@ public class AboutMenu extends JMenu {
 
     private final ImageIcon ICON_OPEN_WEBPAGE;
 
+    private @NotNull String localeOpenLinkErrorTitle = "";
+    private @NotNull String localeOpenLinkErrorMsg = "";
+
     protected AboutMenu(@NotNull Application parentApp) {
-        super("About");
+        super();
         app = parentApp;
 
-        setMnemonic('A');
+        TranslationManager.addTranslationListener(this);
 
-        ICON_OPEN_WEBPAGE = new ImageIcon(
-                new ImageIcon(System.class.getResource("/assets/webpage.png"))
-                        .getImage().getScaledInstance(Application.MENU_ITEM_ICON_SIZE, Application.MENU_ITEM_ICON_SIZE, Image.SCALE_SMOOTH)
-        );
+        ICON_OPEN_WEBPAGE = IconUtils.importIcon("/assets/webpage.png", Application.MENU_ITEM_ICON_SIZE);
 
-        OPEN_WEBPAGE = new JMenuItem("Open Webpage", 'O');
+        OPEN_WEBPAGE = new JMenuItem();
         OPEN_WEBPAGE.setIcon(ICON_OPEN_WEBPAGE);
         OPEN_WEBPAGE.addActionListener(
                 e -> {
@@ -41,10 +42,17 @@ public class AboutMenu extends JMenu {
                     }
 
                     if (failed)
-                        JOptionPane.showMessageDialog(this, "Couldn't open link: " + WEBPAGE, "Failed to open Webpage.", JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.showMessageDialog(this, StringUtils.format(localeOpenLinkErrorMsg, WEBPAGE), localeOpenLinkErrorTitle, JOptionPane.WARNING_MESSAGE);
                 }
         );
         add(OPEN_WEBPAGE);
     }
 
+    @Override
+    public void updateTranslations(@NotNull Translation translation) {
+        translation.translateComponent("aboutMenu", this);
+        translation.translateComponent("aboutMenu.openWebpage", OPEN_WEBPAGE);
+        localeOpenLinkErrorTitle = translation.getOrDefault("aboutMenu.openLinkErrorTitle");
+        localeOpenLinkErrorMsg = translation.getOrDefault("aboutMenu.openLinkErrorMsg");
+    }
 }

@@ -1,11 +1,13 @@
 package io.github.hds.pemu;
 
 import io.github.hds.pemu.app.Application;
+import io.github.hds.pemu.app.GFileDialog;
 import io.github.hds.pemu.arguments.ArgumentsParser;
 import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.ProcessorConfig;
 import io.github.hds.pemu.processor.Word;
 import io.github.hds.pemu.utils.MathUtils;
+import io.github.hds.pemu.utils.TranslationManager;
 
 import javax.swing.*;
 import java.io.File;
@@ -44,8 +46,11 @@ public class Main {
                 (int) parser.getOption("-clock").value
         );
 
-        // Initializing app instance and showing it
-        Application app = Application.getInstance(config);
+        // Initializing app instance, loading English translation and showing it
+        Application app = Application.getInstance();
+        TranslationManager.loadTranslation("/localization/en-us.lang");
+
+        app.setProcessorConfig(config);
         app.setCurrentProgram(new File((String) parser.getOption("-program").value));
         if ((boolean) parser.getOption("-run").value)
             app.runProcessor(null);
