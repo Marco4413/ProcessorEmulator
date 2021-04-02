@@ -10,38 +10,25 @@ import java.util.function.BiConsumer;
 public class KeyValueParser {
 
     public static class ParsedData {
-        private final HashMap<String, Integer>   NUMBERS   ;
-        private final HashMap<String, String>    STRINGS   ;
-        private final HashMap<String, Character> CHARACTERS;
+        private final HashMap<String, Object> ENTRIES;
 
-        protected ParsedData(@NotNull HashMap<String, Integer> numbers, @NotNull HashMap<String, String> strings, @NotNull HashMap<String, Character> characters) {
-            NUMBERS = numbers;
-            STRINGS = strings;
-            CHARACTERS = characters;
+        protected ParsedData(@NotNull HashMap<String, Object> entries) {
+            ENTRIES = entries;
         }
 
-        public void forEachNumber(@NotNull BiConsumer<String, Integer> consumer) {
-            NUMBERS.forEach(consumer);
+        public void forEach(@NotNull BiConsumer<String, Object> consumer) {
+            ENTRIES.forEach(consumer);
         }
 
-        public @Nullable Integer getNumber(@NotNull String key) {
-            return NUMBERS.get(key);
+        public <T> @Nullable T get(@NotNull Class<T> clazz, @NotNull String key) {
+            return getOrDefault(clazz, key, null);
         }
 
-        public void forEachString(@NotNull BiConsumer<String, String> consumer) {
-            STRINGS.forEach(consumer);
-        }
-
-        public @Nullable String getString(@NotNull String key) {
-            return STRINGS.get(key);
-        }
-
-        public void forEachCharacter(@NotNull BiConsumer<String, Character> consumer) {
-            CHARACTERS.forEach(consumer);
-        }
-
-        public @Nullable Character getCharacter(@NotNull String key) {
-            return CHARACTERS.get(key);
+        @SuppressWarnings("unchecked")
+        public <T> @Nullable T getOrDefault(@NotNull Class<T> clazz, @NotNull String key, T defaultValue) {
+            Object value = ENTRIES.get(key);
+            if (clazz.isInstance(value)) return (T) value;
+            return defaultValue;
         }
     }
 
@@ -102,9 +89,7 @@ public class KeyValueParser {
     public static @NotNull ParsedData parseKeyValuePairs(@NotNull Readable readable) {
         Scanner scanner = new Scanner(readable);
 
-        HashMap<String, Integer>   numbers    = new HashMap<>();
-        HashMap<String, String>    strings    = new HashMap<>();
-        HashMap<String, Character> characters = new HashMap<>();
+        HashMap<String, Object> entries = new HashMap<>();
 
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
@@ -120,23 +105,23 @@ public class KeyValueParser {
 
             String str = parseString(tokenizer);
             if (str != null) {
-                strings.put(key, str);
+                entries.put(key, str);
                 continue;
             }
 
             Character character = parseCharacter(tokenizer);
             if (character != null) {
-                characters.put(key, character);
+                entries.put(key, character);
                 continue;
             }
 
             Integer number = parseNumber(tokenizer);
             if (number != null) {
-                numbers.put(key, number);
+                entries.put(key, number);
             }
         }
 
-        return new ParsedData(numbers, strings, characters);
+        return new ParsedData(entries);
     }
 
 }

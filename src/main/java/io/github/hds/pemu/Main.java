@@ -48,7 +48,9 @@ public class Main {
 
         // Initializing app instance, loading English translation and showing it
         Application app = Application.getInstance();
-        TranslationManager.loadTranslation("/localization/en-us.lang");
+        TranslationManager.setCurrentTranslation(
+            TranslationManager.loadTranslation("/localization/en-us.lang")
+        );
 
         app.setProcessorConfig(config);
         app.setCurrentProgram(new File((String) parser.getOption("-program").value));

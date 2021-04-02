@@ -68,8 +68,11 @@ public class StringUtils {
         return new String[0];
     }
 
-    public static @NotNull String getFilePathWExt(@NotNull File file, @NotNull String[] extensions) {
-        String path = file.getAbsolutePath();
+    public static @NotNull String getFilePathWExt(@NotNull File file, @NotNull String... extensions) {
+        return getPathWExt(file.getAbsolutePath(), extensions);
+    }
+
+    public static @NotNull String getPathWExt(@NotNull String path, @NotNull String... extensions) {
         if (extensions.length == 0) return path;
 
         for (String extension : extensions) {
