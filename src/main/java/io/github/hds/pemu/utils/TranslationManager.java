@@ -25,20 +25,24 @@ public class TranslationManager {
         return currentTranslation == null ? new Translation() : currentTranslation;
     }
 
-    public static void loadTranslation(@NotNull String resourcePath) {
-        InputStream stream = Main.class.getResourceAsStream(resourcePath);
-        currentTranslation = parseTranslation(new InputStreamReader(stream));
-
+    public static void setCurrentTranslation(@NotNull Translation translation) {
+        currentTranslation = translation;
         LISTENERS.forEach(listener -> listener.updateTranslations(currentTranslation));
+    }
+
+    public static @NotNull Translation loadTranslation(@NotNull String resourcePath) {
+        InputStream stream = Main.class.getResourceAsStream(resourcePath);
+        return parseTranslation(new InputStreamReader(stream));
     }
 
     private static @NotNull Translation parseTranslation(@NotNull Readable readable) {
         KeyValueParser.ParsedData parsedData = KeyValueParser.parseKeyValuePairs(readable);
         HashMap<String, String> translationData = new HashMap<>();
-
-        parsedData.forEachCharacter((k, v) -> translationData.put(k, String.valueOf(v)));
-        parsedData.forEachString(translationData::put);
-
+        parsedData.forEach(
+                (k, v) -> {
+                    if (v != null) translationData.put(k, String.valueOf(v));
+                }
+        );
         return new Translation(translationData);
     }
 

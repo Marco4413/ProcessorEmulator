@@ -1,12 +1,20 @@
+"_shortName" = "it-it"
+"_longName"  = "Italiano - Italia"
+
 "application.noProgramSelected" = "(Nessun Programma Selezionato)"
 "application.programSelected"   = "({0})"
 
-"fileMenu._text"                 = "File"
-"fileMenu._mnemonic"             = 'F'
-"fileMenu.openProgram._text"     = "Apri Programma"
-"fileMenu.openProgram._mnemonic" = 'A'
-"fileMenu.quit._text"            = "Esci"
-"fileMenu.quit._mnemonic"        = 'E'
+"fileMenu._text"                    = "File"
+"fileMenu._mnemonic"                = 'F'
+"fileMenu.openProgram._text"        = "Apri Programma"
+"fileMenu.openProgram._mnemonic"    = 'A'
+"fileMenu.changeLanguage._text"     = "Cambia Lingua"
+"fileMenu.changeLanguage._mnemonic" = 'L'
+"fileMenu.quit._text"               = "Esci"
+"fileMenu.quit._mnemonic"           = 'E'
+
+"fileMenu.selectLanguageTitle" = "Cambia Lingua"
+"fileMenu.selectLanguageMsg"   = "Seleziona la Lingua:"
 
 "programMenu._text"               = "Programma"
 "programMenu._mnemonic"           = 'P'

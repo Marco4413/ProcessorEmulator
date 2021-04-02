@@ -19,6 +19,10 @@ public class Translation {
         MAP = translationMap;
     }
 
+    public @NotNull String getName() {
+        return getOrDefault("_longName", getOrDefault("_shortName"));
+    }
+
     public @Nullable String get(@NotNull String key) {
         return MAP.get(key);
     }

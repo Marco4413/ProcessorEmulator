@@ -1,5 +1,17 @@
 
 -- Version (v1.0.0-RELEASE)
+-- Changes from commit @32c4721
+
+Added Change Language button to FileMenu
+
+Added method TranslationManager.setCurrentTranslation that sets the current translation to the one specified
+Made method TranslationManager.loadTranslation only parse the specified file
+
+Changed how class KeyValueParser.ParsedData works
+
+Added method Translation#getName
+Added method StringUtils.getPathWExt
+
 -- Changes from commit @d3067cf
 
 Laid down translations support
