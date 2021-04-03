@@ -9,20 +9,18 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.io.File;
 
 public class Application extends JFrame implements KeyListener, ITranslatable {
 
+    public static final String APP_TITLE = "PEMU";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
     public static final int MENU_ITEM_ICON_SIZE = 20;
 
     private static Application INSTANCE;
-    private static final String APP_TITLE = "PEMU";
 
     protected final FileMenu FILE_MENU;
     protected final ProgramMenu PROGRAM_MENU;
@@ -47,6 +45,14 @@ public class Application extends JFrame implements KeyListener, ITranslatable {
 
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        Config config = Config.getInstance();
+        config.loadOrCreate();
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                Config.getInstance().saveConfig();
+            }
+        });
 
         TranslationManager.addTranslationListener(this);
         GFileDialog.getInstance();
@@ -78,6 +84,13 @@ public class Application extends JFrame implements KeyListener, ITranslatable {
         add(splitPane);
 
         Console.POutput.addKeyListener(this);
+
+        String languageName = config.getConfig().get(String.class, "selectedLanguage");
+        TranslationManager.setCurrentTranslation(
+                TranslationManager.loadTranslation(
+                        StringUtils.getPathWExt("/localization/" + languageName, "lang")
+                )
+        );
     }
 
     public static @NotNull Application getInstance() {
@@ -273,6 +286,8 @@ public class Application extends JFrame implements KeyListener, ITranslatable {
         currentProcessor.step();
         Console.Debug.println("Processor stepped forward!");
     }
+
+
 
     protected void close(ActionEvent e) {
         System.exit(0);

@@ -8,6 +8,12 @@ One day I woke up and decided to challenge myself.
 So this project came to life, it's a short story but full of headaches.
 Don't expect much from this emulator, it's made just for learning purposes.
 
+## Does this program create any files on disk?
+
+From version 1.0.0 this program creates one file named `PEMU.config` in the user's home dir to save all config data.
+
+On Windows: `%USERPROFILE%/PEMU.config`
+
 ## How to run:
 
 There are four main ways to run this project:

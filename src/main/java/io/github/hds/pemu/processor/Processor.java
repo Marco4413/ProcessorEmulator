@@ -4,6 +4,7 @@ import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.Flag;
 import io.github.hds.pemu.memory.Memory;
 import io.github.hds.pemu.memory.Registry;
+import io.github.hds.pemu.memory.Word;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.KeyEvent;

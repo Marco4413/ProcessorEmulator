@@ -1,12 +1,13 @@
 package io.github.hds.pemu;
 
 import io.github.hds.pemu.app.Application;
-import io.github.hds.pemu.app.GFileDialog;
+import io.github.hds.pemu.app.Config;
 import io.github.hds.pemu.arguments.ArgumentsParser;
 import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.ProcessorConfig;
-import io.github.hds.pemu.processor.Word;
+import io.github.hds.pemu.memory.Word;
 import io.github.hds.pemu.utils.MathUtils;
+import io.github.hds.pemu.utils.StringUtils;
 import io.github.hds.pemu.utils.TranslationManager;
 
 import javax.swing.*;
@@ -40,19 +41,27 @@ public class Main {
         } catch (Exception ignored) { }
 
         // Creating initial processor config
-        ProcessorConfig config = new ProcessorConfig(
+        ProcessorConfig processorConfig = new ProcessorConfig(
                 Word.getClosestSize((int) parser.getOption("-bits").value),
                 MathUtils.makeMultipleOf(Byte.SIZE, (int) parser.getOption("-memory").value),
                 (int) parser.getOption("-clock").value
         );
 
-        // Initializing app instance, loading English translation and showing it
-        Application app = Application.getInstance();
-        TranslationManager.setCurrentTranslation(
-            TranslationManager.loadTranslation("/localization/en-us.lang")
-        );
+        // Trying to get an instance of the app
+        Application app;
+        try {
+            app = Application.getInstance();
+        } catch (Exception err) {
+            // If it fails it's probably a bad config file, so we reset it
+            Config appConfig = Config.getInstance();
+            appConfig.resetToDefault();
+            appConfig.saveConfig();
+            // And try to get a new instance of the app, if this also fails, we let the program crash
+            app = Application.getInstance();
+        }
 
-        app.setProcessorConfig(config);
+        // Setting up app instance and showing it
+        app.setProcessorConfig(processorConfig);
         app.setCurrentProgram(new File((String) parser.getOption("-program").value));
         if ((boolean) parser.getOption("-run").value)
             app.runProcessor(null);

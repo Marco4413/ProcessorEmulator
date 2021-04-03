@@ -23,6 +23,14 @@ public class Translation {
         return getOrDefault("_longName", getOrDefault("_shortName"));
     }
 
+    public @NotNull String getLongName() {
+        return getOrDefault("_longName", toString());
+    }
+
+    public @NotNull String getShortName() {
+        return getOrDefault("_shortName", toString());
+    }
+
     public @Nullable String get(@NotNull String key) {
         return MAP.get(key);
     }
