@@ -2,7 +2,7 @@ package io.github.hds.pemu.app;
 
 import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.ProcessorConfig;
-import io.github.hds.pemu.processor.Word;
+import io.github.hds.pemu.memory.Word;
 import io.github.hds.pemu.utils.ITranslatable;
 import io.github.hds.pemu.utils.Translation;
 import io.github.hds.pemu.utils.TranslationManager;

@@ -36,7 +36,7 @@ public class TranslationManager {
     }
 
     private static @NotNull Translation parseTranslation(@NotNull Readable readable) {
-        KeyValueParser.ParsedData parsedData = KeyValueParser.parseKeyValuePairs(readable);
+        KeyValueData parsedData = KeyValueParser.parseKeyValuePairs(readable);
         HashMap<String, String> translationData = new HashMap<>();
         parsedData.forEach(
                 (k, v) -> {

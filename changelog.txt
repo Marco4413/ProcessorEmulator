@@ -1,5 +1,21 @@
 
 -- Version (v1.0.0-RELEASE)
+-- Changes from commit @49dfb33
+
+Added class Config, which is used to manage the app's config (The config file is saved at the user's home dir as "PEMU.config")
+Made Application load the current language on create
+Made FileMenu's Change Language dialog save the specified language to the config file
+
+Moved class Word from package pemu.processor to pemu.memory
+
+Renamed and moved ParsedData class from utils.KeyValueParser to utils.KeyValueData
+Added methods to KeyValueData: containsKey, toString
+
+Added field StringUtils.SpecialCharacters.INVERSE_MAP
+Added method StringUtils.SpecialCharacters.escapeAll
+
+Added methods Translation#getLongName and Translation#getShortName
+
 -- Changes from commit @32c4721
 
 Added Change Language button to FileMenu

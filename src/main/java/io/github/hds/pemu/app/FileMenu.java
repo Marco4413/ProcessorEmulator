@@ -101,7 +101,9 @@ public class FileMenu extends JMenu implements ITranslatable {
 
         for (int i = 0; i < languagesNames.length; i++) {
             if (languagesNames[i].equals(selectedLanguage)) {
-                TranslationManager.setCurrentTranslation(availableTranslations.get(i));
+                Translation selectedTranslation = availableTranslations.get(i);
+                TranslationManager.setCurrentTranslation(selectedTranslation);
+                Config.getInstance().getConfig().put("selectedLanguage", selectedTranslation.getShortName());
                 break;
             }
         }

@@ -1,4 +1,4 @@
-package io.github.hds.pemu.processor;
+package io.github.hds.pemu.memory;
 
 import io.github.hds.pemu.utils.MathUtils;
 

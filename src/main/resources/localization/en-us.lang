@@ -1,3 +1,4 @@
+# _shortName MUST be the same as the file's name and MUST be specified
 "_shortName" = "en-us"
 "_longName"  = "English - US"
 

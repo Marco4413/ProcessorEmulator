@@ -15,6 +15,7 @@ public class StringUtils {
 
     public static class SpecialCharacters {
         public static final HashMap<Character, Character> MAP = new HashMap<>();
+        public static final HashMap<Character, Character> INVERSE_MAP = new HashMap<>();
 
         static {
             MAP.put('\'', '\''); // Quotes
@@ -26,6 +27,25 @@ public class StringUtils {
             MAP.put('f' , '\f'); // Form feed
             MAP.put('n' , '\n'); // Newline
             MAP.put('0' , '\0'); // NULL
+
+            MAP.forEach((k, v) -> INVERSE_MAP.put(v, k));
+        }
+
+        public static @NotNull String escapeAll(@NotNull String str) {
+            StringBuilder escapedStr = new StringBuilder();
+            for (int i = 0; i < str.length(); i++) {
+                char currentChar = str.charAt(i);
+                if (INVERSE_MAP.containsKey(currentChar)) {
+                    escapedStr.append("\\").append(INVERSE_MAP.get(currentChar));
+                } else escapedStr.append(currentChar);
+            }
+            return escapedStr.toString();
+        }
+
+        public static @NotNull String escapeAll(char character) {
+            if (INVERSE_MAP.containsKey(character))
+                return "\\" + INVERSE_MAP.get(character);
+            return String.valueOf(character);
         }
     }
 

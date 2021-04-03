@@ -1,6 +1,5 @@
 package io.github.hds.pemu.memory;
 
-import io.github.hds.pemu.processor.Word;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;

@@ -5,38 +5,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Scanner;
-import java.util.function.BiConsumer;
 
 public class KeyValueParser {
-
-    public static class ParsedData {
-        private final HashMap<String, Object> ENTRIES;
-
-        protected ParsedData(@NotNull HashMap<String, Object> entries) {
-            ENTRIES = entries;
-        }
-
-        public void forEach(@NotNull BiConsumer<String, Object> consumer) {
-            ENTRIES.forEach(consumer);
-        }
-
-        public <T> @Nullable T get(@NotNull Class<T> clazz, @NotNull String key) {
-            return getOrDefault(clazz, key, null);
-        }
-
-        @SuppressWarnings("unchecked")
-        public <T> @Nullable T getOrDefault(@NotNull Class<T> clazz, @NotNull String key, T defaultValue) {
-            Object value = ENTRIES.get(key);
-            if (clazz.isInstance(value)) return (T) value;
-            return defaultValue;
-        }
-    }
-
     private static final Token STRING = new Token("\"");
     private static final Token CHARACTER = new Token("'");
     private static final Token ESCAPE_CHAR = new Token("\\\\");
     private static final Token ASSIGN = new Token("=");
     private static final Token WHITESPACE = new Token("\\s");
+    private static final Token COMMENT = new Token("#");
 
     private static @Nullable String parseString(@NotNull Tokenizer tokenizer) {
         String terminator = tokenizer.peekNext(WHITESPACE);
@@ -86,7 +62,7 @@ public class KeyValueParser {
         return null;
     }
 
-    public static @NotNull ParsedData parseKeyValuePairs(@NotNull Readable readable) {
+    public static @NotNull KeyValueData parseKeyValuePairs(@NotNull Readable readable) {
         Scanner scanner = new Scanner(readable);
 
         HashMap<String, Object> entries = new HashMap<>();
@@ -94,8 +70,10 @@ public class KeyValueParser {
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
 
-            Tokenizer tokenizer = new Tokenizer(line, true, STRING, CHARACTER, ESCAPE_CHAR, ASSIGN, WHITESPACE);
+            Tokenizer tokenizer = new Tokenizer(line, true, STRING, CHARACTER, ESCAPE_CHAR, ASSIGN, WHITESPACE, COMMENT);
             tokenizer.removeEmpties();
+
+            if (COMMENT.equals(tokenizer.peekNext(WHITESPACE))) continue;
 
             String key = parseString(tokenizer);
             if (key == null) continue;
@@ -121,7 +99,7 @@ public class KeyValueParser {
             }
         }
 
-        return new ParsedData(entries);
+        return new KeyValueData(entries);
     }
 
 }
