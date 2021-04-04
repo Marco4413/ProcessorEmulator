@@ -55,10 +55,18 @@ public class KeyValueParser {
         return null;
     }
 
-    private static @Nullable Integer parseNumber(@NotNull Tokenizer tokenizer) {
+    private static @Nullable Number parseNumber(@NotNull Tokenizer tokenizer) {
+        String number = tokenizer.peekNext(WHITESPACE);
+        if (number == null) return null;
+
         try {
-            return StringUtils.parseInt(tokenizer.consumeNext(WHITESPACE));
+            return StringUtils.parseInt(number);
         } catch (Exception ignored) { }
+
+        try {
+            return Float.parseFloat(number);
+        } catch (Exception ignored) { }
+
         return null;
     }
 
@@ -93,9 +101,16 @@ public class KeyValueParser {
                 continue;
             }
 
-            Integer number = parseNumber(tokenizer);
+            Number number = parseNumber(tokenizer);
             if (number != null) {
                 entries.put(key, number);
+                continue;
+            }
+
+            String bool = tokenizer.peekNext(WHITESPACE);
+            if (bool == null) continue;
+            if (bool.equalsIgnoreCase("true") || bool.equalsIgnoreCase("false")) {
+                entries.put(key, bool.equalsIgnoreCase("true"));
             }
         }
 

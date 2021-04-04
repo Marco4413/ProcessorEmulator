@@ -1,14 +1,12 @@
 package io.github.hds.pemu;
 
 import io.github.hds.pemu.app.Application;
-import io.github.hds.pemu.app.Config;
+import io.github.hds.pemu.utils.ConfigManager;
 import io.github.hds.pemu.arguments.ArgumentsParser;
 import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.ProcessorConfig;
 import io.github.hds.pemu.memory.Word;
 import io.github.hds.pemu.utils.MathUtils;
-import io.github.hds.pemu.utils.StringUtils;
-import io.github.hds.pemu.utils.TranslationManager;
 
 import javax.swing.*;
 import java.io.File;
@@ -53,9 +51,8 @@ public class Main {
             app = Application.getInstance();
         } catch (Exception err) {
             // If it fails it's probably a bad config file, so we reset it
-            Config appConfig = Config.getInstance();
-            appConfig.resetToDefault();
-            appConfig.saveConfig();
+            ConfigManager.resetToDefault();
+            ConfigManager.saveConfig(true);
             // And try to get a new instance of the app, if this also fails, we let the program crash
             app = Application.getInstance();
         }

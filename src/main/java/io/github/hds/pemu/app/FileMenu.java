@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class FileMenu extends JMenu implements ITranslatable {
+public class FileMenu extends JMenu implements ITranslatable, IConfigurable {
 
     private final Application app;
 
@@ -29,6 +29,7 @@ public class FileMenu extends JMenu implements ITranslatable {
         super();
         app = parentApp;
 
+        ConfigManager.addConfigListener(this);
         TranslationManager.addTranslationListener(this);
 
         OPEN_PROGRAM = new JMenuItem();
@@ -103,9 +104,29 @@ public class FileMenu extends JMenu implements ITranslatable {
             if (languagesNames[i].equals(selectedLanguage)) {
                 Translation selectedTranslation = availableTranslations.get(i);
                 TranslationManager.setCurrentTranslation(selectedTranslation);
-                Config.getInstance().getConfig().put("selectedLanguage", selectedTranslation.getShortName());
                 break;
             }
         }
+    }
+
+    @Override
+    public void loadConfig(KeyValueData config) {
+        String languageName = config.get(String.class, "selectedLanguage");
+        TranslationManager.setCurrentTranslation(
+                TranslationManager.loadTranslation(
+                        StringUtils.getPathWExt("/localization/" + languageName, "lang")
+                )
+        );
+    }
+
+    @Override
+    public void saveConfig(KeyValueData config) {
+        String selectedLanguage = TranslationManager.getCurrentTranslation().getShortName();
+        config.put("selectedLanguage", selectedLanguage);
+    }
+
+    @Override
+    public void setDefaults(KeyValueData defaultConfig) {
+        defaultConfig.put("selectedLanguage", "en-us");
     }
 }
