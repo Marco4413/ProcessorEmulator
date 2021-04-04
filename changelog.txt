@@ -1,4 +1,16 @@
 
+-- Version (v1.0.5-RELEASE)
+-- Changes from commit @f5eec88
+
+Now MemoryView class saves its settings
+
+Renamed class Config to ConfigManager and made it static
+Added interface IConfigurable, implemented by classes which want to listen to Config Events
+
+Made class KeyValueData copy the provided HashMap when created (and added copy constructor)
+Fixed method KeyValueData#toString not serializing Strings properly
+Made method KeyValueParser.parseKeyValuePairs also parse Floats and Booleans
+
 -- Version (v1.0.0-RELEASE)
 -- Changes from commit @49dfb33
 

@@ -11,7 +11,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
 
-public class MemoryView extends JFrame implements ITranslatable {
+public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
 
     private static final String R_VALUES_FORMAT = "<html><table><tr><td>IP=%s</td><td>SP=%s</td></tr><tr><td>ZF=%s</td><td>CF=%s</td></tr></table></html>";
     private static final String R_VALUES_UNKNOWN = "?";
@@ -22,7 +22,7 @@ public class MemoryView extends JFrame implements ITranslatable {
     private final JTable MEMORY_TABLE;
 
     private final JLabel COLS_LABEL;
-    private final JLabel UPDATE_INTEVAL_LABEL;
+    private final JLabel UPDATE_INTERVAL_LABEL;
 
     private final JSpinner COLS_SPINNER;
     private final JSpinner UPDATE_INTERVAL_SPINNER;
@@ -40,6 +40,7 @@ public class MemoryView extends JFrame implements ITranslatable {
         setSize(Application.FRAME_WIDTH, Application.FRAME_HEIGHT);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
+        ConfigManager.addConfigListener(this);
         TranslationManager.addTranslationListener(this);
 
         setLayout(new GridBagLayout());
@@ -51,8 +52,8 @@ public class MemoryView extends JFrame implements ITranslatable {
         COLS_SPINNER = new JSpinner(colsModel);
         addComponent(COLS_SPINNER, 1, 0);
 
-        UPDATE_INTEVAL_LABEL = new JLabel("", JLabel.RIGHT);
-        addComponent(UPDATE_INTEVAL_LABEL, 2, 0);
+        UPDATE_INTERVAL_LABEL = new JLabel("", JLabel.RIGHT);
+        addComponent(UPDATE_INTERVAL_LABEL, 2, 0);
         SpinnerNumberModel updateDelayModel = new SpinnerNumberModel(1.0f, 0.01f, 5.0f, 0.01f);
         UPDATE_INTERVAL_SPINNER = new JSpinner(updateDelayModel);
         addComponent(UPDATE_INTERVAL_SPINNER, 3, 0);
@@ -129,7 +130,7 @@ public class MemoryView extends JFrame implements ITranslatable {
     public void updateTranslations(@NotNull Translation translation) {
         translation.translateFrame("memoryView", this);
         translation.translateComponent("memoryView.colsLabel", COLS_LABEL);
-        translation.translateComponent("memoryView.updateIntervalLabel", UPDATE_INTEVAL_LABEL);
+        translation.translateComponent("memoryView.updateIntervalLabel", UPDATE_INTERVAL_LABEL);
         translation.translateComponent("memoryView.showAsChar", SHOW_AS_CHAR);
         translation.translateComponent("memoryView.showHistory", SHOW_HISTORY);
         translation.translateComponent("memoryView.showPointers", SHOW_POINTERS);
@@ -211,5 +212,32 @@ public class MemoryView extends JFrame implements ITranslatable {
 
             model.setValueAt(value, y, x);
         }
+    }
+
+    @Override
+    public void loadConfig(KeyValueData config) {
+        COLS_SPINNER.setValue(config.get(Integer.class, "memoryView.columns"));
+        UPDATE_INTERVAL_SPINNER.setValue(new Double(config.get(Float.class, "memoryView.updateInterval")));
+        SHOW_AS_CHAR.setSelected(config.get(Boolean.class, "memoryView.showAsChar"));
+        SHOW_HISTORY.setSelected(config.get(Boolean.class, "memoryView.showHistory"));
+        SHOW_POINTERS.setSelected(config.get(Boolean.class, "memoryView.showPointers"));
+    }
+
+    @Override
+    public void saveConfig(KeyValueData config) {
+        config.put("memoryView.columns", COLS_SPINNER.getValue());
+        config.put("memoryView.updateInterval", new Float((Double) UPDATE_INTERVAL_SPINNER.getValue()));
+        config.put("memoryView.showAsChar", SHOW_AS_CHAR.isSelected());
+        config.put("memoryView.showHistory", SHOW_HISTORY.isSelected());
+        config.put("memoryView.showPointers", SHOW_POINTERS.isSelected());
+    }
+
+    @Override
+    public void setDefaults(KeyValueData defaultConfig) {
+        defaultConfig.put("memoryView.columns", 8);
+        defaultConfig.put("memoryView.updateInterval", 1.0f);
+        defaultConfig.put("memoryView.showAsChar", false);
+        defaultConfig.put("memoryView.showHistory", false);
+        defaultConfig.put("memoryView.showPointers", false);
     }
 }

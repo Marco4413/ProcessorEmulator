@@ -46,11 +46,9 @@ public class Application extends JFrame implements KeyListener, ITranslatable {
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        Config config = Config.getInstance();
-        config.loadOrCreate();
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                Config.getInstance().saveConfig();
+                ConfigManager.saveConfig();
             }
         });
 
@@ -85,12 +83,7 @@ public class Application extends JFrame implements KeyListener, ITranslatable {
 
         Console.POutput.addKeyListener(this);
 
-        String languageName = config.getConfig().get(String.class, "selectedLanguage");
-        TranslationManager.setCurrentTranslation(
-                TranslationManager.loadTranslation(
-                        StringUtils.getPathWExt("/localization/" + languageName, "lang")
-                )
-        );
+        ConfigManager.loadOrCreate();
     }
 
     public static @NotNull Application getInstance() {
@@ -286,8 +279,6 @@ public class Application extends JFrame implements KeyListener, ITranslatable {
         currentProcessor.step();
         Console.Debug.println("Processor stepped forward!");
     }
-
-
 
     protected void close(ActionEvent e) {
         System.exit(0);

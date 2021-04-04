@@ -7,14 +7,18 @@ import java.util.HashMap;
 import java.util.function.BiConsumer;
 
 public class KeyValueData {
-    private final HashMap<String, Object> ENTRIES;
+    protected final HashMap<String, Object> ENTRIES;
 
     public KeyValueData() {
         this(new HashMap<>());
     }
 
+    public KeyValueData(@NotNull KeyValueData data) {
+        this(data.ENTRIES);
+    }
+
     public KeyValueData(@NotNull HashMap<String, Object> entries) {
-        ENTRIES = entries;
+        ENTRIES = new HashMap<>(entries);
     }
 
     public void forEach(@NotNull BiConsumer<String, Object> consumer) {
@@ -43,10 +47,10 @@ public class KeyValueData {
     protected @NotNull String ObjectToString(@Nullable Object object) {
         if (object == null) return "";
         if (object instanceof String)
-            return "\"" + StringUtils.SpecialCharacters.escapeAll((String) object) + "\"";
+            return "\"" + StringUtils.SpecialCharacters.escapeAll((String) object).replaceAll("\"", "\\\\\"") + "\"";
         else if (object instanceof Character)
-            return "'" + StringUtils.SpecialCharacters.escapeAll((Character) object) + "'";
-        else if (object instanceof Number)
+            return "'" + StringUtils.SpecialCharacters.escapeAll((Character) object).replaceAll("'", "\\\\'") + "'";
+        else if (object instanceof Number || object instanceof Boolean)
             return object.toString();
         return "";
     }
@@ -57,7 +61,7 @@ public class KeyValueData {
         ENTRIES.forEach(
                 (k, v) -> {
                     thisAsString.append('"').append(
-                            StringUtils.SpecialCharacters.escapeAll(k)
+                            StringUtils.SpecialCharacters.escapeAll(k).replaceAll("\"", "\\\\\"")
                     ).append("\" = ").append(ObjectToString(v)).append('\n');
                 }
         );
