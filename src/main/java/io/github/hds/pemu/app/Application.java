@@ -12,9 +12,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 
-public class Application extends JFrame implements KeyListener, ITranslatable {
+public class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
     public static final String APP_TITLE = "PEMU";
+    public static final String APP_VERSION = "1.0.5";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
@@ -52,6 +53,7 @@ public class Application extends JFrame implements KeyListener, ITranslatable {
             }
         });
 
+        ConfigManager.addConfigListener(this);
         TranslationManager.addTranslationListener(this);
         GFileDialog.getInstance();
 
@@ -98,11 +100,41 @@ public class Application extends JFrame implements KeyListener, ITranslatable {
         updateTitle();
     }
 
+    @Override
+    public void loadConfig(KeyValueData config) {
+        // Check if the config is on the right version, if not reset it to defaults
+        String configVersion = config.get(String.class, "version");
+        if (configVersion == null || StringUtils.compareVersions(configVersion, APP_VERSION) != 0) {
+            ConfigManager.resetToDefault();
+            // Stopping event propagation to prevent from loading twice
+            ConfigManager.stopEvent();
+        } else {
+            processorConfig.setBits(config.get(Integer.class, "processorConfig.bits"));
+            processorConfig.setMemorySize(config.get(Integer.class, "processorConfig.memSize"));
+            processorConfig.setClock(config.get(Integer.class, "processorConfig.clock"));
+        }
+    }
+
+    @Override
+    public void saveConfig(KeyValueData config) {
+        config.put("processorConfig.bits", processorConfig.getBits());
+        config.put("processorConfig.memSize", processorConfig.getMemorySize());
+        config.put("processorConfig.clock", processorConfig.getClock());
+    }
+
+    @Override
+    public void setDefaults(KeyValueData defaultConfig) {
+        defaultConfig.put("version", APP_VERSION);
+        defaultConfig.put("processorConfig.bits", ProcessorConfig.DEFAULT_BITS);
+        defaultConfig.put("processorConfig.memSize", ProcessorConfig.DEFAULT_MEMORY_SIZE);
+        defaultConfig.put("processorConfig.clock", ProcessorConfig.DEFAULT_CLOCK);
+    }
+
     public void updateTitle() {
         if (currentProgram == null)
-            setTitle(APP_TITLE + " " + localeNoProgramSelected);
+            setTitle(APP_TITLE + " " + APP_VERSION + " " + localeNoProgramSelected);
         else
-            setTitle(APP_TITLE + " " + StringUtils.format(localeProgramSelected, currentProgram.getAbsolutePath()));
+            setTitle(APP_TITLE + " " + APP_VERSION + " " + StringUtils.format(localeProgramSelected, currentProgram.getAbsolutePath()));
     }
 
     public void setCurrentProgram(@NotNull File program) {
@@ -114,7 +146,11 @@ public class Application extends JFrame implements KeyListener, ITranslatable {
 
     public void setProcessorConfig(@NotNull ProcessorConfig config) {
         processorConfig = config;
-        if (currentProcessor != null) currentProcessor.CLOCK.setClock(processorConfig.clock);
+        if (currentProcessor != null) currentProcessor.CLOCK.setClock(processorConfig.getClock());
+    }
+
+    public @NotNull ProcessorConfig getProcessorConfig() {
+        return processorConfig;
     }
 
     @Override

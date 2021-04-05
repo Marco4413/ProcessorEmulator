@@ -1,11 +1,7 @@
 package io.github.hds.pemu.app;
 
-import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.ProcessorConfig;
-import io.github.hds.pemu.memory.Word;
-import io.github.hds.pemu.utils.ITranslatable;
-import io.github.hds.pemu.utils.Translation;
-import io.github.hds.pemu.utils.TranslationManager;
+import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -32,27 +28,27 @@ public class ProcessorConfigPanel extends JPanel implements ITranslatable {
 
         BITS_LABEL = new JLabel("Word Size (Bits): ");
         add(BITS_LABEL);
-        SpinnerNumberModel bitsModel = new SpinnerNumberModel(Word.SizeBit8, Word.SizeBit8, Word.SizeBit24, Byte.SIZE);
+        SpinnerNumberModel bitsModel = new SpinnerNumberModel(ProcessorConfig.DEFAULT_BITS, ProcessorConfig.MIN_BITS, ProcessorConfig.MAX_BITS, Byte.SIZE);
         BITS_SPINNER = new JSpinner(bitsModel);
         add(BITS_SPINNER);
 
         MEMORY_LABEL = new JLabel("Memory Size (Words): ");
         add(MEMORY_LABEL);
-        SpinnerNumberModel memoryModel = new SpinnerNumberModel(Byte.SIZE, Byte.SIZE, Word.MaskBit24, Byte.SIZE);
+        SpinnerNumberModel memoryModel = new SpinnerNumberModel(ProcessorConfig.DEFAULT_MEMORY_SIZE, ProcessorConfig.MIN_MEMORY_SIZE, ProcessorConfig.MAX_MEMORY_SIZE, Byte.SIZE);
         MEMORY_SPINNER = new JSpinner(memoryModel);
         add(MEMORY_SPINNER);
 
         CLOCK_LABEL = new JLabel("Clock (Hz): ");
         add(CLOCK_LABEL);
-        SpinnerNumberModel clockModel = new SpinnerNumberModel(Clock.MIN_CLOCK, Clock.MIN_CLOCK, Clock.MAX_CLOCK, 1);
+        SpinnerNumberModel clockModel = new SpinnerNumberModel(ProcessorConfig.DEFAULT_CLOCK, ProcessorConfig.MIN_CLOCK, ProcessorConfig.MAX_CLOCK, 1);
         CLOCK_SPINNER = new JSpinner(clockModel);
         add(CLOCK_SPINNER);
     }
 
     public void setConfig(@NotNull ProcessorConfig config) {
-        BITS_SPINNER.setValue(config.bits);
-        MEMORY_SPINNER.setValue(config.memSize);
-        CLOCK_SPINNER.setValue(config.clock);
+        BITS_SPINNER.setValue(config.getBits());
+        MEMORY_SPINNER.setValue(config.getMemorySize());
+        CLOCK_SPINNER.setValue(config.getClock());
     }
 
     public @NotNull ProcessorConfig getConfig() {

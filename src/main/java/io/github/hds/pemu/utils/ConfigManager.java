@@ -12,12 +12,17 @@ import java.util.ArrayList;
 
 public class ConfigManager {
 
+    private enum EVENT_TYPE {
+        SAVE, LOAD, DEFAULTS
+    }
+
     public static final @NotNull Path CONFIG_PATH = Paths.get(System.getProperty("user.home"), Application.APP_TITLE + ".config");
 
     private static KeyValueData config = new KeyValueData();
     private static KeyValueData defaultConfig = null;
 
     private static ArrayList<IConfigurable> LISTENERS = new ArrayList<>();
+    private static boolean stoppingEvent = false;
 
     public static void addConfigListener(@NotNull IConfigurable configurable) {
         LISTENERS.add(configurable);
@@ -34,19 +39,20 @@ public class ConfigManager {
     public static @NotNull KeyValueData getDefaultConfig() {
         if (defaultConfig == null) {
             defaultConfig = new KeyValueData();
-            LISTENERS.forEach(listener -> listener.setDefaults(defaultConfig));
+            sendEvent(EVENT_TYPE.DEFAULTS);
         }
         return new KeyValueData(defaultConfig);
     }
 
     public static void resetToDefault() {
         config = getDefaultConfig();
+        sendEvent(EVENT_TYPE.LOAD);
     }
 
     public static void loadOrCreate() {
         if (!loadConfig()) {
             saveConfig(true);
-            LISTENERS.forEach(listener -> listener.loadConfig(config));
+            sendEvent(EVENT_TYPE.LOAD);
         }
     }
 
@@ -61,7 +67,7 @@ public class ConfigManager {
                 return false;
             }
             config = KeyValueParser.parseKeyValuePairs(reader);
-            LISTENERS.forEach(listener -> listener.loadConfig(config));
+            sendEvent(EVENT_TYPE.LOAD);
             return true;
         }
         return false;
@@ -73,7 +79,7 @@ public class ConfigManager {
 
     public static boolean saveConfig(boolean skipListeners) {
         if (!skipListeners)
-            LISTENERS.forEach(listener -> listener.saveConfig(config));
+            sendEvent(EVENT_TYPE.SAVE);
 
         File file = CONFIG_PATH.toFile();
         if (file.isDirectory()) return false;
@@ -84,6 +90,31 @@ public class ConfigManager {
             return true;
         } catch (Exception ignored) { }
         return false;
+    }
+
+    private static void sendEvent(EVENT_TYPE type) {
+        stoppingEvent = false;
+        switch (type) {
+            case LOAD:
+                for (IConfigurable listener : LISTENERS) {
+                    if (stoppingEvent) break;
+                    listener.loadConfig(config);
+                }
+                break;
+            case SAVE:
+                for (IConfigurable listener : LISTENERS) {
+                    if (stoppingEvent) break;
+                    listener.saveConfig(config);
+                }
+                break;
+            case DEFAULTS:
+                LISTENERS.forEach(listener -> listener.setDefaults(defaultConfig));
+                break;
+        }
+    }
+
+    public static void stopEvent() {
+        stoppingEvent = true;
     }
 
 }

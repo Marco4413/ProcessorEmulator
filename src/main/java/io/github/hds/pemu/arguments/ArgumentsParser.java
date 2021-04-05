@@ -39,6 +39,8 @@ public class ArgumentsParser {
     public void parse(String[] args) {
         if (args == null || args.length <= 0) return;
         options.forEach((key, option) -> {
+            option.specified = false;
+
             for (int i = 0; i < args.length; i++) {
                 if (args[i] == null) continue;
 
@@ -53,6 +55,7 @@ public class ArgumentsParser {
 
                     try {
                         option.parse(optionArgs);
+                        option.specified = true;
                     } catch (Exception err) {
                         throw new IllegalArgumentException("Invalid argument for option " + option.NAME);
                     }
@@ -84,6 +87,11 @@ public class ArgumentsParser {
     public @NotNull ArgumentOption getOption(@NotNull String name) {
         if (!options.containsKey(name)) throw new IllegalArgumentException(name + " isn't a valid option!");
         return options.get(name);
+    }
+
+    public boolean isSpecified(@NotNull String name) {
+        if (!options.containsKey(name)) throw new IllegalArgumentException(name + " isn't a valid option!");
+        return options.get(name).specified;
     }
 
 }
