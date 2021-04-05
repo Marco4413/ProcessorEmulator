@@ -60,11 +60,11 @@ public class KeyValueParser {
         if (number == null) return null;
 
         try {
-            return StringUtils.parseInt(number);
+            return StringUtils.parseLong(number);
         } catch (Exception ignored) { }
 
         try {
-            return Float.parseFloat(number);
+            return Double.parseDouble(number);
         } catch (Exception ignored) { }
 
         return null;

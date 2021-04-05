@@ -34,9 +34,9 @@ public class Processor implements Runnable {
     private boolean stepping = false;
 
     public Processor(@NotNull ProcessorConfig config) {
-        Word word = new Word(config.bits);
-        MEMORY = new Memory(config.memSize, word);
-        CLOCK = new Clock(config.clock);
+        Word word = new Word(config.getBits());
+        MEMORY = new Memory(config.getMemorySize(), word);
+        CLOCK = new Clock(config.getClock());
 
         SP.value = MEMORY.getSize() - 1;
 

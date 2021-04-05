@@ -1,5 +1,25 @@
 
 -- Version (v1.0.5-RELEASE)
+-- Changes from commit @80338de
+
+Added field Application.APP_VERSION
+Added Application#processorConfig to the saved config
+Added method Application#getProcessorConfig
+
+Added methods: StringUtils.parseLong, StringUtils.compareVersions
+Now App's config is reset to defaults if it was made on a different version of the app
+
+Added method ArgumentsParser#isSpecified
+Now only loading specified command line arguments
+
+Made method KeyValueData#getOrDefault automatically convert Numbers to others
+Made method KeyValueParser.parseKeyValuePairs only store numbers as either Doubles or Longs
+
+Added method ConfigManager.stopEvent, which stops event propagation
+
+Added static fields to ProcessorConfig which are used to get the max, min and defaults for each property
+Made all primitive fields on ProcessorConfig private and added methods to set and get them
+
 -- Changes from commit @f5eec88
 
 Now MemoryView class saves its settings

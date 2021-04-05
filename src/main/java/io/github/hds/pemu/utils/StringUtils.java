@@ -8,6 +8,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 
@@ -50,12 +51,31 @@ public class StringUtils {
     }
 
     public static int parseInt(@NotNull String str) {
+        return (int) parseLong(str);
+    }
+
+    public static long parseLong(@NotNull String str) {
         int radix = 10;
         if (str.startsWith("0x")) radix = 16;
         else if (str.startsWith("0o")) radix =  8;
         else if (str.startsWith("0b")) radix =  2;
         if (radix != 10) str = str.substring(2);
-        return Integer.parseInt(str, radix);
+        return Long.parseLong(str, radix);
+    }
+
+    public static int compareVersions(@NotNull String version1, @NotNull String version2) {
+        int[] version1Components = Arrays.stream(version1.split("\\.")).mapToInt(StringUtils::parseInt).toArray();
+        int[] version2Components = Arrays.stream(version2.split("\\.")).mapToInt(StringUtils::parseInt).toArray();
+
+        for (int i = 0; i < Math.max(version1Components.length, version2Components.length); i++) {
+            int v1Component = i < version1Components.length ? version1Components[i] : 0;
+            int v2Component = i < version2Components.length ? version2Components[i] : 0;
+
+            if (v1Component > v2Component) return 1;
+            else if (v1Component < v2Component) return -1;
+        }
+
+        return 0;
     }
 
     public static @NotNull String format(@Nullable String str, @NotNull String... formats) {

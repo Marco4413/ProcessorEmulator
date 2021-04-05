@@ -7,6 +7,7 @@ public abstract class ArgumentOption <T> {
     public final @NotNull String NAME;
     public final @Nullable String SHORT;
     public @NotNull T value;
+    public boolean specified = false;
 
     public ArgumentOption(@NotNull String name, @Nullable String shortName, @NotNull T defaultValue) {
         NAME = name;

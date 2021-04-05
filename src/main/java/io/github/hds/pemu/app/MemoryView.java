@@ -217,7 +217,7 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
     @Override
     public void loadConfig(KeyValueData config) {
         COLS_SPINNER.setValue(config.get(Integer.class, "memoryView.columns"));
-        UPDATE_INTERVAL_SPINNER.setValue(new Double(config.get(Float.class, "memoryView.updateInterval")));
+        UPDATE_INTERVAL_SPINNER.setValue(config.get(Double.class, "memoryView.updateInterval"));
         SHOW_AS_CHAR.setSelected(config.get(Boolean.class, "memoryView.showAsChar"));
         SHOW_HISTORY.setSelected(config.get(Boolean.class, "memoryView.showHistory"));
         SHOW_POINTERS.setSelected(config.get(Boolean.class, "memoryView.showPointers"));
@@ -226,7 +226,7 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
     @Override
     public void saveConfig(KeyValueData config) {
         config.put("memoryView.columns", COLS_SPINNER.getValue());
-        config.put("memoryView.updateInterval", new Float((Double) UPDATE_INTERVAL_SPINNER.getValue()));
+        config.put("memoryView.updateInterval", UPDATE_INTERVAL_SPINNER.getValue());
         config.put("memoryView.showAsChar", SHOW_AS_CHAR.isSelected());
         config.put("memoryView.showHistory", SHOW_HISTORY.isSelected());
         config.put("memoryView.showPointers", SHOW_POINTERS.isSelected());
