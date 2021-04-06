@@ -6,6 +6,7 @@ import io.github.hds.pemu.utils.StringUtils;
 import io.github.hds.pemu.utils.Token;
 import io.github.hds.pemu.utils.Tokenizer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.Scanner;
 
 public class Compiler {
 
-    public static class Tokens {
+    protected static class Tokens {
 
         public static final Token COMMENT   = new Token(";");
         public static final Token CONSTANT  = new Token("@");
@@ -30,7 +31,7 @@ public class Compiler {
 
     }
 
-    public static class LabelData {
+    protected static class LabelData {
         public static int NULL_PTR = -1;
 
         public int pointer = NULL_PTR;
@@ -39,6 +40,22 @@ public class Compiler {
 
         public LabelData(int pointer) {
             this.pointer = pointer;
+        }
+    }
+
+    protected static class CompilerData {
+        @NotNull ArrayList<Integer> program;
+        @NotNull HashMap<String, LabelData> labels;
+        @NotNull HashMap<String, Integer> constants;
+        @NotNull Tokenizer tokenizer;
+        int currentLine;
+
+        protected CompilerData() {
+            program = new ArrayList<>();
+            labels = new HashMap<>();
+            constants = Constants.getDefaultConstants();
+            tokenizer = new Tokenizer();
+            currentLine = 0;
         }
     }
 
@@ -60,56 +77,101 @@ public class Compiler {
         }
     }
 
-    private static boolean parseValue(ArrayList<Integer> program, HashMap<String, LabelData> labels, HashMap<String, Integer> constants, Tokenizer tokenizer, int currentLine) {
-        // Default value is 0
-        int value = 0;
-        // Get the value to parse
-        String valueToParse = tokenizer.consumeNext(Tokens.SPACE);
+    protected enum PARSE_STATUS {
+        SUCCESS, FAIL, SUCCESS_PROGRAM_NOT_CHANGED
+    }
 
-        // Throw if there's no value, because there MUST be one if this function is called
-        if (valueToParse == null) throw new SyntaxError("value", "null", currentLine, tokenizer.getConsumedCharacters());
+    private static PARSE_STATUS parseLabel(@NotNull CompilerData cd, boolean declareOnly) {
+        String lastToken = cd.tokenizer.getLast();
+        if (lastToken == null) return PARSE_STATUS.FAIL;
 
-        // Try to convert it into a number, if that didn't happen then the value must be either a label or constant
-        try {
-            value = StringUtils.parseInt(valueToParse);
-        } catch (Exception err) {
-            String nextToken = tokenizer.peekNext(Tokens.SPACE);
-            if (Tokens.CONSTANT.equals(valueToParse)) {
-                if (nextToken == null) throw new SyntaxError("constant's name", "null", currentLine, tokenizer.getConsumedCharacters());
-                else if (constants.containsKey(nextToken)) {
-                    // If the constant was defined put its value and consume the token
-                    tokenizer.consumeNext(Tokens.SPACE);
-                    value = constants.get(nextToken);
-                } else throw new ReferenceError("Constant", nextToken, currentLine, tokenizer.getConsumedCharacters());
-            } else if (Tokens.LABEL.equals(nextToken)) {
-                // If a label is being declared consume the declaration token
-                tokenizer.consumeNext(Tokens.SPACE);
-                if (labels.containsKey(valueToParse)) {
-                    // If a label was already created check if it has a pointer
-                    LabelData labelData = labels.get(valueToParse);
-                    if (labelData.pointer == LabelData.NULL_PTR)
-                        labelData.pointer = program.size();
-                    else
-                        // If the label has a valid pointer then it was already declared!
-                        throw new TypeError("Label '" + valueToParse + "' was already declared", currentLine, tokenizer.getConsumedCharacters());
-                } else
-                    // If no label was created then create it
-                    labels.put(valueToParse, new LabelData(program.size()));
-                return false; // Returning false tells the compiler that no value was added to the program
-
-            // If no label is being declared put the label's value
-            } else if (labels.containsKey(valueToParse)) {
-                LabelData labelData = labels.get(valueToParse);
-                labelData.occurrences.add(program.size());
+        String nextToken = cd.tokenizer.peekNext(Tokens.SPACE);
+        if (Tokens.LABEL.equals(nextToken)) {
+            // If a label is being declared consume the declaration token
+            cd.tokenizer.consumeNext(Tokens.SPACE);
+            if (cd.labels.containsKey(lastToken)) {
+                // If a label was already created check if it has a pointer
+                LabelData labelData = cd.labels.get(lastToken);
+                if (labelData.pointer == LabelData.NULL_PTR)
+                    labelData.pointer = cd.program.size();
+                else
+                    // If the label has a valid pointer then it was already declared!
+                    throw new TypeError("Label '" + lastToken + "' was already declared", cd.currentLine, cd.tokenizer.getConsumedCharacters());
+            } else
+                // If no label was created then create it
+                cd.labels.put(lastToken, new LabelData(cd.program.size()));
+            return PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED;
+        } else if (!declareOnly) {
+            if (cd.labels.containsKey(lastToken)) {
+                LabelData labelData = cd.labels.get(lastToken);
+                labelData.occurrences.add(cd.program.size());
             } else {
                 LabelData labelData = new LabelData();
-                labelData.occurrences.add(program.size());
-                labels.put(valueToParse, labelData);
+                labelData.occurrences.add(cd.program.size());
+                cd.labels.put(lastToken, labelData);
             }
+            cd.program.add(0);
+        } else throw new SyntaxError("label declaration", lastToken, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+
+        return PARSE_STATUS.SUCCESS;
+    }
+
+    private static PARSE_STATUS parseConstant(@NotNull CompilerData cd, boolean isGetting) {
+        String lastToken = cd.tokenizer.getLast();
+        if (lastToken == null) return PARSE_STATUS.FAIL;
+
+        if (Tokens.CONSTANT.equals(lastToken)) {
+            if (isGetting) {
+                String nextToken = cd.tokenizer.consumeNext(Tokens.SPACE);
+                if (nextToken == null) throw new SyntaxError("constant's name", "null", cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                else if (cd.constants.containsKey(nextToken)) {
+                    // If the constant was defined put its value and consume the token
+                    cd.tokenizer.consumeNext(Tokens.SPACE);
+                    cd.program.add(cd.constants.get(nextToken));
+                } else throw new ReferenceError("Constant", nextToken, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+            } else {
+                String constantName = cd.tokenizer.consumeNext(Tokens.SPACE);
+                String constantValue = cd.tokenizer.consumeNext(Tokens.SPACE);
+                if (constantName == null) throw new SyntaxError("constant's name", "null", cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                else if (constantValue == null) throw new SyntaxError("static number", "null", cd.currentLine, cd.tokenizer.getConsumedCharacters());
+
+                try {
+                    cd.constants.put(constantName, StringUtils.parseInt(constantValue));
+                } catch (Exception err) {
+                    throw new SyntaxError("static number", constantValue, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                }
+
+                return PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED;
+            }
+        } else return PARSE_STATUS.FAIL;
+
+        return PARSE_STATUS.SUCCESS;
+    }
+
+    private static PARSE_STATUS parseNumber(@NotNull CompilerData cd) {
+        String lastToken = cd.tokenizer.getLast();
+        if (lastToken == null) return PARSE_STATUS.FAIL;
+
+        try {
+            int value = StringUtils.parseInt(lastToken);
+            cd.program.add(value);
+        } catch (Exception err) {
+            return PARSE_STATUS.FAIL;
         }
 
-        program.add(value);
-        return true;
+        return PARSE_STATUS.SUCCESS;
+    }
+
+    private static PARSE_STATUS parseAll(@NotNull CompilerData cd) {
+        // Get the value to parse
+        String valueToParse = cd.tokenizer.consumeNext(Tokens.SPACE);
+        // Throw if there's no value, because there MUST be one if this function is called
+        if (valueToParse == null) throw new SyntaxError("value", "null", cd.currentLine, cd.tokenizer.getConsumedCharacters());
+
+        PARSE_STATUS lastStatus = parseNumber(cd);
+        if (lastStatus == PARSE_STATUS.FAIL) lastStatus = parseConstant(cd, true);
+        if (lastStatus == PARSE_STATUS.FAIL) lastStatus = parseLabel(cd, false);
+        return lastStatus;
     }
 
     public static int[] compileFile(@NotNull File file, @NotNull InstructionSet instructionSet) {
@@ -123,17 +185,15 @@ public class Compiler {
             throw new IllegalStateException("Something went wrong while initializing Scanner.");
         }
 
-        ArrayList<Integer> program = new ArrayList<>();
-        HashMap<String, LabelData>  labels = new HashMap<>();
-        HashMap<String, Integer> constants = Constants.getDefaultConstants(); // Getting Default constants
+        CompilerData cd = new CompilerData();
 
-        for (int currentLine = 1; reader.hasNextLine(); currentLine++) {
-            Tokenizer tokenizer = new Tokenizer(reader.nextLine(), true, Tokens.ALL_TOKENS);
-            tokenizer.removeEmpties();
+        for (cd.currentLine = 1; reader.hasNextLine(); cd.currentLine++) {
+            cd.tokenizer = new Tokenizer(reader.nextLine(), true, Tokens.ALL_TOKENS);
+            cd.tokenizer.removeEmpties();
 
-            while (tokenizer.hasNext()) {
+            while (cd.tokenizer.hasNext()) {
 
-                String token = tokenizer.consumeNext(Tokens.SPACE);
+                String token = cd.tokenizer.consumeNext(Tokens.SPACE);
                 if (token == null || Tokens.COMMENT.equals(token)) break;
 
                 int instructionCode = instructionSet.getKeyCode(token);
@@ -141,28 +201,26 @@ public class Compiler {
 
                 if (instruction != null) {
                     // If an instruction was found add it to the memory
+                    cd.program.add(instructionCode);
+                    for (int i = 0; i < instruction.ARGUMENTS;)
+                        if (parseAll(cd) == PARSE_STATUS.SUCCESS) i++;
 
-                    program.add(instructionCode);
-                    for (int i = 0; i < instruction.ARGUMENTS; ) {
-                        if (parseValue(program, labels, constants, tokenizer, currentLine)) i++;
-                    }
                 } else if (Tokens.COMPILER.equals(token)) {
                     // Parsing Compiler Instructions
-
-                    String compilerInstr = tokenizer.consumeNext(Tokens.SPACE);
+                    String compilerInstr = cd.tokenizer.consumeNext(Tokens.SPACE);
                     if (compilerInstr == null)
-                        throw new SyntaxError("compiler instruction", "null", currentLine, tokenizer.getConsumedCharacters());
+                        throw new SyntaxError("compiler instruction", "null", cd.currentLine, cd.tokenizer.getConsumedCharacters());
                     else if (compilerInstr.equals("DW")) {
-                        parseValue(program, labels, constants, tokenizer, currentLine);
+                        parseAll(cd);
                     } else if (compilerInstr.equals("DS")) {
-                        String terminator = tokenizer.consumeNext(Tokens.SPACE);
+                        String terminator = cd.tokenizer.consumeNext(Tokens.SPACE);
                         if (Tokens.STRING.equals(terminator)) {
                             boolean escapeChar = false;
                             StringBuilder value = new StringBuilder();
                             while (true) {
-                                String valueToAdd = tokenizer.consumeNext();
+                                String valueToAdd = cd.tokenizer.consumeNext();
                                 if (valueToAdd == null)
-                                    throw new SyntaxError("String terminator ('" + terminator + "')", String.valueOf(value.charAt(value.length() - 1)), currentLine, tokenizer.getConsumedCharacters());
+                                    throw new SyntaxError("String terminator ('" + terminator + "')", String.valueOf(value.charAt(value.length() - 1)), cd.currentLine, cd.tokenizer.getConsumedCharacters());
                                 else if (escapeChar) {
                                     char escapedChar = valueToAdd.charAt(0);
                                     if (StringUtils.SpecialCharacters.MAP.containsKey(escapedChar)) {
@@ -175,69 +233,45 @@ public class Compiler {
                                 else if (Tokens.ESCAPECH.equals(valueToAdd)) escapeChar = true;
                                 else value.append(valueToAdd);
                             }
-                            for (int i = 0; i < value.length(); i++) program.add((int) value.charAt(i));
-                        } else throw new SyntaxError("String", terminator == null ? "null" : terminator, currentLine, tokenizer.getConsumedCharacters());
+                            for (int i = 0; i < value.length(); i++) cd.program.add((int) value.charAt(i));
+                        } else throw new SyntaxError("String", terminator == null ? "null" : terminator, cd.currentLine, cd.tokenizer.getConsumedCharacters());
                     } else if (compilerInstr.equals("DA")) {
                         // Be sure that there's the character that starts the array
-                        String arrayStart = tokenizer.consumeNext(Tokens.SPACE);
+                        String arrayStart = cd.tokenizer.consumeNext(Tokens.SPACE);
                         if (Tokens.ARR_START.equals(arrayStart)) {
                             while (true) {
                                 // For each value in the array, check if the next value is the array closer character
-                                String nextToken = tokenizer.peekNext(Tokens.SPACE);
+                                String nextToken = cd.tokenizer.peekNext(Tokens.SPACE);
                                 if (Tokens.ARR_END.equals(nextToken)) {
-                                    tokenizer.consumeNext(Tokens.SPACE);
+                                    cd.tokenizer.consumeNext(Tokens.SPACE);
                                     break;
                                 }
 
                                 try {
-                                    parseValue(program, labels, constants, tokenizer, currentLine);
+                                    parseAll(cd);
                                 } catch (Exception err) {
-                                    throw new SyntaxError("Array terminator ('}')", tokenizer.getLast() == null ? "null" : tokenizer.getLast(), currentLine, tokenizer.getConsumedCharacters());
+                                    throw new SyntaxError("Array terminator ('}')", cd.tokenizer.getLast() == null ? "null" : cd.tokenizer.getLast(), cd.currentLine, cd.tokenizer.getConsumedCharacters());
                                 }
                             }
-                        } else throw new SyntaxError("Array", arrayStart == null ? "null" : arrayStart, currentLine, tokenizer.getConsumedCharacters());
-                    } else throw new SyntaxError("compiler instruction", compilerInstr, currentLine, tokenizer.getConsumedCharacters());
+                        } else throw new SyntaxError("Array", arrayStart == null ? "null" : arrayStart, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                    } else throw new SyntaxError("compiler instruction", compilerInstr, cd.currentLine, cd.tokenizer.getConsumedCharacters());
                 } else {
                     // Parsing Labels and Constants
-                    boolean isConstant = Tokens.CONSTANT.equals(token);
-                    if (isConstant) {
-                        String constantName = tokenizer.consumeNext(Tokens.SPACE);
-                        String constantValue = tokenizer.consumeNext(Tokens.SPACE);
-                        if (constantName == null) throw new SyntaxError("constant's name", "null", currentLine, tokenizer.getConsumedCharacters());
-                        else if (constantValue == null) throw new SyntaxError("static number", "null", currentLine, tokenizer.getConsumedCharacters());
-
-                        try {
-                            constants.put(constantName, StringUtils.parseInt(constantValue));
-                        } catch (Exception err) {
-                            throw new SyntaxError("static number", constantValue, currentLine, tokenizer.getConsumedCharacters());
-                        }
-                    } else {
-                        boolean isLabel = Tokens.LABEL.equals(tokenizer.consumeNext(Tokens.SPACE));
-                        if (isLabel) {
-                            if (labels.containsKey(token)) {
-                                LabelData labelData = labels.get(token);
-                                if (labelData.pointer == LabelData.NULL_PTR)
-                                    labelData.pointer = program.size();
-                                else
-                                    throw new TypeError("Label '" + token + "' was already declared", currentLine, tokenizer.getConsumedCharacters());
-                            } else
-                                labels.put(token, new LabelData(program.size()));
-                        } else throw new SyntaxError("label declaration", token, currentLine, tokenizer.getConsumedCharacters());
-                    }
+                    if (parseConstant(cd, false) == PARSE_STATUS.FAIL) parseLabel(cd, true);
                 }
             }
         }
 
-        labels.forEach((key, data) -> {
+        cd.labels.forEach((key, data) -> {
             if (data.pointer == LabelData.NULL_PTR) throw new IllegalStateException("Label '" + key + "' was never declared.");
             for (int occurrence : data.occurrences) {
-                program.set(occurrence, data.pointer);
+                cd.program.set(occurrence, data.pointer);
             }
         });
 
-        int[] primitiveIntProgram = new int[program.size()];
-        for (int i = 0; i < program.size(); i++)
-            primitiveIntProgram[i] = program.get(i);
+        int[] primitiveIntProgram = new int[cd.program.size()];
+        for (int i = 0; i < cd.program.size(); i++)
+            primitiveIntProgram[i] = cd.program.get(i);
         return primitiveIntProgram;
     }
 
