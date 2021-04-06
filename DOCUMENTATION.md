@@ -157,6 +157,22 @@ str: #DS "Hello World!\0"
 str_ptr: #DW str
 ```
 
+An offset can also be specified on labels using the characters `[` and `]` and putting either a constant
+or static number between them:
+
+```Assembly
+@offset 0
+
+; This will print the character at the address specified
+;  by str + the specified offset (that can be either a constant or number)
+OUTC str[ @offset ]
+OUTC str [11]
+HLT
+
+; Declaring a label that points to a string
+str: #DS "Hello World!\0"
+```
+
 ## Compiler Instructions
 
 These instructions are useful to put values into memory where there's no processor instruction:
