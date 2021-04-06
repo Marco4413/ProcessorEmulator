@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class KeyValueParser {
     private static final Token STRING = new Token("\"");
     private static final Token CHARACTER = new Token("'");
-    private static final Token ESCAPE_CHAR = new Token("\\\\");
+    private static final Token ESCAPE_CHAR = new Token("\\", true);
     private static final Token ASSIGN = new Token("=");
     private static final Token WHITESPACE = new Token("\\s");
     private static final Token COMMENT = new Token("#");

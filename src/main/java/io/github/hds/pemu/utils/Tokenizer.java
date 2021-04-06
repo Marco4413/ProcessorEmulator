@@ -25,9 +25,8 @@ public class Tokenizer {
 
     public Tokenizer(@NotNull String str, boolean keepDelimiters, @NotNull Token... tokens) {
         StringBuilder ruleBuilder = new StringBuilder();
-        for (Token token : tokens) {
-            ruleBuilder.append(token.REGEX);
-        }
+        for (Token token : tokens)
+            ruleBuilder.append(token.getPattern());
 
         String rule = ruleBuilder.toString();
         String regex = keepDelimiters ?

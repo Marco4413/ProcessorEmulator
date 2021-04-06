@@ -1,5 +1,16 @@
 
 -- Version (v1.1.0-RELEASE)
+
+-- Version (v1.0.7-RELEASE)
+-- Changes from commit @db19c18
+
+Added offsets to labels, see docs
+
+Renamed field Token#REGEX to PATTERN
+Added method Token#getPattern, used to get the actual regex-ready String from field Token#PATTERN
+
+Added void constructor to Tokenizer
+
 -- Changes from commit @a1958fc
 
 General improvements to Compiler's code (Nothing should've changed)
