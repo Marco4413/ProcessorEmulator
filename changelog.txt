@@ -1,4 +1,10 @@
 
+-- Version (v1.1.0-RELEASE)
+-- Changes from commit @a1958fc
+
+General improvements to Compiler's code (Nothing should've changed)
+Fixed method Tokenizer#getLast returning null if at 0th token
+
 -- Version (v1.0.5-RELEASE)
 -- Changes from commit @80338de
 

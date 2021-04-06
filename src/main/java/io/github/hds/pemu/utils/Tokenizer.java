@@ -11,6 +11,10 @@ public class Tokenizer {
     private int nextToken = 0;
     private int consumedCharacters = 0;
 
+    public Tokenizer() {
+        tokens = new String[0];
+    }
+
     public Tokenizer(@NotNull String str, boolean keepDelimiters, @NotNull String... delimiters) {
         String rule = String.join("", delimiters);
         String regex = keepDelimiters ?
@@ -70,7 +74,7 @@ public class Tokenizer {
     }
 
     public @Nullable String getLast() {
-        return nextToken - 1 > 0 ? tokens[nextToken - 1] : null;
+        return nextToken - 1 >= 0 ? tokens[nextToken - 1] : null;
     }
 
     public @Nullable String peekNext() {
