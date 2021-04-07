@@ -264,6 +264,78 @@ public class Instructions {
         }
     };
 
+    public static final Instruction JE = new Instruction("JE", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            return JZ.execute(p, args);
+        }
+    };
+
+    public static final Instruction JNE = new Instruction("JNE", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            return JNZ.execute(p, args);
+        }
+    };
+
+    public static final Instruction JB = new Instruction("JB", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            return JC.execute(p, args);
+        }
+    };
+
+    public static final Instruction JNB = new Instruction("JNB", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            return JNC.execute(p, args);
+        }
+    };
+
+    public static final Instruction JBE = new Instruction("JBE", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            if (p.ZERO.value || p.CARRY.value) return JMP.execute(p, args);
+            return false;
+        }
+    };
+
+    public static final Instruction JNBE = new Instruction("JNBE", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            if (!(p.ZERO.value || p.CARRY.value)) return JMP.execute(p, args);
+            return false;
+        }
+    };
+
+    public static final Instruction JA = new Instruction("JA", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            return JNBE.execute(p, args);
+        }
+    };
+
+    public static final Instruction JNA = new Instruction("JNA", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            return JBE.execute(p, args);
+        }
+    };
+
+    public static final Instruction JAE = new Instruction("JAE", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            return JNC.execute(p, args);
+        }
+    };
+
+    public static final Instruction JNAE = new Instruction("JNAE", 1) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            return JC.execute(p, args);
+        }
+    };
+
     public static final Instruction CALL = new Instruction("CALL", 1) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
@@ -304,7 +376,14 @@ public class Instructions {
     };
 
     public static final InstructionSet SET = new InstructionSet(
-            new Instruction[] { NULL, BRK, DATA, MOV, SWP, OUTI, OUTC, GETI, GETC, GETK, TS, TMS, INC, DEC, ADD, SUB, MUL, DIV, MOD, AND, OR, NOT, XOR, CMP, JMP, JC, JNC, JZ, JNZ, CALL, RET, PUSH, POP, HLT }
+            new Instruction[] {
+                    NULL, BRK , DATA, MOV, SWP, OUTI, OUTC, GETI,
+                    GETC, GETK, TS  , TMS, INC, DEC , ADD , SUB ,
+                    MUL , DIV , MOD , AND, OR , NOT , XOR , CMP ,
+                    JMP , JC  , JNC , JZ , JNZ, JE  , JNE , JB  ,
+                    JNB , JBE , JNBE, JA , JNA, JAE , JNAE, CALL,
+                    RET , PUSH, POP , HLT
+            }
     );
 
 }

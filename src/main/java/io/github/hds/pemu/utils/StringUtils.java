@@ -120,4 +120,22 @@ public class StringUtils {
         }
         return path + "." + extensions[0];
     }
+
+    private static final String[] ENG_NOTATION_PREFIXES = new String[] { "", "k", "M", "G", "T", "P", "E", "Z", "Y" };
+
+    public static @NotNull String getEngNotationInt(int number) {
+        return getEngNotationLong(number);
+    }
+
+    public static @NotNull String getEngNotationLong(long number) {
+        String numberAsString = String.valueOf(number);
+        int zeroCount = 0;
+        for (int i = numberAsString.length() - 1; i >= 0; i--) {
+            if (numberAsString.charAt(i) == '0') zeroCount++;
+            else break;
+        }
+
+        int suffixIndex = Math.min(zeroCount / 3, ENG_NOTATION_PREFIXES.length - 1);
+        return (number / (long) Math.pow(10, suffixIndex * 3)) + ENG_NOTATION_PREFIXES[suffixIndex];
+    }
 }

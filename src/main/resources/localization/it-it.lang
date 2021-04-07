@@ -72,5 +72,7 @@
 "consoleContextualMenu.save._mnemonic"      = 'S'
 "consoleContextualMenu.clear._text"         = "Cancella"
 "consoleContextualMenu.clear._mnemonic"     = 'C'
+"consoleContextualMenu.resetZoom._text"     = "Resetta Zoom"
+"consoleContextualMenu.resetZoom._mnemonic" = 'Z'
 "consoleContextualMenu.saveErrorPanelTitle" = "Errore {0}"
 "consoleContextualMenu.saveErrorPanelMsg"   = "{0}\nNon è stato possibile scrivere sul file:\n{1}"
