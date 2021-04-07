@@ -7,9 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.util.function.Function;
 
@@ -22,8 +20,10 @@ public class Console {
     private static class ConsoleContextualMenu extends JPopupMenu implements ITranslatable {
         private final TJMenuItem SAVE;
         private final TJMenuItem CLEAR;
+        private final TJMenuItem RESET_FONT_SIZE;
 
         private final ImageIcon ICON_CLEAR;
+        private final ImageIcon ICON_RESET_ZOOM;
 
         private @NotNull String localeSaveErrorPanelTitle = "";
         private @NotNull String localeSaveErrorPanelMsg = "";
@@ -45,12 +45,20 @@ public class Console {
             CLEAR.setIcon(ICON_CLEAR);
             CLEAR.addActionListener(this::clearConsole);
             add(CLEAR);
+
+            ICON_RESET_ZOOM = IconUtils.importIcon("/assets/reset_zoom.png", Application.MENU_ITEM_ICON_SIZE);
+
+            RESET_FONT_SIZE = new TJMenuItem(i -> getInvoker() instanceof ConsoleComponent && ((ConsoleComponent) getInvoker()).getFontSize() != ConsoleComponent.DEFAULT_FONT_SIZE);
+            RESET_FONT_SIZE.setIcon(ICON_RESET_ZOOM);
+            RESET_FONT_SIZE.addActionListener(this::resetZoom);
+            add(RESET_FONT_SIZE);
         }
 
         @Override
         public void updateTranslations(@NotNull Translation translation) {
             translation.translateComponent("consoleContextualMenu.save", SAVE);
             translation.translateComponent("consoleContextualMenu.clear", CLEAR);
+            translation.translateComponent("consoleContextualMenu.resetZoom", RESET_FONT_SIZE);
 
             localeSaveErrorPanelTitle = translation.getOrDefault("consoleContextualMenu.saveErrorPanelTitle");
             localeSaveErrorPanelMsg = translation.getOrDefault("consoleContextualMenu.saveErrorPanelMsg");
@@ -78,15 +86,22 @@ public class Console {
             if (!(getInvoker() instanceof  ConsoleComponent)) return;
             ((ConsoleComponent) getInvoker()).clear();
         }
+
+        public void resetZoom(ActionEvent e) {
+            if (!(getInvoker() instanceof  ConsoleComponent)) return;
+            ((ConsoleComponent) getInvoker()).resetFontSize();
+        }
     }
 
     public static class ConsoleComponent extends JTextArea {
+
+        public static final int DEFAULT_FONT_SIZE = 12;
 
         public ConsoleComponent() {
             super();
 
             setEditable(false);
-            setFont(new Font("Consolas", Font.PLAIN, 12));
+            setFont(new Font("Consolas", Font.PLAIN, DEFAULT_FONT_SIZE));
 
             DefaultCaret caret = (DefaultCaret) getCaret();
             caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
@@ -98,6 +113,27 @@ public class Console {
                         CTX_MENU.show(ConsoleComponent.this, e.getX(), e.getY());
                 }
             });
+
+            addMouseWheelListener(new MouseAdapter() {
+                @Override
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    if (e.getModifiers() == KeyEvent.CTRL_MASK)
+                        setFontSize(getFontSize() - e.getWheelRotation());
+                }
+            });
+        }
+
+        public int getFontSize() {
+            return getFont().getSize();
+        }
+
+        public void setFontSize(int size) {
+            Font oldFont = getFont();
+            setFont(new Font(oldFont.getFamily(), oldFont.getStyle(), Math.max(size, 0)));
+        }
+
+        public void resetFontSize() {
+            setFontSize(DEFAULT_FONT_SIZE);
         }
 
         public void clear() {

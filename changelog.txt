@@ -1,5 +1,16 @@
 
 -- Version (v1.1.0-RELEASE)
+-- Changes from commit @9d1f452
+
+Added Instructions: JE, JNE, JB, JNB, JBE, JNBE, JA, JNA, JAE, JNAE (see docs)
+
+Added zoom to Console.ConsoleComponent, now consoles can be zoomed in and out (by holding CTRL and scrolling the mouse wheel)
+Added button to reset Console.ConsoleComponent's zoom to Console.ConsoleContextualMenu
+
+Added methods StringUtils.getEngNotationInt, StringUtils.getEngNotationLong
+Made Processor#getInfo return Clock's interval using Engineering Notation
+
+Added methods to Console.ConsoleComponent: #getFontSize, #setFontSize, #resetFontSize
 
 -- Version (v1.0.7-RELEASE)
 -- Changes from commit @db19c18

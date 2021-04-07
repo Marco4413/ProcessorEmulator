@@ -5,6 +5,7 @@ import io.github.hds.pemu.memory.Flag;
 import io.github.hds.pemu.memory.Memory;
 import io.github.hds.pemu.memory.Registry;
 import io.github.hds.pemu.memory.Word;
+import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.KeyEvent;
@@ -50,7 +51,7 @@ public class Processor implements Runnable {
     }
 
     public @NotNull String getInfo() {
-        return "\tClock:\t" + CLOCK.getClock() + "Hz\n" +
+        return "\tClock:\t" + StringUtils.getEngNotationInt(CLOCK.getClock()) + "Hz\n" +
                "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.WORD.BYTES + " Bytes\n" +
                "\tInstructions:\t" + INSTRUCTIONSET.getSize() + "\n";
     }

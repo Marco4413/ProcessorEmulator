@@ -6,6 +6,7 @@
  - [Common Mistakes](#common-mistakes)
    * [Declaring variables between instructions](#declaring-variables-between-instructions)
    * [Dividing by ZERO](#dividing-by-zero)
+   * [Setting the clock too high](#setting-the-clock-too-high)
  - [Compiler Basics](#compiler-basics)
    * [Constants](#constants)
    * [Labels](#labels)
@@ -40,6 +41,16 @@
    * [JNC](#jnc)
    * [JZ](#jz)
    * [JNZ](#jnz)
+   * [JE](#je)
+   * [JNE](#jne)
+   * [JB](#jb)
+   * [JNB](#jnb)
+   * [JBE](#jbe)
+   * [JNBE](#jnbe)
+   * [JA](#ja)
+   * [JNA](#jna)
+   * [JAE](#jae)
+   * [JNAE](#jnae)
    * [CALL](#call)
    * [RET](#ret)
    * [PUSH](#push)
@@ -83,7 +94,7 @@ so most of the time it's the user's fault.
 
 The clock can go up to 1 instruction every nanosecond (1GHz), though it's overkill for most programs and will probably
 lock the emulator if the program has an uncapped loop that writes to the console, so it's not recommended going above the
-1MHz mark.
+1kHz mark except for programs that have a cap on their draw loop.
 
 # Compiler Basics
 
@@ -874,6 +885,50 @@ The same as [JMP](#jmp) but gets executed only if the Zero flag is set to true.
 ## JNZ
 
 The same as [JMP](#jmp) but gets executed only if the Zero flag is set to false.
+
+## JE
+
+The same as [JMP](#jmp) but gets executed only if the last two compared numbers were equal.
+
+## JNE
+
+The same as [JMP](#jmp) but gets executed only if the last two compared numbers were not equal.
+
+## JB
+
+The same as [JMP](#jmp) but gets executed only if the first of the last two compared numbers was below the second one.
+
+## JNB
+
+The same as [JMP](#jmp) but gets executed only if the first of the last two compared numbers wasn't below the second one.
+
+## JBE
+
+The same as [JMP](#jmp) but gets executed only if the first of the last two compared numbers was below or equal to
+the second one.
+
+## JNBE
+
+The same as [JMP](#jmp) but gets executed only if the first of the last two compared numbers wasn't below or equal to
+the second one.
+
+## JA
+
+The same as [JMP](#jmp) but gets executed only if the first of the last two compared numbers was above the second one.
+
+## JNA
+
+The same as [JMP](#jmp) but gets executed only if the first of the last two compared numbers wasn't above the second one.
+
+## JAE
+
+The same as [JMP](#jmp) but gets executed only if the first of the last two compared numbers was above or equal to
+the second one.
+
+## JNAE
+
+The same as [JMP](#jmp) but gets executed only if the first of the last two compared numbers wasn't above or equal to
+the second one.
 
 ## CALL
 

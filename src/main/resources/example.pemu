@@ -16,7 +16,7 @@ f_print:
     MOV _print_char _print_str_ptr: 0
 
     CMP _print_char null
-    JZ _f_print_end
+    JE _f_print_end
 
     OUTC _print_char
     INC _print_str_ptr
