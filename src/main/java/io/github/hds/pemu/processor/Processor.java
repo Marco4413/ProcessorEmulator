@@ -31,8 +31,8 @@ public class Processor implements Runnable {
     public volatile int pressedKey = KeyEvent.VK_UNDEFINED;
     private long startTimestamp = 0;
 
-    private boolean isPaused = false;
-    private boolean stepping = false;
+    private volatile boolean isPaused = false;
+    private volatile boolean stepping = false;
 
     public Processor(@NotNull ProcessorConfig config) {
         Word word = new Word(config.getBits());

@@ -1,5 +1,9 @@
 
 -- Version (v1.2.0-RELEASE)
+-- Changes from commit @bd4e337
+
+Hopefully made Processor and Console.ConsoleElement classes Thread-Safe
+
 -- Changes from commit @fdc309a
 
 Made PEMU Constants also accept other declared constants and characters

@@ -136,46 +136,46 @@ public class Console {
             setFontSize(DEFAULT_FONT_SIZE);
         }
 
-        public void clear() {
+        public synchronized void clear() {
             setText("");
         }
 
-        public void print(String... strings) {
+        public synchronized void print(String... strings) {
             for (String string : strings)
                 append(string);
         }
 
-        public void print(char... characters) {
+        public synchronized void print(char... characters) {
             for (char character : characters)
                 if (character != '\0')
                     append(String.valueOf(character));
         }
 
-        public void print(int... integers) {
+        public synchronized void print(int... integers) {
             for (int integer : integers)
                 append(String.valueOf(integer));
         }
 
-        public void println(String... strings) {
+        public synchronized void println(String... strings) {
             print(strings);
             print('\n');
         }
 
-        public void println(char... characters) {
+        public synchronized void println(char... characters) {
             print(characters);
             print('\n');
         }
 
-        public void println(int... integers) {
+        public synchronized void println(int... integers) {
             print(integers);
             print('\n');
         }
 
-        public void printStackTrace(@NotNull Exception err) {
+        public synchronized void printStackTrace(@NotNull Exception err) {
             println(StringUtils.stackTraceAsString(err));
         }
 
-        public void printStackTrace(@NotNull Exception err, boolean printBacktraceForKnownExceptions) {
+        public synchronized void printStackTrace(@NotNull Exception err, boolean printBacktraceForKnownExceptions) {
             if (printBacktraceForKnownExceptions)
                 printStackTrace(err);
             else {
