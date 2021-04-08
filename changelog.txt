@@ -1,4 +1,11 @@
 
+-- Version (v1.2.0-RELEASE)
+-- Changes from commit @fdc309a
+
+Made PEMU Constants also accept other declared constants and characters
+Made #DW, #DA and Processor Instructions accept characters (see docs)
+Improved Compiler's errors
+
 -- Version (v1.1.0-RELEASE)
 -- Changes from commit @9d1f452
 

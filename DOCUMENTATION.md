@@ -123,6 +123,14 @@ HLT
 key: #DW @time_till_stop
 ```
 
+Values that can be assigned to constants are: Previously Declared Constants, Characters or Numbers
+
+```Assembly
+@key_confirm @VK_ENTER
+@char_comma ','
+@n_delay 500
+```
+
 Constants are parsed as they come up, so if you redeclare one, values where said constant is used depend on its
 last declared value.
 There are some constants that are already declared, such as virtual keys (or VK), the emulator uses reflection to get
@@ -149,7 +157,7 @@ OUTC char
 
 ; This label will always point to the memory where
 ;  the character 'C' is stored
-char: #DS 'C'
+char: #DW 'C'
 ```
 
 Labels are declared by putting `:` in front of a name and used by their name, because they aren't declared and
@@ -194,10 +202,10 @@ These instructions are useful to put values into memory where there's no process
 ```
 
 They are 3 and always have an `#` in front of them:
- - \#DW (Define Word): Can be followed by a [constant](#constants), a [label](#labels) or a numeric value.
+ - \#DW (Define Word): Can be followed by a [constant](#constants), a [label](#labels), a character (`'\''`) or a numeric value.
  - \#DS (Define String): Can only be followed by a string (`"\"This is a string\""` or `'"This is a string"'`).
- - \#DA (Define Array): Can only be followed by an array (`{ 10, 3, 2, @VK_ENTER }`), said array can also contain
-   constants and labels.
+ - \#DA (Define Array): Can only be followed by an array (`{ 3 2 newline: '\n' @VK_ENTER }`), said array can contain
+   constants, labels, characters or numbers.
 
 ```Assembly
 ; This declares a label called "number" that points to
@@ -271,7 +279,7 @@ HLT
 
 _value1: #DW 0
 _value2: #DW 25
-space: #DS ' '
+space: #DW ' '
 ```
 
 ## SWP
@@ -296,7 +304,7 @@ HLT
 
 _value1: #DW 0
 _value2: #DW 25
-space: #DS ' '
+space: #DW ' '
 ```
 
 ## OUTI
@@ -335,7 +343,7 @@ OUTC _char
 
 HLT
 
-_char: #DS 'C'
+_char: #DW 'C'
 ```
 
 ## GETI
@@ -368,7 +376,7 @@ HLT
 
 _number_pressed: #DW 0
 _quit_value: #DW 9
-null: #DS '\0'
+null: #DW '\0'
 ```
 
 ## GETC
@@ -399,7 +407,7 @@ JNZ loop
 HLT
 
 _char_pressed: #DW 0
-_quit_char: #DS 'q'
+_quit_char: #DW 'q'
 null: #DW 0
 ```
 
@@ -448,7 +456,7 @@ Gets the seconds elapsed since the processor started and puts them into `dst`.
 loop:
 
 ; Getting time elapsed (in seconds) since the
-;  processor started
+;  processor started, using a max Clock of 1kHz is recommended
 TS _time_elapsed
 
 ; Showing the time on the console
@@ -476,7 +484,7 @@ Gets the milliseconds elapsed since the processor started and puts them into `ds
 
 ```Assembly
 ; This example only works with processors that have
-;  16 bits or greater words
+;  16 bits or greater words, using a max Clock of 1kHz is recommended
 loop:
 
 ; Getting time elapsed (in milliseconds) since the
@@ -494,7 +502,7 @@ HLT
 
 _time_elapsed: #DW 0
 _max_time: #DW 10000
-null: #DS '0'
+null: #DW '\0'
 ```
 
 ## INC
@@ -518,7 +526,7 @@ OUTI _value
 HLT
 
 _value: #DW 10
-newline: #DS '\n'
+newline: #DW '\n'
 ```
 
 ## DEC
@@ -542,7 +550,7 @@ OUTI _value
 HLT
 
 _value: #DW 10
-newline: #DS '\n'
+newline: #DW '\n'
 ```
 
 ## ADD
@@ -566,8 +574,8 @@ HLT
 
 _a: #DW 11
 _b: #DW 10
-plus_sign: #DS '+'
-equal_sign: #DS '='
+plus_sign: #DW '+'
+equal_sign: #DW '='
 ```
 
 ## SUB
@@ -591,8 +599,8 @@ HLT
 
 _a: #DW 11
 _b: #DW 10
-minus_sign: #DS '-'
-equal_sign: #DS '='
+minus_sign: #DW '-'
+equal_sign: #DW '='
 ```
 
 ## MUL
@@ -616,8 +624,8 @@ HLT
 
 _a: #DW 11
 _b: #DW 10
-mult_sign: #DS '*'
-equal_sign: #DS '='
+mult_sign: #DW '*'
+equal_sign: #DW '='
 ```
 
 ## DIV
@@ -645,8 +653,8 @@ HLT
 
 _a: #DW 11
 _b: #DW 10
-div_sign: #DS '/'
-equal_sign: #DS '='
+div_sign: #DW '/'
+equal_sign: #DW '='
 ```
 
 ## MOD
@@ -672,8 +680,8 @@ HLT
 
 _a: #DW 11
 _b: #DW 3
-modulo_sign: #DS '%'
-equal_sign: #DS '='
+modulo_sign: #DW '%'
+equal_sign: #DW '='
 ```
 
 ## AND
@@ -697,8 +705,8 @@ HLT
 
 _a: #DW 0x0F
 _b: #DW 0xFA
-and_sign: #DS '&'
-equal_sign: #DS '='
+and_sign: #DW '&'
+equal_sign: #DW '='
 ```
 
 ## OR
@@ -722,8 +730,8 @@ HLT
 
 _a: #DW 0x0C
 _b: #DW 0xF2
-or_sign: #DS '|'
-equal_sign: #DS '='
+or_sign: #DW '|'
+equal_sign: #DW '='
 ```
 
 ## NOT
@@ -746,8 +754,8 @@ OUTI _val
 HLT
 
 _val: #DW 0x0F
-not_sign: #DS '~'
-equal_sign: #DS '='
+not_sign: #DW '~'
+equal_sign: #DW '='
 ```
 
 ## XOR
@@ -771,8 +779,8 @@ HLT
 
 _a: #DW 0x0C
 _b: #DW 0xAD
-xor_sign: #DS '^'
-equal_sign: #DS '='
+xor_sign: #DW '^'
+equal_sign: #DW '='
 ```
 
 ## CMP
@@ -837,9 +845,9 @@ _v1: #DW 11
 _v2: #DW 10
 _v3: #DW 11
 
-equal_sign: #DS '='
-not_sign: #DS '!'
-newline: #DS '\n'
+equal_sign: #DW '='
+not_sign: #DW '!'
+newline: #DW '\n'
 ```
 
 ## JMP
@@ -867,7 +875,7 @@ OUTC _char
 end:
 HLT
 
-_char: #DS 'H'
+_char: #DW 'H'
 ```
 
 ## JC
@@ -991,7 +999,7 @@ HLT
 _value: #DW 10
 _value_ptr: #DW _value
 _max: #DW 12
-newline: #DS '\n'
+newline: #DW '\n'
 ```
 
 ## RET
@@ -1028,7 +1036,7 @@ HLT
 
 _v1: #DW 33
 _v2: #DW 46
-newline: #DS '\n'
+newline: #DW '\n'
 ```
 
 ## POP
