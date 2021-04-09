@@ -185,7 +185,7 @@ or static number between them:
 ; This will print the character at the address specified
 ;  by str + the specified offset (that can be either a constant or number)
 OUTC str[ @offset ]
-OUTC str [11]
+OUTC str[11]
 HLT
 
 ; Declaring a label that points to a string
@@ -205,7 +205,7 @@ They are 3 and always have an `#` in front of them:
  - \#DW (Define Word): Can be followed by a [constant](#constants), a [label](#labels), a character (`'\''`) or a numeric value.
  - \#DS (Define String): Can only be followed by a string (`"\"This is a string\""` or `'"This is a string"'`).
  - \#DA (Define Array): Can only be followed by an array (`{ 3 2 newline: '\n' @VK_ENTER }`), said array can contain
-   constants, labels, characters or numbers.
+   constants, labels, characters, offsets or numbers.
 
 ```Assembly
 ; This declares a label called "number" that points to

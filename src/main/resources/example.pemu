@@ -1,8 +1,7 @@
 
 JMP start
 
-str: #DS "Hello World!\n\0"
-str_ptr: #DW str
+str: #DW [1] #DS "Hello World!\n\0"
 
 #DA { _temp: 0 null: 0 }
 
@@ -27,6 +26,6 @@ f_print:
     RET
 
 start:
-    PUSH str_ptr
+    PUSH str
     CALL f_print
     HLT
