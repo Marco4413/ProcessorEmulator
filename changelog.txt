@@ -1,5 +1,10 @@
 
 -- Version (v1.2.0-RELEASE)
+-- Changes from commit @2bda3e8
+
+Made the Compiler Tokenize the specified file all at once, now new lines can be used instead of spaces
+Added methods: Tokenizer#getConsumedLineCharacters and Tokenizer#getConsumedLines
+
 -- Changes from commit @3327b46
 
 Made offsets usable as values ([0] will point to itself, [1] will point to the next address)

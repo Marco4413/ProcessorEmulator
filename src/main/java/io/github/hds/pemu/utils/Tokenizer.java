@@ -10,6 +10,8 @@ public class Tokenizer {
     private String[] tokens;
     private int nextToken = 0;
     private int consumedCharacters = 0;
+    private int consumedLineChars = 0;
+    private int consumedLines = 0;
 
     public Tokenizer() {
         tokens = new String[0];
@@ -99,7 +101,23 @@ public class Tokenizer {
 
     public @Nullable String consumeNext() {
         if (hasNext()) {
-            consumedCharacters += tokens[nextToken].length();
+            String nextString = tokens[nextToken];
+            consumedCharacters += nextString.length();
+
+            // This shouldn't impact performance too much
+            //  also we'll probably never tokenize REALLY long strings
+            int lastNewline = -1;
+            for (int i = 0; i < nextString.length(); i++) {
+                if (nextString.charAt(i) == '\n') {
+                    lastNewline = i;
+                    consumedLines++;
+                }
+            }
+
+            if (lastNewline == -1)
+                consumedLineChars += nextString.length();
+            else consumedLineChars = nextString.length() - lastNewline;
+
             return tokens[nextToken++];
         }
         return null;
@@ -123,6 +141,14 @@ public class Tokenizer {
 
     public int getConsumedCharacters() {
         return consumedCharacters;
+    }
+
+    public int getConsumedLineCharacters() {
+        return consumedLineChars;
+    }
+
+    public int getConsumedLines() {
+        return consumedLines;
     }
 
 }
