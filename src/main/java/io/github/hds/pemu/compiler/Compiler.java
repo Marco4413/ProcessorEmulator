@@ -9,9 +9,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
 
 public class Compiler {
 
@@ -63,30 +64,40 @@ public class Compiler {
         @NotNull HashMap<String, LabelData> labels;
         @NotNull HashMap<String, Integer> constants;
         @NotNull Tokenizer tokenizer;
-        int currentLine;
 
         protected CompilerData() {
             program = new ArrayList<>();
             labels = new HashMap<>();
             constants = Constants.getDefaultConstants();
             tokenizer = new Tokenizer();
-            currentLine = 0;
         }
     }
 
     public static class SyntaxError extends RuntimeException {
+        protected SyntaxError(@NotNull String expected, @Nullable String got, @NotNull Tokenizer tokenizer) {
+            this(expected, got, tokenizer.getConsumedLines() + 1, tokenizer.getConsumedLineCharacters());
+        }
+
         protected SyntaxError(@NotNull String expected, @Nullable String got, int currentLine, int currentChar) {
             super(String.format("Syntax Error (%d:%d): Expected %s, got '%s'.", currentLine, currentChar, expected, got));
         }
     }
 
     public static class ReferenceError extends RuntimeException {
+        protected ReferenceError(@NotNull String type, @NotNull String name, @NotNull Tokenizer tokenizer) {
+            this(type, name, tokenizer.getConsumedLines() + 1, tokenizer.getConsumedLineCharacters());
+        }
+
         protected ReferenceError(@NotNull String type, @NotNull String name, int currentLine, int currentChar) {
             super(String.format("Reference Error (%d:%d): %s '%s' was not declared.", currentLine, currentChar, type, name));
         }
     }
 
     public static class TypeError extends RuntimeException {
+        protected TypeError(@NotNull String message, @NotNull Tokenizer tokenizer) {
+            this(message, tokenizer.getConsumedLines() + 1, tokenizer.getConsumedLineCharacters());
+        }
+
         protected TypeError(@NotNull String message, int currentLine, int currentChar) {
             super(String.format("Type Error (%d:%d): %s.", currentLine, currentChar, message));
         }
@@ -123,7 +134,7 @@ public class Compiler {
 
             ParseResult<Integer> lastResult = parseNumber(cd, false);
             if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseConstant(cd, true, false);
-            if (lastResult.STATUS == PARSE_STATUS.FAIL) throw new SyntaxError("Constant or Number", offsetToken, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+            if (lastResult.STATUS == PARSE_STATUS.FAIL) throw new SyntaxError("Constant or Number", offsetToken, cd.tokenizer);
 
             int offset = lastResult.VALUE;
 
@@ -134,7 +145,7 @@ public class Compiler {
                     cd.program.add(address);
                     return new ParseResult<>(PARSE_STATUS.SUCCESS, null, address);
                 } else return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, null, offset);
-            } else throw new SyntaxError("Offset terminator ('" + Tokens.OFF_END.PATTERN + "')", offEndToken, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+            } else throw new SyntaxError("Offset terminator ('" + Tokens.OFF_END.PATTERN + "')", offEndToken, cd.tokenizer);
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
     }
 
@@ -153,7 +164,7 @@ public class Compiler {
                     labelData.pointer = cd.program.size();
                 else
                     // If the label has a valid pointer then it was already declared!
-                    throw new TypeError("Label '" + lastToken + "' was already declared", cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                    throw new TypeError("Label '" + lastToken + "' was already declared", cd.tokenizer);
             } else
                 // If no label was created then create it
                 cd.labels.put(lastToken, new LabelData(cd.program.size()));
@@ -183,22 +194,22 @@ public class Compiler {
         if (Tokens.CONSTANT.equals(lastToken)) {
             String constantName = cd.tokenizer.consumeNext(Tokens.SPACE);
             if (isGetting) {
-                if (constantName == null) throw new SyntaxError("Constant's name", "null", cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                if (constantName == null) throw new SyntaxError("Constant's name", "null", cd.tokenizer);
                 else if (cd.constants.containsKey(constantName)) {
                     // If the constant was defined save its value
                     if (addToProgram) cd.program.add(cd.constants.get(constantName));
                     return new ParseResult<>(addToProgram ? PARSE_STATUS.SUCCESS : PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, constantName, cd.constants.get(constantName));
-                } else throw new ReferenceError("Constant", constantName, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                } else throw new ReferenceError("Constant", constantName, cd.tokenizer);
             } else {
                 String constantValue = cd.tokenizer.consumeNext(Tokens.SPACE);
-                if (constantName == null) throw new SyntaxError("Constant's name", "null", cd.currentLine, cd.tokenizer.getConsumedCharacters());
-                else if (constantValue == null) throw new SyntaxError("Number, Character or Constant", "null", cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                if (constantName == null) throw new SyntaxError("Constant's name", "null", cd.tokenizer);
+                else if (constantValue == null) throw new SyntaxError("Number, Character or Constant", "null", cd.tokenizer);
 
                 ParseResult<Integer> result = parseNumber(cd, false);
                 if (result.STATUS == PARSE_STATUS.FAIL) result = parseCharacter(cd, false);
                 if (result.STATUS == PARSE_STATUS.FAIL) result = parseConstant(cd, true, false);
                 if (result.STATUS == PARSE_STATUS.FAIL)
-                    throw new SyntaxError("Number, Character or Constant", constantValue, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                    throw new SyntaxError("Number, Character or Constant", constantValue, cd.tokenizer);
 
                 cd.constants.put(constantName, result.VALUE);
                 return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, constantName, result.VALUE);
@@ -229,7 +240,7 @@ public class Compiler {
             while (true) {
                 String valueToAdd = cd.tokenizer.consumeNext();
                 if (valueToAdd == null)
-                    throw new SyntaxError("String terminator ('" + terminator + "')", String.valueOf(value.charAt(value.length() - 1)), cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                    throw new SyntaxError("String terminator ('" + terminator + "')", String.valueOf(value.charAt(value.length() - 1)), cd.tokenizer);
                 else if (escapeChar) {
                     char escapedChar = valueToAdd.charAt(0);
                     if (StringUtils.SpecialCharacters.MAP.containsKey(escapedChar)) {
@@ -258,16 +269,16 @@ public class Compiler {
 
             String nextToken = cd.tokenizer.consumeNext();
             if (nextToken == null || terminator.equals(nextToken) || nextToken.length() > 1)
-                throw new SyntaxError("Character", nextToken, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                throw new SyntaxError("Character", nextToken, cd.tokenizer);
             else if (Tokens.ESCAPE_CH.equals(nextToken)) {
                 String escapedChar = cd.tokenizer.consumeNext();
                 if (escapedChar == null || escapedChar.length() > 1)
-                    throw new SyntaxError("Character", escapedChar, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                    throw new SyntaxError("Character", escapedChar, cd.tokenizer);
                 character = StringUtils.SpecialCharacters.MAP.getOrDefault(escapedChar.charAt(0), escapedChar.charAt(0));
             } else character = nextToken.charAt(0);
 
             if (!terminator.equals(cd.tokenizer.consumeNext()))
-                throw new SyntaxError("Character terminator ('" + terminator + "')", nextToken, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+                throw new SyntaxError("Character terminator ('" + terminator + "')", nextToken, cd.tokenizer);
 
             if (addToProgram) {
                 cd.program.add((int) character);
@@ -280,7 +291,7 @@ public class Compiler {
         // Get the value to parse
         String valueToParse = cd.tokenizer.consumeNext(Tokens.SPACE);
         // Throw if there's no value, because there MUST be one if this function is called
-        if (valueToParse == null) throw new SyntaxError("Number, Char, Offset, Constant or Label", "null", cd.currentLine, cd.tokenizer.getConsumedCharacters());
+        if (valueToParse == null) throw new SyntaxError("Number, Char, Offset, Constant or Label", "null", cd.tokenizer);
 
         ParseResult<Integer> lastResult = parseNumber(cd, true);
         if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseCharacter(cd, true);
@@ -289,7 +300,7 @@ public class Compiler {
         if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseLabel(cd, false);
 
         if (lastResult.STATUS == PARSE_STATUS.FAIL)
-            throw new SyntaxError("Number, Char, Offset, Constant or Label", valueToParse, cd.currentLine, cd.tokenizer.getConsumedCharacters());
+            throw new SyntaxError("Number, Char, Offset, Constant or Label", valueToParse, cd.tokenizer);
         return lastResult;
     }
 
@@ -297,69 +308,65 @@ public class Compiler {
         if (!file.exists()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file doesn't exist.");
         if (!file.canRead()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file can't be read.");
 
-        Scanner reader;
+        String contents;
         try {
-            reader = new Scanner(file);
+            contents = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);;
         } catch (Exception err) {
-            throw new IllegalStateException("Something went wrong while initializing Scanner.");
+            throw new IllegalStateException("Something went wrong while reading the specified file.");
         }
 
         CompilerData cd = new CompilerData();
+        cd.tokenizer = new Tokenizer(contents, true, Tokens.ALL_TOKENS);
+        cd.tokenizer.removeEmpties();
 
-        for (cd.currentLine = 1; reader.hasNextLine(); cd.currentLine++) {
-            cd.tokenizer = new Tokenizer(reader.nextLine(), true, Tokens.ALL_TOKENS);
-            cd.tokenizer.removeEmpties();
+        while (cd.tokenizer.hasNext()) {
+            String token = cd.tokenizer.consumeNext(Tokens.SPACE);
+            if (token == null || Tokens.COMMENT.equals(token)) break;
 
-            while (cd.tokenizer.hasNext()) {
+            int instructionCode = instructionSet.getKeyCode(token);
+            Instruction instruction = instructionSet.getInstruction(instructionCode);
 
-                String token = cd.tokenizer.consumeNext(Tokens.SPACE);
-                if (token == null || Tokens.COMMENT.equals(token)) break;
+            if (instruction != null) {
+                // If an instruction was found add it to the memory
+                cd.program.add(instructionCode);
+                for (int i = 0; i < instruction.ARGUMENTS;)
+                    if (parseValues(cd).STATUS == PARSE_STATUS.SUCCESS) i++;
 
-                int instructionCode = instructionSet.getKeyCode(token);
-                Instruction instruction = instructionSet.getInstruction(instructionCode);
-
-                if (instruction != null) {
-                    // If an instruction was found add it to the memory
-                    cd.program.add(instructionCode);
-                    for (int i = 0; i < instruction.ARGUMENTS;)
-                        if (parseValues(cd).STATUS == PARSE_STATUS.SUCCESS) i++;
-
-                } else if (Tokens.COMPILER.equals(token)) {
-                    // Parsing Compiler Instructions
-                    String compilerInstr = cd.tokenizer.consumeNext(Tokens.SPACE);
-                    if (compilerInstr == null)
-                        throw new SyntaxError("Compiler Instruction", "null", cd.currentLine, cd.tokenizer.getConsumedCharacters());
-                    else if (compilerInstr.equals("DW")) {
-                        parseValues(cd);
-                    } else if (compilerInstr.equals("DS")) {
-                        cd.tokenizer.consumeNext(Tokens.SPACE);
-                        if (parseString(cd, true).STATUS == PARSE_STATUS.FAIL)
-                            throw new SyntaxError("String", cd.tokenizer.getLast(), cd.currentLine, cd.tokenizer.getConsumedCharacters());
-                    } else if (compilerInstr.equals("DA")) {
-                        // Be sure that there's the character that starts the array
-                        String arrayStart = cd.tokenizer.consumeNext(Tokens.SPACE);
-                        if (Tokens.ARR_START.equals(arrayStart)) {
-                            while (true) {
-                                // For each value in the array, check if the next value is the array closer character
-                                String nextToken = cd.tokenizer.peekNext(Tokens.SPACE);
-                                if (Tokens.ARR_END.equals(nextToken)) {
-                                    cd.tokenizer.consumeNext(Tokens.SPACE);
-                                    break;
-                                }
-
-                                try {
-                                    parseValues(cd);
-                                } catch (Exception err) {
-                                    throw new SyntaxError("Array terminator ('" + Tokens.ARR_END.PATTERN + "')", cd.tokenizer.getLast(), cd.currentLine, cd.tokenizer.getConsumedCharacters());
-                                }
+            } else if (Tokens.COMPILER.equals(token)) {
+                // Parsing Compiler Instructions
+                String compilerInstr = cd.tokenizer.consumeNext(Tokens.SPACE);
+                if (compilerInstr == null)
+                    throw new SyntaxError("Compiler Instruction", "null", cd.tokenizer);
+                else if (compilerInstr.equals("DW")) {
+                    parseValues(cd);
+                } else if (compilerInstr.equals("DS")) {
+                    cd.tokenizer.consumeNext(Tokens.SPACE);
+                    if (parseString(cd, true).STATUS == PARSE_STATUS.FAIL)
+                        throw new SyntaxError("String", cd.tokenizer.getLast(), cd.tokenizer);
+                } else if (compilerInstr.equals("DA")) {
+                    // Be sure that there's the character that starts the array
+                    String arrayStart = cd.tokenizer.consumeNext(Tokens.SPACE);
+                    if (Tokens.ARR_START.equals(arrayStart)) {
+                        while (true) {
+                            // For each value in the array, check if the next value is the array closer character
+                            String nextToken = cd.tokenizer.peekNext(Tokens.SPACE);
+                            if (Tokens.ARR_END.equals(nextToken)) {
+                                cd.tokenizer.consumeNext(Tokens.SPACE);
+                                break;
                             }
-                        } else throw new SyntaxError("Array", arrayStart, cd.currentLine, cd.tokenizer.getConsumedCharacters());
-                    } else throw new SyntaxError("Compiler Instruction", compilerInstr, cd.currentLine, cd.tokenizer.getConsumedCharacters());
-                } else {
-                    // Parsing Labels and Constants
-                    if (parseConstant(cd, false, true).STATUS == PARSE_STATUS.FAIL && parseLabel(cd, true).STATUS == PARSE_STATUS.FAIL)
-                        throw new SyntaxError("Constant or Label declaration", cd.tokenizer.getLast(), cd.currentLine, cd.tokenizer.getConsumedCharacters());
-                }
+
+                            try {
+                                parseValues(cd);
+                            } catch (Exception err) {
+                                throw new SyntaxError("Array terminator ('" + Tokens.ARR_END.PATTERN + "')", cd.tokenizer.getLast(), cd.tokenizer);
+                            }
+                        }
+                    } else throw new SyntaxError("Array", arrayStart, cd.tokenizer);
+                } else throw new SyntaxError("Compiler Instruction", compilerInstr, cd.tokenizer);
+            } else {
+                // Parsing Labels and Constants
+                if (parseConstant(cd, false, true).STATUS == PARSE_STATUS.FAIL && parseLabel(cd, true).STATUS == PARSE_STATUS.FAIL)
+                    throw new SyntaxError("Constant or Label declaration", cd.tokenizer.getLast(), cd.tokenizer);
             }
         }
 

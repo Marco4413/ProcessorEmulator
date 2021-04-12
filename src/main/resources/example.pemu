@@ -3,7 +3,10 @@ JMP start
 
 str: #DW [1] #DS "Hello World!\n\0"
 
-#DA { _temp: 0 null: 0 }
+#DA {
+    _temp: 0
+     null: 0
+}
 
 _print_char: #DW 0
 f_print:
