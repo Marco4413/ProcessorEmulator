@@ -30,9 +30,10 @@ public class Compiler {
         public static final Token OFF_START = new Token("[", true);
         public static final Token OFF_END   = new Token("]", true);
         public static final Token SPACE     = new Token("\\s");
+        public static final Token NEWLINE   = new Token("\n");
 
         public static final Token[] ALL_TOKENS = new Token[] {
-                COMMENT, CONSTANT, LABEL, COMPILER, STRING, CHARACTER, ESCAPE_CH, ARR_START, ARR_END, OFF_START, OFF_END, SPACE
+                COMMENT, CONSTANT, LABEL, COMPILER, STRING, CHARACTER, ESCAPE_CH, ARR_START, ARR_END, OFF_START, OFF_END, SPACE, NEWLINE
         };
 
     }
@@ -321,7 +322,7 @@ public class Compiler {
 
         while (cd.tokenizer.hasNext()) {
             String token = cd.tokenizer.consumeNext(Tokens.SPACE);
-            if (token == null || Tokens.COMMENT.equals(token)) break;
+            if (token == null) break;
 
             int instructionCode = instructionSet.getKeyCode(token);
             Instruction instruction = instructionSet.getInstruction(instructionCode);
@@ -332,6 +333,11 @@ public class Compiler {
                 for (int i = 0; i < instruction.ARGUMENTS;)
                     if (parseValues(cd).STATUS == PARSE_STATUS.SUCCESS) i++;
 
+            } else if (Tokens.COMMENT.equals(token)) {
+                String nextToken;
+                do {
+                    nextToken = cd.tokenizer.consumeNext();
+                } while (!Tokens.NEWLINE.equals(nextToken));
             } else if (Tokens.COMPILER.equals(token)) {
                 // Parsing Compiler Instructions
                 String compilerInstr = cd.tokenizer.consumeNext(Tokens.SPACE);

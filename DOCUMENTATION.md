@@ -55,6 +55,7 @@
    * [RET](#ret)
    * [PUSH](#push)
    * [POP](#pop)
+   * [LOOP](#loop)
    * [HLT](#hlt)
 
 # Common Mistakes
@@ -1045,6 +1046,42 @@ newline: #DW '\n'
 
 Pops the last value on the stack and stores it into `dst`.
 This is used with [PUSH](#push), see its example.
+
+## LOOP
+
+`LOOP jmpdst countaddr`
+
+Decrements by 1 the number at `countaddr` and jumps to `jmpdst` if it's not equal to 0.
+
+**NOTE**: If the value at `countaddr` is 0 then it will wrap around to `2^WordSize`.
+
+**Example:**
+
+```Assembly
+; Setting the contents of _count to 10
+DATA _count 10
+; Declaring the label that points to the body
+;  of the loop
+loop:
+   ; Printing out the count
+   OUTI _count
+   OUTC newline
+; Looping if _count - 1 isn't equal to 0
+LOOP loop _count
+HLT
+
+_count: #DW 0
+newline: #DW '\n'
+```
+
+The example above can be seen as the following Java code:
+
+```Java
+int _count = 10;
+do {
+    System.out.println(_count);
+} while (--_count != 0);
+```
 
 ## HLT
 

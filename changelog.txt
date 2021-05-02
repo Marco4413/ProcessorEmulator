@@ -1,4 +1,10 @@
 
+-- Version (v1.2.1-RELEASE)
+-- Changes from commit @46cc67d
+
+Added LOOP instruction
+Fixed Comments commenting the whole program (Didn't notice this since no one comments, am I right?)
+
 -- Version (v1.2.0-RELEASE)
 -- Changes from commit @2bda3e8
 

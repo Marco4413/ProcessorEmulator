@@ -15,7 +15,7 @@ import java.io.File;
 public class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
     public static final String APP_TITLE = "PEMU";
-    public static final String APP_VERSION = "1.2.0";
+    public static final String APP_VERSION = "1.2.1";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
