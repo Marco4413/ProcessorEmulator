@@ -367,6 +367,19 @@ public class Instructions {
         }
     };
 
+    public static final Instruction LOOP = new Instruction("LOOP", 2) {
+        @Override
+        public boolean execute(@NotNull Processor p, int[] args) {
+            int counter = p.MEMORY.getValueAt(args[1]);
+            p.MEMORY.setValueAt(args[1], --counter);
+
+            if (counter != 0) {
+                return JMP.execute(p, new int[] { args[0] });
+            }
+            return false;
+        }
+    };
+
     public static final Instruction HLT = new Instruction("HLT", 0) {
         @Override
         public boolean execute(@NotNull Processor p, int[] args) {
@@ -377,12 +390,12 @@ public class Instructions {
 
     public static final InstructionSet SET = new InstructionSet(
             new Instruction[] {
-                    NULL, BRK , DATA, MOV, SWP, OUTI, OUTC, GETI,
-                    GETC, GETK, TS  , TMS, INC, DEC , ADD , SUB ,
-                    MUL , DIV , MOD , AND, OR , NOT , XOR , CMP ,
-                    JMP , JC  , JNC , JZ , JNZ, JE  , JNE , JB  ,
-                    JNB , JBE , JNBE, JA , JNA, JAE , JNAE, CALL,
-                    RET , PUSH, POP , HLT
+                    NULL, BRK , DATA, MOV , SWP, OUTI, OUTC, GETI,
+                    GETC, GETK, TS  , TMS , INC, DEC , ADD , SUB ,
+                    MUL , DIV , MOD , AND , OR , NOT , XOR , CMP ,
+                    JMP , JC  , JNC , JZ  , JNZ, JE  , JNE , JB  ,
+                    JNB , JBE , JNBE, JA  , JNA, JAE , JNAE, CALL,
+                    RET , PUSH, POP , LOOP, HLT
             }
     );
 
