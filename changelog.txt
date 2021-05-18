@@ -1,4 +1,10 @@
 
+-- Version (v1.3.0-RELEASE)
+-- Changes from commit @1d49def
+
+Now Processors' must implement IProcessor
+Added method Application#setProducer (It accepts a function that produces an IProcessor's instance from a ProcessorConfig)
+
 -- Version (v1.2.1-RELEASE)
 -- Changes from commit @46cc67d
 

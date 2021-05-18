@@ -1,6 +1,7 @@
 package io.github.hds.pemu.app;
 
 import io.github.hds.pemu.compiler.Compiler;
+import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.processor.ProcessorConfig;
 import io.github.hds.pemu.utils.*;
@@ -11,6 +12,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.util.function.Function;
 
 public class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
@@ -29,7 +31,8 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
     protected final AboutMenu ABOUT_MENU;
 
     protected @Nullable File currentProgram = null;
-    protected @Nullable Processor currentProcessor = null;
+    protected @Nullable Function<ProcessorConfig, IProcessor> processorProducer = null;
+    protected @Nullable IProcessor currentProcessor = null;
     protected @NotNull ProcessorConfig processorConfig;
 
     protected final MemoryView MEMORY_VIEW;
@@ -137,6 +140,10 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
             setTitle(APP_TITLE + " " + APP_VERSION + " " + StringUtils.format(localeProgramSelected, currentProgram.getAbsolutePath()));
     }
 
+    public void setProducer(@NotNull Function<ProcessorConfig, IProcessor> producer) {
+        processorProducer = producer;
+    }
+
     public void setCurrentProgram(@NotNull File program) {
         if (program.exists() && program.canRead())
             currentProgram = program;
@@ -146,7 +153,7 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
 
     public void setProcessorConfig(@NotNull ProcessorConfig config) {
         processorConfig = config;
-        if (currentProcessor != null) currentProcessor.CLOCK.setClock(processorConfig.getClock());
+        if (currentProcessor != null) currentProcessor.getClock().setClock(processorConfig.getClock());
     }
 
     public @NotNull ProcessorConfig getProcessorConfig() {
@@ -159,15 +166,15 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
 
         char typed = e.getKeyChar();
         if (typed == KeyEvent.CHAR_UNDEFINED)
-            currentProcessor.pressedChar = '\0';
+            currentProcessor.setCharPressed('\0');
         else
-            currentProcessor.pressedChar = typed;
+            currentProcessor.setCharPressed(typed);
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
         if (currentProcessor == null) return;
-        currentProcessor.pressedKey = e.getKeyCode();
+        currentProcessor.setKeyPressed(e.getKeyCode());
     }
 
     @Override
@@ -175,11 +182,11 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
         if (currentProcessor == null) return;
 
         char character = e.getKeyChar();
-        if (character != KeyEvent.CHAR_UNDEFINED && Character.toLowerCase(character) == Character.toLowerCase(currentProcessor.pressedChar))
-            currentProcessor.pressedChar = '\0';
+        if (character != KeyEvent.CHAR_UNDEFINED && Character.toLowerCase(character) == Character.toLowerCase(currentProcessor.getCharPressed()))
+            currentProcessor.setCharPressed('\0');
 
-        if (e.getKeyCode() == currentProcessor.pressedKey)
-            currentProcessor.pressedKey = KeyEvent.VK_UNDEFINED;
+        if (e.getKeyCode() == currentProcessor.getKeyPressed())
+            currentProcessor.setKeyPressed(KeyEvent.VK_UNDEFINED);
     }
 
     public int[] compileProgram() {
@@ -217,6 +224,8 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
     }
 
     public void runProcessor(ActionEvent e) {
+        if (processorProducer == null) throw new IllegalStateException("A Processor Producer was never specified!");
+
         // Make sure that the last thread is dead
         if (currentProcessor != null && currentProcessor.isRunning()) {
             Console.Debug.println("Processor is already running!");
@@ -245,12 +254,12 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
 
         Console.Debug.println(
                 "Compiled file (" + currentProgram.getName() + ") occupies "
-                        + compiledProgram.length + " / " + currentProcessor.MEMORY.getSize() + " Words"
+                        + compiledProgram.length + " / " + currentProcessor.getMemory().getSize() + " Words"
         );
 
         // Load compiled program into memory
         try {
-            currentProcessor.MEMORY.setValuesAt(0, compiledProgram);
+            currentProcessor.getMemory().setValuesAt(0, compiledProgram);
         } catch (Exception err) {
             Console.Debug.println("Error while loading program into memory!");
             Console.Debug.printStackTrace(err, false);

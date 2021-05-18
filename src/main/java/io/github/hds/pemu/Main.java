@@ -1,6 +1,7 @@
 package io.github.hds.pemu;
 
 import io.github.hds.pemu.app.Application;
+import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.utils.ConfigManager;
 import io.github.hds.pemu.arguments.ArgumentsParser;
 import io.github.hds.pemu.processor.ProcessorConfig;
@@ -57,6 +58,7 @@ public class Main {
             processorConfig.setClock((int) parser.getOption("-clock").value);
 
         // Setting up app instance and showing it
+        app.setProducer(Processor::new);
         app.setCurrentProgram(new File((String) parser.getOption("-program").value));
         if ((boolean) parser.getOption("-run").value)
             app.runProcessor(null);

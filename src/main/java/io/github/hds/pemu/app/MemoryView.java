@@ -1,6 +1,8 @@
 package io.github.hds.pemu.app;
 
-import io.github.hds.pemu.processor.Processor;
+import io.github.hds.pemu.memory.Flag;
+import io.github.hds.pemu.memory.Registry;
+import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -167,7 +169,7 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
 
         if (!isVisible()) return;
 
-        Processor processor = app.currentProcessor;
+        IProcessor processor = app.currentProcessor;
         DefaultTableModel model = (DefaultTableModel) MEMORY_TABLE.getModel();
         if (processor == null) {
             model.setRowCount(0);
@@ -177,17 +179,21 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
             return;
         }
 
-        // Getting copy of current history and pointers (Don't know if this is needed
-        //  but it's here to prevent from getting newer instruction translations)
-        HashMap<Integer, String> history = new HashMap<>(processor.HISTORY);
-        int IP = processor.IP.value;
-        int SP = processor.SP.value;
-        boolean ZF = processor.ZERO.value;
-        boolean CF = processor.CARRY.value;
+        HashMap<Integer, String> history = processor.getInstructionHistory();
+        Registry IP = processor.getRegistry("IP");
+        Registry SP = processor.getRegistry("SP");
+        Flag ZF = processor.getFlag("ZF");
+        Flag CF = processor.getFlag("CF");
 
-        REG_VALUES.setText(String.format(R_VALUES_FORMAT, IP, SP, ZF, CF));
+        REG_VALUES.setText(
+                String.format(
+                        R_VALUES_FORMAT,
+                        IP == null ? -1 : IP.value, SP == null ? -1 : SP.value,
+                        ZF == null ? -1 : ZF.value, CF == null ? -1 : CF.value
+                )
+        );
 
-        int memSize = processor.MEMORY.getSize();
+        int memSize = processor.getMemory().getSize();
         int cols = (int) COLS_SPINNER.getValue();
         int rows = (int) Math.ceil(memSize / (float) cols);
 
@@ -202,13 +208,13 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
             int y = i / cols;
 
             String value = SHOW_AS_CHAR.isSelected() ?
-                    String.valueOf((char) processor.MEMORY.getValueAt(i)) : String.valueOf(processor.MEMORY.getValueAt(i));
+                    String.valueOf((char) processor.getMemory().getValueAt(i)) : String.valueOf(processor.getMemory().getValueAt(i));
 
-            if (SHOW_HISTORY.isSelected() && history.containsKey(i))
+            if (SHOW_HISTORY.isSelected() && history != null && history.containsKey(i))
                 value = history.get(i);
             if (SHOW_POINTERS.isSelected())
-                if (IP == i) value = "{ " + value + " }";
-                else if (SP == i) value = "[ " + value + " ]";
+                if (IP != null && IP.value == i) value = "{ " + value + " }";
+                else if (SP != null && SP.value == i) value = "[ " + value + " ]";
 
             model.setValueAt(value, y, x);
         }

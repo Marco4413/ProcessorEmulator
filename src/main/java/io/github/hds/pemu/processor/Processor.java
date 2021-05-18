@@ -7,28 +7,29 @@ import io.github.hds.pemu.memory.Registry;
 import io.github.hds.pemu.memory.Word;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 
-public class Processor implements Runnable {
+public class Processor implements IProcessor {
 
     private boolean isRunning = false;
 
-    public final Registry IP = new Registry("Instruction Pointer");
-    public final Registry SP = new Registry("Stack Pointer");
+    private final Registry IP = new Registry("Instruction Pointer");
+    private final Registry SP = new Registry("Stack Pointer");
 
-    public final Flag ZERO  = new Flag(false, "Zero Flag");
-    public final Flag CARRY = new Flag(false, "Carry Flag");
+    private final Flag ZERO  = new Flag(false, "Zero Flag");
+    private final Flag CARRY = new Flag(false, "Carry Flag");
 
-    public final Memory MEMORY;
-    public final Clock CLOCK;
+    private final Memory MEMORY;
+    private final Clock CLOCK;
 
-    public final InstructionSet INSTRUCTIONSET;
-    public final HashMap<Integer, String> HISTORY;
+    private final InstructionSet INSTRUCTIONSET;
+    private final HashMap<Integer, String> HISTORY;
 
-    public volatile char pressedChar = '\0';
-    public volatile int pressedKey = KeyEvent.VK_UNDEFINED;
+    private volatile char charPressed = '\0';
+    private volatile int keyPressed = KeyEvent.VK_UNDEFINED;
     private long startTimestamp = 0;
 
     private volatile boolean isPaused = false;
@@ -45,26 +46,74 @@ public class Processor implements Runnable {
         HISTORY = new HashMap<>();
     }
 
-    public void updateFlags(int value, boolean zero, boolean carry) {
-        if (zero) ZERO.value = value == 0;
-        if (carry) CARRY.value = (value & ~MEMORY.WORD.MASK) != 0;
+    @Override
+    public @Nullable Flag getFlag(@NotNull String shortName) {
+        if (shortName.equals(ZERO.SHORT)) return ZERO;
+        else if (shortName.equals(CARRY.SHORT)) return CARRY;
+        return null;
     }
 
+    @Override
+    public @Nullable Registry getRegistry(@NotNull String shortName) {
+        if (shortName.equals(IP.SHORT)) return IP;
+        else if (shortName.equals(SP.SHORT)) return SP;
+        return null;
+    }
+
+    @Override
+    public @NotNull Memory getMemory() {
+        return MEMORY;
+    }
+
+    @Override
+    public @NotNull Clock getClock() {
+        return CLOCK;
+    }
+
+    @Override
+    public int getKeyPressed() {
+        return keyPressed;
+    }
+
+    @Override
+    public void setKeyPressed(int key) {
+        keyPressed = key;
+    }
+
+    @Override
+    public char getCharPressed() {
+        return charPressed;
+    }
+
+    @Override
+    public void setCharPressed(char ch) {
+        charPressed = ch;
+    }
+
+    @Override
     public @NotNull String getInfo() {
         return "\tClock:\t" + StringUtils.getEngNotationInt(CLOCK.getClock()) + "Hz\n" +
                "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.WORD.BYTES + " Bytes\n" +
                "\tInstructions:\t" + INSTRUCTIONSET.getSize() + "\n";
     }
 
+    @Override
+    public @Nullable HashMap<Integer, String> getInstructionHistory() {
+        return HISTORY;
+    }
+
+    @Override
     public long getTimeRunning() {
         if (!isRunning) return -1;
         return System.currentTimeMillis() - startTimestamp;
     }
 
+    @Override
     public boolean isRunning() {
         return this.isRunning;
     }
 
+    @Override
     public void run() {
         if (isRunning) return;
 
@@ -87,20 +136,25 @@ public class Processor implements Runnable {
         }
     }
 
+    @Override
     public void stop() { isRunning = false; }
 
+    @Override
     public boolean isPaused() {
         return this.isPaused;
     }
 
+    @Override
     public void pause() {
         isPaused = true;
     }
 
+    @Override
     public void resume() {
         isPaused = false;
     }
 
+    @Override
     public void step() {
         stepping = true;
     }

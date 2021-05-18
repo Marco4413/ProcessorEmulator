@@ -1,6 +1,6 @@
 package io.github.hds.pemu.instructions;
 
-import io.github.hds.pemu.processor.Processor;
+import io.github.hds.pemu.processor.IProcessor;
 import org.jetbrains.annotations.NotNull;
 
 public class Instruction {
@@ -17,6 +17,6 @@ public class Instruction {
         return ARGUMENTS + 1;
     }
 
-    public boolean execute(@NotNull Processor p, int[] args) { return false; }
+    public boolean execute(@NotNull IProcessor p, int[] args) { return false; }
 
 }
