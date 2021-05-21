@@ -1,20 +1,18 @@
 package io.github.hds.pemu.instructions;
 
 import io.github.hds.pemu.app.Console;
-import io.github.hds.pemu.memory.Flag;
-import io.github.hds.pemu.memory.Memory;
-import io.github.hds.pemu.memory.Registry;
+import io.github.hds.pemu.memory.*;
 import io.github.hds.pemu.processor.IProcessor;
 import org.jetbrains.annotations.NotNull;
 
 public class Instructions {
 
     private static void updateMathFlags(@NotNull IProcessor p, int value, boolean zero, boolean carry) {
-        Flag ZF = p.getFlag("ZF");
-        Flag CF = p.getFlag("CF");
+        IFlag ZF = p.getFlag("ZF");
+        IFlag CF = p.getFlag("CF");
 
-        if (ZF != null && zero) ZF.value = value == 0;
-        if (CF != null && carry) CF.value = (value & ~p.getMemory().WORD.MASK) != 0;
+        if (ZF != null && zero) ZF.setValue(value == 0);
+        if (CF != null && carry) CF.setValue((value & ~p.getMemory().WORD.MASK) != 0);
     }
 
     public static final Instruction NULL = new Instruction("NULL", 0);
@@ -244,11 +242,11 @@ public class Instructions {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
             Memory memory = p.getMemory();
-            Flag ZF = p.getFlag("ZF");
-            Flag CF = p.getFlag("CF");
+            IFlag ZF = p.getFlag("ZF");
+            IFlag CF = p.getFlag("CF");
 
-            if (ZF != null) ZF.value = memory.getValueAt(args[0]) == memory.getValueAt(args[1]);
-            if (CF != null) CF.value = memory.getValueAt(args[0]) <  memory.getValueAt(args[1]);
+            if (ZF != null) ZF.setValue(memory.getValueAt(args[0]) == memory.getValueAt(args[1]));
+            if (CF != null) CF.setValue(memory.getValueAt(args[0]) <  memory.getValueAt(args[1]));
             return false;
         }
     };
@@ -256,9 +254,9 @@ public class Instructions {
     public static final Instruction JMP = new Instruction("JMP", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            Registry IP = p.getRegistry("IP");
+            IRegister IP = p.getRegistry("IP");
             if (IP == null) return false;
-            else IP.value = args[0];
+            else IP.setValue(args[0]);
             return true;
         }
     };
@@ -266,8 +264,8 @@ public class Instructions {
     public static final Instruction JC = new Instruction("JC", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            Flag CF = p.getFlag("CF");
-            if (CF != null && CF.value) return JMP.execute(p, args);
+            IFlag CF = p.getFlag("CF");
+            if (CF != null && CF.getValue()) return JMP.execute(p, args);
             return false;
         }
     };
@@ -275,8 +273,8 @@ public class Instructions {
     public static final Instruction JNC = new Instruction("JNC", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            Flag CF = p.getFlag("CF");
-            if (CF != null && !CF.value) return JMP.execute(p, args);
+            IFlag CF = p.getFlag("CF");
+            if (CF != null && !CF.getValue()) return JMP.execute(p, args);
             return false;
         }
     };
@@ -284,8 +282,8 @@ public class Instructions {
     public static final Instruction JZ = new Instruction("JZ", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            Flag ZF = p.getFlag("ZF");
-            if (ZF != null && ZF.value) return JMP.execute(p, args);
+            IFlag ZF = p.getFlag("ZF");
+            if (ZF != null && ZF.getValue()) return JMP.execute(p, args);
             return false;
         }
     };
@@ -293,8 +291,8 @@ public class Instructions {
     public static final Instruction JNZ = new Instruction("JNZ", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            Flag ZF = p.getFlag("ZF");
-            if (ZF != null && !ZF.value) return JMP.execute(p, args);
+            IFlag ZF = p.getFlag("ZF");
+            if (ZF != null && !ZF.getValue()) return JMP.execute(p, args);
             return false;
         }
     };
@@ -330,9 +328,9 @@ public class Instructions {
     public static final Instruction JBE = new Instruction("JBE", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            Flag ZF = p.getFlag("ZF");
-            Flag CF = p.getFlag("CF");
-            if ((ZF != null && ZF.value) || (CF != null && CF.value)) return JMP.execute(p, args);
+            IFlag ZF = p.getFlag("ZF");
+            IFlag CF = p.getFlag("CF");
+            if ((ZF != null && ZF.getValue()) || (CF != null && CF.getValue())) return JMP.execute(p, args);
             return false;
         }
     };
@@ -340,9 +338,9 @@ public class Instructions {
     public static final Instruction JNBE = new Instruction("JNBE", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            Flag ZF = p.getFlag("ZF");
-            Flag CF = p.getFlag("CF");
-            if (!(ZF != null && ZF.value) || (CF != null && CF.value)) return JMP.execute(p, args);
+            IFlag ZF = p.getFlag("ZF");
+            IFlag CF = p.getFlag("CF");
+            if (!(ZF != null && ZF.getValue()) || (CF != null && CF.getValue())) return JMP.execute(p, args);
             return false;
         }
     };
@@ -378,11 +376,13 @@ public class Instructions {
     public static final Instruction CALL = new Instruction("CALL", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            Registry SP = p.getRegistry("SP");
-            Registry IP = p.getRegistry("IP");
+            IRegister SP = p.getRegistry("SP");
+            IRegister IP = p.getRegistry("IP");
             if (SP == null || IP == null) return false;
 
-            p.getMemory().setValueAt(SP.value--, IP.value + getWords());
+            p.getMemory().setValueAt(
+                    SP.setValue(SP.getValue() - 1), IP.getValue()
+            );
             return JMP.execute(p, args);
         }
     };
@@ -390,20 +390,22 @@ public class Instructions {
     public static final Instruction RET = new Instruction("RET", 0) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            Registry SP = p.getRegistry("SP");
+            IRegister SP = p.getRegistry("SP");
+            if (SP == null) return false;
 
-            return JMP.execute(p, new int[] { p.getMemory().getValueAt(++SP.value) });
+            SP.setValue(SP.getValue() + 1);
+            return JMP.execute(p, new int[] { p.getMemory().getValueAt(SP.getValue()) });
         }
     };
 
     public static final Instruction PUSH = new Instruction("PUSH", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            Registry SP = p.getRegistry("SP");
+            IRegister SP = p.getRegistry("SP");
             if (SP == null) return false;
 
             Memory memory = p.getMemory();
-            memory.setValueAt(SP.value--, memory.getValueAt(args[0]));
+            memory.setValueAt(SP.setValue(SP.getValue() - 1), memory.getValueAt(args[0]));
             return false;
         }
     };
@@ -411,11 +413,12 @@ public class Instructions {
     public static final Instruction POP = new Instruction("POP", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            Registry SP = p.getRegistry("SP");
+            IRegister SP = p.getRegistry("SP");
             if (SP == null) return false;
 
             Memory memory = p.getMemory();
-            memory.setValueAt(args[0], memory.getValueAt(++SP.value));
+            SP.setValue(SP.getValue() + 1);
+            memory.setValueAt(args[0], memory.getValueAt(SP.getValue()));
             return false;
         }
     };

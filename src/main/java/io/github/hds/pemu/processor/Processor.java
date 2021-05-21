@@ -1,10 +1,8 @@
 package io.github.hds.pemu.processor;
 
+import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionSet;
-import io.github.hds.pemu.memory.Flag;
-import io.github.hds.pemu.memory.Memory;
-import io.github.hds.pemu.memory.Registry;
-import io.github.hds.pemu.memory.Word;
+import io.github.hds.pemu.memory.*;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,11 +14,13 @@ public class Processor implements IProcessor {
 
     private boolean isRunning = false;
 
-    private final Registry IP = new Registry("Instruction Pointer");
-    private final Registry SP = new Registry("Stack Pointer");
+    private final int REGISTRIES_WORDS = 2;
+    private final BasicRegister IP;
+    private final BasicRegister SP;
 
-    private final Flag ZERO  = new Flag(false, "Zero Flag");
-    private final Flag CARRY = new Flag(false, "Carry Flag");
+    private final int FLAGS_WORDS = 1;
+    private final MemFlag ZERO;
+    private final MemFlag CARRY;
 
     private final Memory MEMORY;
     private final Clock CLOCK;
@@ -40,23 +40,28 @@ public class Processor implements IProcessor {
         MEMORY = new Memory(config.getMemorySize(), word);
         CLOCK = new Clock(config.getClock());
 
-        SP.value = MEMORY.getSize() - 1;
-
         INSTRUCTIONSET = config.instructionSet;
         HISTORY = new HashMap<>();
+
+        int lastAddress = MEMORY.getSize() - 1;
+        IP = new MemRegister(0, "Instruction Pointer", "IP", MEMORY, lastAddress);
+        SP = new MemRegister(lastAddress - (REGISTRIES_WORDS + FLAGS_WORDS), "Stack Pointer", "SP", MEMORY, lastAddress - 1);
+
+        ZERO  = new MemFlag(false, "Zero Flag", MEMORY, lastAddress - REGISTRIES_WORDS, 0);
+        CARRY = new MemFlag(false, "Carry Flag", MEMORY, lastAddress - REGISTRIES_WORDS, 1);
     }
 
     @Override
-    public @Nullable Flag getFlag(@NotNull String shortName) {
-        if (shortName.equals(ZERO.SHORT)) return ZERO;
-        else if (shortName.equals(CARRY.SHORT)) return CARRY;
+    public @Nullable BasicFlag getFlag(@NotNull String shortName) {
+        if (shortName.equals(ZERO.getShortName())) return ZERO;
+        else if (shortName.equals(CARRY.getShortName())) return CARRY;
         return null;
     }
 
     @Override
-    public @Nullable Registry getRegistry(@NotNull String shortName) {
-        if (shortName.equals(IP.SHORT)) return IP;
-        else if (shortName.equals(SP.SHORT)) return SP;
+    public @Nullable BasicRegister getRegistry(@NotNull String shortName) {
+        if (shortName.equals(IP.getShortName())) return IP;
+        else if (shortName.equals(SP.getShortName())) return SP;
         return null;
     }
 
@@ -68,6 +73,11 @@ public class Processor implements IProcessor {
     @Override
     public @NotNull Clock getClock() {
         return CLOCK;
+    }
+
+    @Override
+    public @NotNull InstructionSet getInstructionSet() {
+        return INSTRUCTIONSET;
     }
 
     @Override
@@ -109,6 +119,21 @@ public class Processor implements IProcessor {
     }
 
     @Override
+    public @Nullable String loadProgram(int[] program) {
+        if (program.length > MEMORY.getSize() - (getReservedWords()))
+            return "Couldn't load program because there's not enough space!";
+
+        MEMORY.setValuesAt(0, program);
+        return null;
+    }
+
+    @Override
+    public int getReservedWords() {
+        // The +1 at the end is the first element on the stack
+        return REGISTRIES_WORDS + FLAGS_WORDS + 1;
+    }
+
+    @Override
     public boolean isRunning() {
         return this.isRunning;
     }
@@ -120,19 +145,23 @@ public class Processor implements IProcessor {
         startTimestamp = System.currentTimeMillis();
         isRunning = true;
         while (isRunning) {
-
             if (CLOCK.update() && (stepping || !isPaused)) {
                 stepping = false;
-                int lastIP = IP.value;
 
-                InstructionSet.ExecutionData executionData = INSTRUCTIONSET.parseAndExecute(this, MEMORY, IP.value);
-                HISTORY.put(lastIP, executionData.INSTRUCTION.KEYWORD);
-                if (!executionData.IGNORE_LENGTH)
-                    IP.value += executionData.LENGTH;
+                if (IP.getValue() >= MEMORY.getSize()) {
+                    stop();
+                } else {
+                    int currentIP = IP.getValue();
+                    Instruction instruction = INSTRUCTIONSET.parse(MEMORY, currentIP);
+                    HISTORY.put(currentIP, instruction.KEYWORD);
 
-                if (IP.value >= MEMORY.getSize()) stop();
+                    IP.setValue(currentIP + instruction.getWords());
+                    instruction.execute(
+                            this,
+                            instruction.ARGUMENTS == 0 ? new int[0] : MEMORY.getValuesAt(currentIP + 1, instruction.ARGUMENTS)
+                    );
+                }
             }
-
         }
     }
 
