@@ -254,15 +254,21 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
 
         Console.Debug.println(
                 "Compiled file (" + currentProgram.getName() + ") occupies "
-                        + compiledProgram.length + " / " + currentProcessor.getMemory().getSize() + " Words"
+                        + compiledProgram.length + " / " + ( currentProcessor.getMemory().getSize() - currentProcessor.getReservedWords() ) + " Words"
         );
 
         // Load compiled program into memory
+        String loadError = null;
         try {
-            currentProcessor.getMemory().setValuesAt(0, compiledProgram);
+            loadError = currentProcessor.loadProgram(compiledProgram);
         } catch (Exception err) {
             Console.Debug.println("Error while loading program into memory!");
             Console.Debug.printStackTrace(err, false);
+        }
+
+        if (loadError != null) {
+            Console.Debug.println("Error while loading program!");
+            Console.Debug.println("Processor Error: " + loadError);
             return;
         }
 

@@ -1,5 +1,15 @@
 
 -- Version (v1.3.0-RELEASE)
+-- Changes from commit @caf66ac
+
+Now Processor holds all its Flags and Registers inside Memory
+Added methods to IProcessor: getInstructionSet, loadProgram, getReservedWords
+
+Renamed class Registry to BasicRegister
+Renamed class Flag to BasicFlag
+Added interfaces: IFlag, IRegister
+Added classes: MemFlag, MemRegister (which are Registers and Flags that hold their value in Memory)
+
 -- Changes from commit @1d49def
 
 Now Processors' must implement IProcessor

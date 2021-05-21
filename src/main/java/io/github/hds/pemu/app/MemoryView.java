@@ -1,7 +1,7 @@
 package io.github.hds.pemu.app;
 
-import io.github.hds.pemu.memory.Flag;
-import io.github.hds.pemu.memory.Registry;
+import io.github.hds.pemu.memory.IFlag;
+import io.github.hds.pemu.memory.IRegister;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
@@ -180,16 +180,16 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
         }
 
         HashMap<Integer, String> history = processor.getInstructionHistory();
-        Registry IP = processor.getRegistry("IP");
-        Registry SP = processor.getRegistry("SP");
-        Flag ZF = processor.getFlag("ZF");
-        Flag CF = processor.getFlag("CF");
+        IRegister IP = processor.getRegistry("IP");
+        IRegister SP = processor.getRegistry("SP");
+        IFlag ZF = processor.getFlag("ZF");
+        IFlag CF = processor.getFlag("CF");
 
         REG_VALUES.setText(
                 String.format(
                         R_VALUES_FORMAT,
-                        IP == null ? -1 : IP.value, SP == null ? -1 : SP.value,
-                        ZF == null ? -1 : ZF.value, CF == null ? -1 : CF.value
+                        IP == null ? -1 : IP.getValue(), SP == null ? -1 : SP.getValue(),
+                        ZF == null ? -1 : ZF.getValue(), CF == null ? -1 : CF.getValue()
                 )
         );
 
@@ -213,8 +213,8 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
             if (SHOW_HISTORY.isSelected() && history != null && history.containsKey(i))
                 value = history.get(i);
             if (SHOW_POINTERS.isSelected())
-                if (IP != null && IP.value == i) value = "{ " + value + " }";
-                else if (SP != null && SP.value == i) value = "[ " + value + " ]";
+                if (IP != null && IP.getValue() == i) value = "{ " + value + " }";
+                else if (SP != null && SP.getValue() == i) value = "[ " + value + " ]";
 
             model.setValueAt(value, y, x);
         }
