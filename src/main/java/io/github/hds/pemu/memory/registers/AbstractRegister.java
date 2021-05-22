@@ -1,19 +1,23 @@
-package io.github.hds.pemu.memory;
+package io.github.hds.pemu.memory.registers;
 
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class BasicRegister implements IRegister {
+/**
+ * An Abstract implementation of IRegister that adds the naming capabilities
+ * that all Registers should have
+ */
+public abstract class AbstractRegister implements IRegister {
 
     private final String FULL_NAME;
     private final String SHORT_NAME;
 
-    public BasicRegister(@NotNull String fullName) {
+    public AbstractRegister(@NotNull String fullName) {
         this(fullName, StringUtils.toShortName(fullName));
     }
 
-    public BasicRegister(@NotNull String fullName, @NotNull String shortName) {
+    public AbstractRegister(@NotNull String fullName, @NotNull String shortName) {
         FULL_NAME = fullName;
         SHORT_NAME = shortName;
     }

@@ -1,5 +1,24 @@
 
 -- Version (v1.3.0-RELEASE)
+-- Changes from commit @8d1aa2f
+
+Now programs can reference Registers and Flags if they support it
+
+Renamed method IProcessor#getRegistry to getRegister
+
+Added class CompiledProgram, which is used to hold info about a program compiled with Compiler.compileFile
+Moved class LabelData from class Compiler to package pemu.compiler
+Made Compiler.compileFile take an IProcessor instead of an InstructionSet
+
+Added method Application.createProcessor
+Now class Application actually uses its field processorProducer
+
+Renamed class BasicFlag to AbstractFlag
+Renamed class BasicRegister to AbstractRegister
+Added packages in pemu.memory: flags, registers
+Interfaces moved to pemu.memory.flags package: IFlag, IRegister
+Classes moved to pemu.memory.flags package: AbstractFlag, AbstractRegister
+
 -- Changes from commit @caf66ac
 
 Now Processor holds all its Flags and Registers inside Memory

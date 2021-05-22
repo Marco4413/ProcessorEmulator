@@ -1,8 +1,8 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.compiler.CompiledProgram;
 import io.github.hds.pemu.compiler.Compiler;
 import io.github.hds.pemu.processor.IProcessor;
-import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.processor.ProcessorConfig;
 import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +17,7 @@ import java.util.function.Function;
 public class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
     public static final String APP_TITLE = "PEMU";
-    public static final String APP_VERSION = "1.2.1";
+    public static final String APP_VERSION = "1.3.0";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
@@ -189,14 +189,31 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
             currentProcessor.setKeyPressed(KeyEvent.VK_UNDEFINED);
     }
 
-    public int[] compileProgram() {
+    public @Nullable IProcessor createProcessor() {
+        if (processorProducer == null) return null;
+
+        // Create a new Processor with the current ProcessorConfig
+        try {
+            return processorProducer.apply(processorConfig);
+        } catch (Exception err) {
+            Console.Debug.println("Couldn't create processor.");
+            Console.Debug.printStackTrace(err, false);
+        }
+
+        return null;
+    }
+
+    public CompiledProgram compileProgram(@Nullable IProcessor processorInstance) {
+        if (processorInstance == null) processorInstance = createProcessor();
+        if (processorInstance == null) return null;
+
         if (currentProgram == null) {
             Console.Debug.println("No program specified!");
             return null;
         }
 
         try {
-            return Compiler.compileFile(currentProgram, processorConfig.instructionSet);
+            return Compiler.compileFile(currentProgram, processorInstance);
         } catch (Exception err) {
             Console.Debug.println("Compilation error (for file @'" + currentProgram.getAbsolutePath() + "'):");
             Console.Debug.printStackTrace(err, false);
@@ -206,16 +223,18 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
     }
 
     public void verifyProgram(ActionEvent e) {
-        int[] compiledProgram = compileProgram();
+        CompiledProgram compiledProgram = compileProgram(null);
 
-        if (compiledProgram != null)
+        if (compiledProgram != null) {
+            int[] compiledProgramData = compiledProgram.getData();
             Console.Debug.println(
-                    String.format("The specified program compiled successfully!\nIt occupies %d Word%s.", compiledProgram.length, compiledProgram.length == 1 ? "" : "s")
+                    String.format("The specified program compiled successfully!\nIt occupies %d Word%s.", compiledProgramData.length, compiledProgramData.length == 1 ? "" : "s")
             );
+        }
     }
 
     public void obfuscateProgram(ActionEvent e) {
-        int[] compiledProgram = compileProgram();
+        CompiledProgram compiledProgram = compileProgram(null);
 
         if (compiledProgram != null) {
             Console.Debug.println("Program obfuscated successfully:");
@@ -240,27 +259,22 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
         }
 
         // Create a new Processor with the specified values
-        try {
-            currentProcessor = new Processor(processorConfig);
-        } catch (Exception err) {
-            Console.Debug.println("Couldn't create processor.");
-            Console.Debug.printStackTrace(err, false);
-            return;
-        }
+        currentProcessor = createProcessor();
+        if (currentProcessor == null) return;
 
         // Compile the selected program
-        int[] compiledProgram = compileProgram();
+        CompiledProgram compiledProgram = compileProgram(currentProcessor);
         if (compiledProgram == null) return;
 
         Console.Debug.println(
                 "Compiled file (" + currentProgram.getName() + ") occupies "
-                        + compiledProgram.length + " / " + ( currentProcessor.getMemory().getSize() - currentProcessor.getReservedWords() ) + " Words"
+                        + compiledProgram.getData().length + " / " + ( currentProcessor.getMemory().getSize() - currentProcessor.getReservedWords() ) + " Words"
         );
 
         // Load compiled program into memory
         String loadError = null;
         try {
-            loadError = currentProcessor.loadProgram(compiledProgram);
+            loadError = currentProcessor.loadProgram(compiledProgram.getData());
         } catch (Exception err) {
             Console.Debug.println("Error while loading program into memory!");
             Console.Debug.printStackTrace(err, false);

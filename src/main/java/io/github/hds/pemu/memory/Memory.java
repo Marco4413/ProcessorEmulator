@@ -4,8 +4,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
 
+/**
+ * A class that emulates RAM
+ */
 public class Memory {
 
+    /**
+     * This class is used with Memory#toString to format the outputted String
+     */
     public static class FormatterData {
         public @NotNull StringBuilder builder;
         public int index;
@@ -18,7 +24,13 @@ public class Memory {
         }
     }
 
+    /**
+     * The max value that this Memory can hold in an address
+     */
     public final int MAX_VALUE;
+    /**
+     * Describes how much data each address can hold
+     */
     public final Word WORD;
 
     private final byte[] MEMORY;
@@ -64,17 +76,32 @@ public class Memory {
         return builder.toString();
     }
 
+    /**
+     * Returns the size (The amount of addresses) this Memory has
+     * @return The size of this Memory
+     */
     public int getSize() { return MEMORY.length / WORD.BYTES; }
 
     private int getIndexFromAddress(int address) {
         return address * WORD.BYTES;
     }
 
+    /**
+     * Checks if the specified address is inside Memory
+     * @throws IllegalArgumentException If the specified address is out of bounds
+     * @param address The address to test for
+     */
     public void validateAddress(int address) {
         if (address < 0 || getIndexFromAddress(address) + WORD.BYTES - 1 >= MEMORY.length)
             throw new IllegalArgumentException("Address must be within memory size!");
     }
 
+    /**
+     * Sets the value at the specified address to the one specified
+     * @param address The address to set
+     * @param value The value to set at the specified address
+     * @return The old value at the specified address
+     */
     public synchronized int setValueAt(int address, int value) {
         int index = getIndexFromAddress(address);
 
@@ -89,6 +116,11 @@ public class Memory {
         return oldValue;
     }
 
+    /**
+     * Returns the value at the specified address
+     * @param address The address to get the value from
+     * @return The value at the specified address
+     */
     public synchronized int getValueAt(int address) {
         int index = getIndexFromAddress(address);
         validateAddress(address);
@@ -101,6 +133,12 @@ public class Memory {
         return WORD.combineBytes(bytes);
     }
 
+    /**
+     * Sets the values starting from the specified address to the specified values
+     * @param address The address to start setting the values from
+     * @param values The values to set from the specified address
+     * @return The old values
+     */
     public synchronized int[] setValuesAt(int address, int[] values) {
         validateAddress(address);
 
@@ -114,6 +152,12 @@ public class Memory {
         return oldValues;
     }
 
+    /**
+     * Returns the values starting from the specified address and ending at (address + size - 1)
+     * @param address The address to start getting the values from
+     * @param size The amount of values to retrieve
+     * @return The retrieved values
+     */
     public synchronized int[] getValuesAt(int address, int size) {
         validateAddress(address);
 
