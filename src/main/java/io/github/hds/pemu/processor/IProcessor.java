@@ -2,6 +2,8 @@ package io.github.hds.pemu.processor;
 
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.*;
+import io.github.hds.pemu.memory.flags.IFlag;
+import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.utils.IStoppable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,7 +13,7 @@ import java.util.HashMap;
 public interface IProcessor extends Runnable, IStoppable {
 
     @Nullable IFlag getFlag(@NotNull String shortName);
-    @Nullable IRegister getRegistry(@NotNull String shortName);
+    @Nullable IRegister getRegister(@NotNull String shortName);
     @NotNull Memory getMemory();
     @NotNull Clock getClock();
     @NotNull InstructionSet getInstructionSet();

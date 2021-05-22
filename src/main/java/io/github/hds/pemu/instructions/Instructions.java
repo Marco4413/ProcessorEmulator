@@ -2,6 +2,8 @@ package io.github.hds.pemu.instructions;
 
 import io.github.hds.pemu.app.Console;
 import io.github.hds.pemu.memory.*;
+import io.github.hds.pemu.memory.flags.IFlag;
+import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.processor.IProcessor;
 import org.jetbrains.annotations.NotNull;
 
@@ -254,7 +256,7 @@ public class Instructions {
     public static final Instruction JMP = new Instruction("JMP", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            IRegister IP = p.getRegistry("IP");
+            IRegister IP = p.getRegister("IP");
             if (IP == null) return false;
             else IP.setValue(args[0]);
             return true;
@@ -376,8 +378,8 @@ public class Instructions {
     public static final Instruction CALL = new Instruction("CALL", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            IRegister SP = p.getRegistry("SP");
-            IRegister IP = p.getRegistry("IP");
+            IRegister SP = p.getRegister("SP");
+            IRegister IP = p.getRegister("IP");
             if (SP == null || IP == null) return false;
 
             p.getMemory().setValueAt(
@@ -390,7 +392,7 @@ public class Instructions {
     public static final Instruction RET = new Instruction("RET", 0) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            IRegister SP = p.getRegistry("SP");
+            IRegister SP = p.getRegister("SP");
             if (SP == null) return false;
 
             SP.setValue(SP.getValue() + 1);
@@ -401,7 +403,7 @@ public class Instructions {
     public static final Instruction PUSH = new Instruction("PUSH", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            IRegister SP = p.getRegistry("SP");
+            IRegister SP = p.getRegister("SP");
             if (SP == null) return false;
 
             Memory memory = p.getMemory();
@@ -413,7 +415,7 @@ public class Instructions {
     public static final Instruction POP = new Instruction("POP", 1) {
         @Override
         public boolean execute(@NotNull IProcessor p, int[] args) {
-            IRegister SP = p.getRegistry("SP");
+            IRegister SP = p.getRegister("SP");
             if (SP == null) return false;
 
             Memory memory = p.getMemory();

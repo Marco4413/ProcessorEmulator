@@ -3,6 +3,12 @@ package io.github.hds.pemu.processor;
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.*;
+import io.github.hds.pemu.memory.flags.IFlag;
+import io.github.hds.pemu.memory.flags.MemoryFlag;
+import io.github.hds.pemu.memory.registers.AbstractRegister;
+import io.github.hds.pemu.memory.registers.BasicRegister;
+import io.github.hds.pemu.memory.registers.IRegister;
+import io.github.hds.pemu.memory.registers.MemoryRegister;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,12 +21,12 @@ public class Processor implements IProcessor {
     private boolean isRunning = false;
 
     private final int REGISTRIES_WORDS = 2;
-    private final BasicRegister IP;
-    private final BasicRegister SP;
+    private final MemoryRegister IP;
+    private final MemoryRegister SP;
 
     private final int FLAGS_WORDS = 1;
-    private final MemFlag ZERO;
-    private final MemFlag CARRY;
+    private final MemoryFlag ZERO;
+    private final MemoryFlag CARRY;
 
     private final Memory MEMORY;
     private final Clock CLOCK;
@@ -44,22 +50,22 @@ public class Processor implements IProcessor {
         HISTORY = new HashMap<>();
 
         int lastAddress = MEMORY.getSize() - 1;
-        IP = new MemRegister(0, "Instruction Pointer", "IP", MEMORY, lastAddress);
-        SP = new MemRegister(lastAddress - (REGISTRIES_WORDS + FLAGS_WORDS), "Stack Pointer", "SP", MEMORY, lastAddress - 1);
+        IP = new MemoryRegister(0, "Instruction Pointer", "IP", MEMORY, lastAddress);
+        SP = new MemoryRegister(lastAddress - (REGISTRIES_WORDS + FLAGS_WORDS), "Stack Pointer", "SP", MEMORY, lastAddress - 1);
 
-        ZERO  = new MemFlag(false, "Zero Flag", MEMORY, lastAddress - REGISTRIES_WORDS, 0);
-        CARRY = new MemFlag(false, "Carry Flag", MEMORY, lastAddress - REGISTRIES_WORDS, 1);
+        ZERO  = new MemoryFlag(false, "Zero Flag", MEMORY, lastAddress - REGISTRIES_WORDS, 0);
+        CARRY = new MemoryFlag(false, "Carry Flag", MEMORY, lastAddress - REGISTRIES_WORDS, 1);
     }
 
     @Override
-    public @Nullable BasicFlag getFlag(@NotNull String shortName) {
+    public @Nullable IFlag getFlag(@NotNull String shortName) {
         if (shortName.equals(ZERO.getShortName())) return ZERO;
         else if (shortName.equals(CARRY.getShortName())) return CARRY;
         return null;
     }
 
     @Override
-    public @Nullable BasicRegister getRegistry(@NotNull String shortName) {
+    public @Nullable IRegister getRegister(@NotNull String shortName) {
         if (shortName.equals(IP.getShortName())) return IP;
         else if (shortName.equals(SP.getShortName())) return SP;
         return null;

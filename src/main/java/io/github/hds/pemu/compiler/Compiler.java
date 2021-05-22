@@ -2,6 +2,9 @@ package io.github.hds.pemu.compiler;
 
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionSet;
+import io.github.hds.pemu.memory.registers.IRegister;
+import io.github.hds.pemu.memory.registers.MemoryRegister;
+import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.utils.StringUtils;
 import io.github.hds.pemu.utils.Token;
 import io.github.hds.pemu.utils.Tokenizer;
@@ -38,38 +41,20 @@ public class Compiler {
 
     }
 
-    protected static class LabelData {
-        public static int NULL_PTR = -1;
-
-        public int pointer = NULL_PTR;
-        public ArrayList<Integer> occurrences = new ArrayList<>();
-        public ArrayList<Integer> offsets = new ArrayList<>();
-        public LabelData() { }
-
-        public LabelData(int pointer) {
-            this.pointer = pointer;
-        }
-
-        public void addOccurrence(int at) {
-            addOccurrence(at, 0);
-        }
-
-        public void addOccurrence(int at, int offset) {
-            occurrences.add(at);
-            offsets.add(offset);
-        }
-    }
-
     protected static class CompilerData {
-        @NotNull ArrayList<Integer> program;
-        @NotNull HashMap<String, LabelData> labels;
-        @NotNull HashMap<String, Integer> constants;
-        @NotNull Tokenizer tokenizer;
+        public final @NotNull IProcessor PROCESSOR;
+        public @NotNull ArrayList<Integer> program;
+        public @NotNull HashMap<String, LabelData> labels;
+        public @NotNull HashMap<String, Integer> constants;
+        public @NotNull HashMap<Integer, String> registers;
+        public @NotNull Tokenizer tokenizer;
 
-        protected CompilerData() {
+        protected CompilerData(@NotNull IProcessor processor) {
+            PROCESSOR = processor;
             program = new ArrayList<>();
             labels = new HashMap<>();
             constants = Constants.getDefaultConstants();
+            registers = new HashMap<>();
             tokenizer = new Tokenizer();
         }
     }
@@ -101,6 +86,16 @@ public class Compiler {
 
         protected TypeError(@NotNull String message, int currentLine, int currentChar) {
             super(String.format("Type Error (%d:%d): %s.", currentLine, currentChar, message));
+        }
+    }
+
+    public static class ProcessorError extends RuntimeException {
+        protected ProcessorError(@NotNull String message, @NotNull Tokenizer tokenizer) {
+            this(message, tokenizer.getConsumedLines() + 1, tokenizer.getConsumedLineCharacters());
+        }
+
+        protected ProcessorError(@NotNull String message, int currentLine, int currentChar) {
+            super(String.format("Processor Error (%d:%d): %s.", currentLine, currentChar, message));
         }
     }
 
@@ -146,7 +141,7 @@ public class Compiler {
                     cd.program.add(address);
                     return new ParseResult<>(PARSE_STATUS.SUCCESS, null, address);
                 } else return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, null, offset);
-            } else throw new SyntaxError("Offset terminator ('" + Tokens.OFF_END.PATTERN + "')", offEndToken, cd.tokenizer);
+            } else throw new SyntaxError("Offset terminator ('" + Tokens.OFF_END.getPattern() + "')", offEndToken, cd.tokenizer);
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
     }
 
@@ -231,6 +226,22 @@ public class Compiler {
         }
     }
 
+    private static ParseResult<Integer> parseRegister(CompilerData cd, boolean addToProgram) {
+        String lastToken = cd.tokenizer.getLast();
+        if (lastToken == null) return new ParseResult<>(PARSE_STATUS.FAIL);
+
+        IRegister register = cd.PROCESSOR.getRegister(lastToken);
+        if (register == null) return new ParseResult<>(PARSE_STATUS.FAIL);
+        else if (register instanceof MemoryRegister) {
+            int address = ((MemoryRegister) register).getAddress();
+            if (!addToProgram) return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, lastToken, address);
+
+            cd.registers.put(cd.program.size(), lastToken);
+            cd.program.add(address);
+            return new ParseResult<>(PARSE_STATUS.SUCCESS, lastToken, address);
+        } else throw new ProcessorError("Reading/Writing to Register \"" + lastToken + "\" isn't supported!", cd.tokenizer);
+    }
+
     private static ParseResult<String> parseString(@NotNull CompilerData cd, boolean addToProgram) {
         String terminator = cd.tokenizer.getLast();
         if (terminator == null) return new ParseResult<>(PARSE_STATUS.FAIL);
@@ -295,6 +306,7 @@ public class Compiler {
         if (valueToParse == null) throw new SyntaxError("Number, Char, Offset, Constant or Label", "null", cd.tokenizer);
 
         ParseResult<Integer> lastResult = parseNumber(cd, true);
+        if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseRegister(cd, true);
         if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseCharacter(cd, true);
         if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseOffset(cd, false, null, true);
         if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseConstant(cd, true, true);
@@ -305,7 +317,7 @@ public class Compiler {
         return lastResult;
     }
 
-    public static int[] compileFile(@NotNull File file, @NotNull InstructionSet instructionSet) {
+    public static CompiledProgram compileFile(@NotNull File file, @NotNull IProcessor processor) {
         if (!file.exists()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file doesn't exist.");
         if (!file.canRead()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file can't be read.");
 
@@ -316,7 +328,9 @@ public class Compiler {
             throw new IllegalStateException("Something went wrong while reading the specified file.");
         }
 
-        CompilerData cd = new CompilerData();
+        InstructionSet instructionSet = processor.getInstructionSet();
+
+        CompilerData cd = new CompilerData(processor);
         cd.tokenizer = new Tokenizer(contents, true, Tokens.ALL_TOKENS);
         cd.tokenizer.removeEmpties();
 
@@ -364,7 +378,7 @@ public class Compiler {
                             try {
                                 parseValues(cd);
                             } catch (Exception err) {
-                                throw new SyntaxError("Array terminator ('" + Tokens.ARR_END.PATTERN + "')", cd.tokenizer.getLast(), cd.tokenizer);
+                                throw new SyntaxError("Array terminator ('" + Tokens.ARR_END.getPattern() + "')", cd.tokenizer.getLast(), cd.tokenizer);
                             }
                         }
                     } else throw new SyntaxError("Array", arrayStart, cd.tokenizer);
@@ -386,20 +400,34 @@ public class Compiler {
         int[] primitiveIntProgram = new int[cd.program.size()];
         for (int i = 0; i < cd.program.size(); i++)
             primitiveIntProgram[i] = cd.program.get(i);
-        return primitiveIntProgram;
+
+        return new CompiledProgram(processor, cd.labels, cd.registers, primitiveIntProgram);
     }
 
-    public static @NotNull String obfuscateProgram(int[] program) {
-        switch (program.length) {
-            case 0: return "; Nothing to see here ;)";
-            case 1: return "#DW " + program[0];
+    public static @NotNull String obfuscateProgram(CompiledProgram compiledProgram) {
+        int[] programData = compiledProgram.getData();
+        switch (programData.length) {
+            case 0: return Tokens.COMMENT.getPattern() + " Nothing to see here ;)";
+            case 1: {
+                return Tokens.COMPILER.getPattern() + "DW " +
+                        ( compiledProgram.getRegisters().containsKey(0) ? compiledProgram.getRegisters().get(0) : programData[0] );
+            }
             default: {
                 StringBuilder obfProgram = new StringBuilder();
-                obfProgram.append("#DA { ");
-                for (int value : program) {
-                    obfProgram.append(value).append(' ');
+                obfProgram.append(Tokens.COMPILER.getPattern())
+                          .append("DA ")
+                          .append(Tokens.ARR_START.getPattern())
+                          .append(" ");
+
+                HashMap<Integer, String> programRegisters = compiledProgram.getRegisters();
+                for (int i = 0; i < programData.length; i++) {
+                    if (programRegisters.containsKey(i))
+                        obfProgram.append(programRegisters.get(i));
+                    else obfProgram.append(programData[i]);
+                    obfProgram.append(' ');
                 }
-                obfProgram.append("}");
+
+                obfProgram.append(Tokens.ARR_END.getPattern());
                 return obfProgram.toString();
             }
         }

@@ -11,6 +11,7 @@
    * [Constants](#constants)
    * [Labels](#labels)
    * [Compiler Instructions](#compiler-instructions)
+   * [Registers](#registers)
  - [Instructions](#instructions)
    * [NULL](#null)
    * [BRK](#brk)
@@ -224,6 +225,20 @@ array: #DA { 10, 3, 2, enter_key: @VK_ENTER }
 ; This is useful to define multiple words without using multiple define
 ;  word instructions 
 ```
+
+## Registers
+
+If the specified Register supports it, Registers can be used in the same places as [Labels](#labels).
+
+For Example: They're useful if you want to get the location of the Stack:
+
+```Assembly
+; This label points at the Stack Pointer Register's address
+SP_ptr: #DW SP
+```
+
+If the specified Register doesn't support this type of operation (aka The Register isn't an instance of MemoryRegister),
+then an error will be thrown on the Debug Console.
 
 # Instructions
 

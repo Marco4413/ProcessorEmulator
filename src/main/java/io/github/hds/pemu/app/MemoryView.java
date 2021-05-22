@@ -1,7 +1,7 @@
 package io.github.hds.pemu.app;
 
-import io.github.hds.pemu.memory.IFlag;
-import io.github.hds.pemu.memory.IRegister;
+import io.github.hds.pemu.memory.flags.IFlag;
+import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
@@ -180,8 +180,8 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
         }
 
         HashMap<Integer, String> history = processor.getInstructionHistory();
-        IRegister IP = processor.getRegistry("IP");
-        IRegister SP = processor.getRegistry("SP");
+        IRegister IP = processor.getRegister("IP");
+        IRegister SP = processor.getRegister("SP");
         IFlag ZF = processor.getFlag("ZF");
         IFlag CF = processor.getFlag("CF");
 

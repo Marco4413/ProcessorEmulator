@@ -7,26 +7,30 @@ import java.util.regex.Pattern;
 
 public class Token {
 
-    private final boolean SHOULD_QUOTE;
-    public final String PATTERN;
+    private final boolean DO_QUOTE;
+    private final String PATTERN;
 
     public Token(@NotNull String pattern) {
         this(pattern, false);
     }
 
     public Token(@NotNull String pattern, boolean quotePattern) {
-        SHOULD_QUOTE = quotePattern;
+        DO_QUOTE = quotePattern;
         PATTERN = pattern;
     }
 
     public @NotNull String getPattern() {
-        if (SHOULD_QUOTE) return Pattern.quote(PATTERN);
+        return PATTERN;
+    }
+
+    public @NotNull String getRegexPattern() {
+        if (DO_QUOTE) return Pattern.quote(PATTERN);
         else return PATTERN;
     }
 
     public boolean equals(@Nullable String str) {
         if (str == null) return false;
-        return str.matches("[" + getPattern() + "]+");
+        return str.matches("[" + getRegexPattern() + "]+");
     }
 
 }
