@@ -1,7 +1,6 @@
 
 JMP start
 
-sp: #DW SP
 str: #DW [1] #DS "Hello World!\n\0"
 
 #DA {
