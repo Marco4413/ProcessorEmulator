@@ -44,17 +44,17 @@ public class Compiler {
     protected static class CompilerData {
         public final @NotNull IProcessor PROCESSOR;
         public @NotNull ArrayList<Integer> program;
-        public @NotNull HashMap<String, LabelData> labels;
+        public @NotNull LabelData labels;
         public @NotNull HashMap<String, Integer> constants;
-        public @NotNull HashMap<Integer, String> registers;
+        public @NotNull RegisterData registers;
         public @NotNull Tokenizer tokenizer;
 
         protected CompilerData(@NotNull IProcessor processor) {
             PROCESSOR = processor;
             program = new ArrayList<>();
-            labels = new HashMap<>();
+            labels = new LabelData();
             constants = Constants.getDefaultConstants();
-            registers = new HashMap<>();
+            registers = new RegisterData();
             tokenizer = new Tokenizer();
         }
     }
@@ -155,15 +155,15 @@ public class Compiler {
             cd.tokenizer.consumeNext(Tokens.SPACE);
             if (cd.labels.containsKey(lastToken)) {
                 // If a label was already created check if it has a pointer
-                LabelData labelData = cd.labels.get(lastToken);
-                if (labelData.pointer == LabelData.NULL_PTR)
-                    labelData.pointer = cd.program.size();
+                Label label = cd.labels.get(lastToken);
+                if (label.pointer == Label.NULL_PTR)
+                    label.pointer = cd.program.size();
                 else
                     // If the label has a valid pointer then it was already declared!
                     throw new TypeError("Label '" + lastToken + "' was already declared", cd.tokenizer);
             } else
                 // If no label was created then create it
-                cd.labels.put(lastToken, new LabelData(cd.program.size()));
+                cd.labels.put(lastToken, new Label(cd.program.size()));
             return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, lastToken, cd.program.size());
         } else if (!declareOnly) {
             int offset = 0;
@@ -171,12 +171,12 @@ public class Compiler {
             if (offsetResult.STATUS != PARSE_STATUS.FAIL) offset = offsetResult.VALUE;
 
             if (cd.labels.containsKey(lastToken)) {
-                LabelData labelData = cd.labels.get(lastToken);
-                labelData.addOccurrence(cd.program.size(), offset);
+                Label label = cd.labels.get(lastToken);
+                label.addOccurrence(cd.program.size(), offset);
             } else {
-                LabelData labelData = new LabelData();
-                labelData.addOccurrence(cd.program.size(), offset);
-                cd.labels.put(lastToken, labelData);
+                Label label = new Label();
+                label.addOccurrence(cd.program.size(), offset);
+                cd.labels.put(lastToken, label);
             }
             cd.program.add(0);
             return new ParseResult<>(PARSE_STATUS.SUCCESS, lastToken, cd.program.size());
@@ -391,7 +391,7 @@ public class Compiler {
         }
 
         cd.labels.forEach((key, data) -> {
-            if (data.pointer == LabelData.NULL_PTR) throw new ReferenceError("Label", key, -1, -1);
+            if (data.pointer == Label.NULL_PTR) throw new ReferenceError("Label", key, -1, -1);
             if (data.occurrences.size() != data.offsets.size()) throw new IllegalStateException("Label '" + key + "' has different amounts of occurrences and offsets.");
             for (int i = 0; i < data.occurrences.size(); i++)
                 cd.program.set(data.occurrences.get(i), data.pointer + data.offsets.get(i));
@@ -419,11 +419,11 @@ public class Compiler {
                           .append(Tokens.ARR_START.getPattern())
                           .append(" ");
 
-                HashMap<Integer, String> programRegisters = compiledProgram.getRegisters();
+                RegisterData programRegisters = compiledProgram.getRegisters();
                 for (int i = 0; i < programData.length; i++) {
-                    if (programRegisters.containsKey(i))
-                        obfProgram.append(programRegisters.get(i));
-                    else obfProgram.append(programData[i]);
+                    if (programRegisters.hasRegisterOnLine(i))
+                        obfProgram.append( programRegisters.getRegisterOnLine(i) );
+                    else obfProgram.append( programData[i] );
                     obfProgram.append(' ');
                 }
 

@@ -1,4 +1,12 @@
 
+-- Version (v1.4.0-RELEASE)
+-- Changes from commit @ac857ea
+
+Changes to better organize Compiler's code
+Renamed class pemu.compiler.LabelData to Label
+Added class compiler.LabelData (Which holds all Labels parsed by the Compiler)
+Added class compiler.RegisterData (Which holds all registers parsed by the Compiler)
+
 -- Version (v1.3.0-RELEASE)
 -- Changes from commit @8d1aa2f
 

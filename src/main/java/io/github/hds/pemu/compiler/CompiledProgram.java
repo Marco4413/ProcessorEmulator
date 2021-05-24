@@ -7,11 +7,11 @@ import java.util.HashMap;
 
 public class CompiledProgram {
     private final @NotNull IProcessor PROCESSOR;
-    private final @NotNull HashMap<String, LabelData> LABELS;
-    private final @NotNull HashMap<Integer, String> REGISTERS;
+    private final @NotNull LabelData LABELS;
+    private final @NotNull RegisterData REGISTERS;
     private final int[] DATA;
 
-    protected CompiledProgram(@NotNull IProcessor processor, @NotNull HashMap<String, LabelData> labels, @NotNull HashMap<Integer, String> registers, int[] programData) {
+    protected CompiledProgram(@NotNull IProcessor processor, @NotNull LabelData labels, @NotNull RegisterData registers, int[] programData) {
         PROCESSOR = processor;
         LABELS = labels;
         REGISTERS = registers;
@@ -22,11 +22,11 @@ public class CompiledProgram {
         return PROCESSOR;
     }
 
-    public @NotNull HashMap<String, LabelData> getLabels() {
+    public @NotNull LabelData getLabels() {
         return LABELS;
     }
 
-    public @NotNull HashMap<Integer, String> getRegisters() {
+    public @NotNull RegisterData getRegisters() {
         return REGISTERS;
     }
 
