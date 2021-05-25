@@ -2,7 +2,7 @@ package io.github.hds.pemu;
 
 import io.github.hds.pemu.app.Application;
 import io.github.hds.pemu.processor.Processor;
-import io.github.hds.pemu.utils.ConfigManager;
+import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.arguments.ArgumentsParser;
 import io.github.hds.pemu.processor.ProcessorConfig;
 

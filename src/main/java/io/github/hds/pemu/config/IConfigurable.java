@@ -1,4 +1,6 @@
-package io.github.hds.pemu.utils;
+package io.github.hds.pemu.config;
+
+import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
 
 public interface IConfigurable {
 

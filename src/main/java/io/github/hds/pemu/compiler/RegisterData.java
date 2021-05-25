@@ -5,8 +5,25 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class RegisterData extends HashMap<Integer, String> {
+    protected RegisterData(int initialCapacity, float loadFactor) {
+        super(initialCapacity, loadFactor);
+    }
+
+    protected RegisterData(int initialCapacity) {
+        super(initialCapacity);
+    }
+
+    protected RegisterData() {
+        super();
+    }
+
+    protected RegisterData(Map<? extends Integer, ? extends String> m) {
+        super(m);
+    }
+
     @Nullable String getRegisterOnLine(int line) {
         return this.get(line);
     }

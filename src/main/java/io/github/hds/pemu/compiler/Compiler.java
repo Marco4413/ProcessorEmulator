@@ -6,8 +6,8 @@ import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.memory.registers.MemoryRegister;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.utils.StringUtils;
-import io.github.hds.pemu.utils.Token;
-import io.github.hds.pemu.utils.Tokenizer;
+import io.github.hds.pemu.tokenizer.Token;
+import io.github.hds.pemu.tokenizer.Tokenizer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,19 +21,19 @@ public class Compiler {
 
     protected static class Tokens {
 
-        public static final Token COMMENT   = new Token(";");
-        public static final Token CONSTANT  = new Token("@");
-        public static final Token LABEL     = new Token(":");
-        public static final Token COMPILER  = new Token("#");
-        public static final Token STRING    = new Token("\"'");
-        public static final Token CHARACTER = new Token("'");
-        public static final Token ESCAPE_CH = new Token("\\", true);
-        public static final Token ARR_START = new Token("{");
-        public static final Token ARR_END   = new Token("}");
-        public static final Token OFF_START = new Token("[", true);
-        public static final Token OFF_END   = new Token("]", true);
-        public static final Token SPACE     = new Token("\\s");
-        public static final Token NEWLINE   = new Token("\n");
+        public static final Token COMMENT   = new Token(';');
+        public static final Token CONSTANT  = new Token('@');
+        public static final Token LABEL     = new Token(':');
+        public static final Token COMPILER  = new Token('#');
+        public static final Token STRING    = new Token('"', "\"'", false);
+        public static final Token CHARACTER = new Token('\'');
+        public static final Token ESCAPE_CH = new Token('\\', true);
+        public static final Token ARR_START = new Token('{');
+        public static final Token ARR_END   = new Token('}');
+        public static final Token OFF_START = new Token('[', true);
+        public static final Token OFF_END   = new Token(']', true);
+        public static final Token SPACE     = new Token(' ', "\\s", false);
+        public static final Token NEWLINE   = new Token('\n');
 
         public static final Token[] ALL_TOKENS = new Token[] {
                 COMMENT, CONSTANT, LABEL, COMPILER, STRING, CHARACTER, ESCAPE_CH, ARR_START, ARR_END, OFF_START, OFF_END, SPACE, NEWLINE
@@ -42,20 +42,20 @@ public class Compiler {
     }
 
     protected static class CompilerData {
-        public final @NotNull IProcessor PROCESSOR;
-        public @NotNull ArrayList<Integer> program;
-        public @NotNull LabelData labels;
-        public @NotNull HashMap<String, Integer> constants;
-        public @NotNull RegisterData registers;
-        public @NotNull Tokenizer tokenizer;
+        public final @NotNull IProcessor processor;
+        public final @NotNull ArrayList<Integer> program;
+        public final @NotNull LabelData labels;
+        public final @NotNull HashMap<String, Integer> constants;
+        public final @NotNull RegisterData registers;
+        public final @NotNull Tokenizer tokenizer;
 
-        protected CompilerData(@NotNull IProcessor processor) {
-            PROCESSOR = processor;
-            program = new ArrayList<>();
-            labels = new LabelData();
-            constants = Constants.getDefaultConstants();
-            registers = new RegisterData();
-            tokenizer = new Tokenizer();
+        protected CompilerData(@NotNull IProcessor processor, @NotNull Tokenizer tokenizer) {
+            this.processor = processor;
+            this.program = new ArrayList<>();
+            this.labels = new LabelData();
+            this.constants = Constants.getDefaultConstants();
+            this.registers = new RegisterData();
+            this.tokenizer = tokenizer;
         }
     }
 
@@ -124,7 +124,7 @@ public class Compiler {
         String token = peekNext ? (peekBlacklist == null ? cd.tokenizer.peekNext() : cd.tokenizer.peekNext(peekBlacklist)) : cd.tokenizer.getLast();
         if (token == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
-        if (Tokens.OFF_START.equals(token)) {
+        if (Tokens.OFF_START.matches(token)) {
             if (peekNext) cd.tokenizer.consumeNext(Tokens.SPACE);
             String offsetToken = cd.tokenizer.consumeNext(Tokens.SPACE);
 
@@ -135,7 +135,7 @@ public class Compiler {
             int offset = lastResult.VALUE;
 
             String offEndToken = cd.tokenizer.consumeNext(Tokens.SPACE);
-            if (Tokens.OFF_END.equals(offEndToken)) {
+            if (Tokens.OFF_END.matches(offEndToken)) {
                 if (addToProgram) {
                     int address = cd.program.size() + offset;
                     cd.program.add(address);
@@ -150,7 +150,7 @@ public class Compiler {
         if (lastToken == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
         String nextToken = cd.tokenizer.peekNext(Tokens.SPACE);
-        if (Tokens.LABEL.equals(nextToken)) {
+        if (Tokens.LABEL.matches(nextToken)) {
             // If a label is being declared consume the declaration token
             cd.tokenizer.consumeNext(Tokens.SPACE);
             if (cd.labels.containsKey(lastToken)) {
@@ -187,7 +187,7 @@ public class Compiler {
         String lastToken = cd.tokenizer.getLast();
         if (lastToken == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
-        if (Tokens.CONSTANT.equals(lastToken)) {
+        if (Tokens.CONSTANT.matches(lastToken)) {
             String constantName = cd.tokenizer.consumeNext(Tokens.SPACE);
             if (isGetting) {
                 if (constantName == null) throw new SyntaxError("Constant's name", "null", cd.tokenizer);
@@ -230,7 +230,7 @@ public class Compiler {
         String lastToken = cd.tokenizer.getLast();
         if (lastToken == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
-        IRegister register = cd.PROCESSOR.getRegister(lastToken);
+        IRegister register = cd.processor.getRegister(lastToken);
         if (register == null) return new ParseResult<>(PARSE_STATUS.FAIL);
         else if (register instanceof MemoryRegister) {
             int address = ((MemoryRegister) register).getAddress();
@@ -246,7 +246,7 @@ public class Compiler {
         String terminator = cd.tokenizer.getLast();
         if (terminator == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
-        if (Tokens.STRING.equals(terminator)) {
+        if (Tokens.STRING.matches(terminator)) {
             boolean escapeChar = false;
             StringBuilder value = new StringBuilder();
             while (true) {
@@ -262,7 +262,7 @@ public class Compiler {
                     } else value.append(valueToAdd);
                     escapeChar = false;
                 } else if (valueToAdd.equals(terminator)) break;
-                else if (Tokens.ESCAPE_CH.equals(valueToAdd)) escapeChar = true;
+                else if (Tokens.ESCAPE_CH.matches(valueToAdd)) escapeChar = true;
                 else value.append(valueToAdd);
             }
             if (addToProgram) {
@@ -276,13 +276,13 @@ public class Compiler {
         String terminator = cd.tokenizer.getLast();
         if (terminator == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
-        if (Tokens.CHARACTER.equals(terminator)) {
+        if (Tokens.CHARACTER.matches(terminator)) {
             char character;
 
             String nextToken = cd.tokenizer.consumeNext();
             if (nextToken == null || terminator.equals(nextToken) || nextToken.length() > 1)
                 throw new SyntaxError("Character", nextToken, cd.tokenizer);
-            else if (Tokens.ESCAPE_CH.equals(nextToken)) {
+            else if (Tokens.ESCAPE_CH.matches(nextToken)) {
                 String escapedChar = cd.tokenizer.consumeNext();
                 if (escapedChar == null || escapedChar.length() > 1)
                     throw new SyntaxError("Character", escapedChar, cd.tokenizer);
@@ -330,8 +330,10 @@ public class Compiler {
 
         InstructionSet instructionSet = processor.getInstructionSet();
 
-        CompilerData cd = new CompilerData(processor);
-        cd.tokenizer = new Tokenizer(contents, true, Tokens.ALL_TOKENS);
+        CompilerData cd = new CompilerData(
+                processor,
+                new Tokenizer(contents, true, Tokens.ALL_TOKENS)
+        );
         cd.tokenizer.removeEmpties();
 
         while (cd.tokenizer.hasNext()) {
@@ -347,12 +349,12 @@ public class Compiler {
                 for (int i = 0; i < instruction.ARGUMENTS;)
                     if (parseValues(cd).STATUS == PARSE_STATUS.SUCCESS) i++;
 
-            } else if (Tokens.COMMENT.equals(token)) {
+            } else if (Tokens.COMMENT.matches(token)) {
                 String nextToken;
                 do {
                     nextToken = cd.tokenizer.consumeNext();
-                } while (!Tokens.NEWLINE.equals(nextToken));
-            } else if (Tokens.COMPILER.equals(token)) {
+                } while (!Tokens.NEWLINE.matches(nextToken));
+            } else if (Tokens.COMPILER.matches(token)) {
                 // Parsing Compiler Instructions
                 String compilerInstr = cd.tokenizer.consumeNext(Tokens.SPACE);
                 if (compilerInstr == null)
@@ -366,11 +368,11 @@ public class Compiler {
                 } else if (compilerInstr.equals("DA")) {
                     // Be sure that there's the character that starts the array
                     String arrayStart = cd.tokenizer.consumeNext(Tokens.SPACE);
-                    if (Tokens.ARR_START.equals(arrayStart)) {
+                    if (Tokens.ARR_START.matches(arrayStart)) {
                         while (true) {
                             // For each value in the array, check if the next value is the array closer character
                             String nextToken = cd.tokenizer.peekNext(Tokens.SPACE);
-                            if (Tokens.ARR_END.equals(nextToken)) {
+                            if (Tokens.ARR_END.matches(nextToken)) {
                                 cd.tokenizer.consumeNext(Tokens.SPACE);
                                 break;
                             }
