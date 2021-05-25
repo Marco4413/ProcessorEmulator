@@ -1,6 +1,8 @@
-package io.github.hds.pemu.utils;
+package io.github.hds.pemu.config;
 
 import io.github.hds.pemu.app.Application;
+import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
+import io.github.hds.pemu.tokenizer.keyvalue.KeyValueParser;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;

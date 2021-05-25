@@ -1,4 +1,4 @@
-package io.github.hds.pemu.utils;
+package io.github.hds.pemu.tokenizer;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,21 +17,13 @@ public class Tokenizer {
         tokens = new String[0];
     }
 
-    public Tokenizer(@NotNull String str, boolean keepDelimiters, @NotNull String... delimiters) {
-        String rule = String.join("", delimiters);
-        String regex = keepDelimiters ?
-                "((?<=[" + rule + "])|(?=[" + rule + "]))" :
-                "[" + rule + "]+";
-        tokens = str.split(regex);
-    }
-
-    public Tokenizer(@NotNull String str, boolean keepDelimiters, @NotNull Token... tokens) {
+    public Tokenizer(@NotNull String str, boolean keepTokens, @NotNull Token... tokens) {
         StringBuilder ruleBuilder = new StringBuilder();
         for (Token token : tokens)
-            ruleBuilder.append(token.getRegexPattern());
+            ruleBuilder.append(token.getPattern());
 
         String rule = ruleBuilder.toString();
-        String regex = keepDelimiters ?
+        String regex = keepTokens ?
                 "((?<=[" + rule + "])|(?=[" + rule + "]))" :
                 "[" + rule + "]+";
         this.tokens = str.split(regex);
@@ -39,33 +31,34 @@ public class Tokenizer {
 
     public void removeDuplicates() {
         ArrayList<String> newTokens = new ArrayList<>();
-        int offset = 0;
+        int removed = 0;
 
         String lastToken = "";
         for (int i = 0; i < tokens.length; i++) {
             String token = tokens[i];
-            if (!lastToken.equals(token))
-                newTokens.add(token);
-            else if (i <= nextToken)
-                offset++;
-
+            if (!lastToken.equals(token)) newTokens.add(token);
+            else if (i <= nextToken) removed++;
             lastToken = token;
         }
 
-        nextToken -= offset;
-        if (nextToken < 0)
-            nextToken = 0;
+        nextToken -= removed;
+        if (nextToken < 0) nextToken = 0;
 
         tokens = newTokens.toArray(new String[0]);
     }
 
     public void removeEmpties() {
         ArrayList<String> newTokens = new ArrayList<>();
+        int removed = 0;
 
-        for (String token : tokens) {
-            if (!token.equals(""))
-                newTokens.add(token);
+        for (int i = 0; i < tokens.length; i++) {
+            String token = tokens[i];
+            if (!token.equals("")) newTokens.add(token);
+            else if (i <= nextToken) removed++;
         }
+
+        nextToken -= removed;
+        if (nextToken < 0) nextToken = 0;
 
         tokens = newTokens.toArray(new String[0]);
     }
@@ -82,17 +75,17 @@ public class Tokenizer {
         return hasNext() ? tokens[nextToken] : null;
     }
 
-    public @Nullable String peekNext(Token... tokenBlacklist) {
+    public @Nullable String peekNext(Token... ignoredTokens) {
         int offset = 0;
         while (offset + nextToken < tokens.length) {
             String token = tokens[offset++ + nextToken];
             if (token == null) return null;
 
             boolean isValid = true;
-            for (Token blacklisted : tokenBlacklist) {
+            for (Token ignored : ignoredTokens) {
                 if (!isValid) break;
 
-                isValid = !blacklisted.equals(token);
+                isValid = !ignored.matches(token);
             }
             if (isValid) return token;
         }
@@ -101,38 +94,41 @@ public class Tokenizer {
 
     public @Nullable String consumeNext() {
         if (hasNext()) {
-            String nextString = tokens[nextToken];
-            consumedCharacters += nextString.length();
+            String nextToken = tokens[this.nextToken];
+            consumedCharacters += nextToken.length();
 
             // This shouldn't impact performance too much
             //  also we'll probably never tokenize REALLY long strings
+            // Oh nice, I wrote this before the change which
+            //  Tokenizes the whole program at once, life is full of surprises
+            //  though still, Java should be fast enough and programs can't be that long
             int lastNewline = -1;
-            for (int i = 0; i < nextString.length(); i++) {
-                if (nextString.charAt(i) == '\n') {
+            for (int i = 0; i < nextToken.length(); i++) {
+                if (nextToken.charAt(i) == '\n') {
                     lastNewline = i;
                     consumedLines++;
                 }
             }
 
             if (lastNewline == -1)
-                consumedLineChars += nextString.length();
-            else consumedLineChars = nextString.length() - lastNewline;
+                consumedLineChars += nextToken.length();
+            else consumedLineChars = nextToken.length() - lastNewline;
 
-            return tokens[nextToken++];
+            return tokens[this.nextToken++];
         }
         return null;
     }
 
-    public @Nullable String consumeNext(Token... tokenBlacklist) {
+    public @Nullable String consumeNext(Token... ignoredTokens) {
         while (hasNext()) {
             String token = consumeNext();
             if (token == null) return null;
 
             boolean isValid = true;
-            for (Token blacklisted : tokenBlacklist) {
+            for (Token ignored : ignoredTokens) {
                 if (!isValid) break;
 
-                isValid = !blacklisted.equals(token);
+                isValid = !ignored.matches(token);
             }
             if (isValid) return token;
         }

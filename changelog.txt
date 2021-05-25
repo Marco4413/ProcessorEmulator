@@ -1,5 +1,23 @@
 
 -- Version (v1.4.0-RELEASE)
+-- Changes from commit @38d9d71
+
+Overhauled project's layout
+Made all constructors of classes LabelData and RegisterData protected
+
+Added package pemu.config
+Moved classes from package pemu.utils to pemu.config: ConfigManager, IConfigurable
+
+Added package pemu.localization
+Moved classes from package pemu.utils to pemu.localization: TranslationManager, Translation, ITranslatable
+
+Added package pemu.tokenizer
+Moved classes from package pemu.utils to pemu.tokenizer: Tokenizer, Token
+Reworked Token class
+
+Added package pemu.tokenizer.keyvalue
+Moved classes from package pemu.utils to pemu.tokenizer.keyvalue: KeyValueParser, KeyValueData
+
 -- Changes from commit @ac857ea
 
 Changes to better organize Compiler's code

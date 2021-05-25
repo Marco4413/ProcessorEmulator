@@ -1,5 +1,6 @@
-package io.github.hds.pemu.utils;
+package io.github.hds.pemu.tokenizer.keyvalue;
 
+import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

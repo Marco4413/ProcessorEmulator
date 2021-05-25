@@ -1,5 +1,8 @@
-package io.github.hds.pemu.utils;
+package io.github.hds.pemu.tokenizer.keyvalue;
 
+import io.github.hds.pemu.tokenizer.Token;
+import io.github.hds.pemu.tokenizer.Tokenizer;
+import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -7,16 +10,16 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class KeyValueParser {
-    private static final Token STRING = new Token("\"");
-    private static final Token CHARACTER = new Token("'");
-    private static final Token ESCAPE_CHAR = new Token("\\", true);
-    private static final Token ASSIGN = new Token("=");
-    private static final Token WHITESPACE = new Token("\\s");
-    private static final Token COMMENT = new Token("#");
+    private static final Token STRING      = new Token('"');
+    private static final Token CHARACTER   = new Token('\'');
+    private static final Token ESCAPE_CHAR = new Token('\\', true);
+    private static final Token ASSIGN      = new Token('=');
+    private static final Token WHITESPACE  = new Token(' ', "\\s", false);
+    private static final Token COMMENT     = new Token('#');
 
     private static @Nullable String parseString(@NotNull Tokenizer tokenizer) {
         String terminator = tokenizer.peekNext(WHITESPACE);
-        if (!STRING.equals(terminator)) return null;
+        if (!STRING.matches(terminator)) return null;
         tokenizer.consumeNext(WHITESPACE);
 
         StringBuilder builder = new StringBuilder();
@@ -31,20 +34,20 @@ public class KeyValueParser {
                 if (nextToken.length() > 1) builder.append(nextToken.substring(1));
                 isEscaping = false;
             } else if (nextToken.equals(terminator)) return builder.toString();
-            else if (ESCAPE_CHAR.equals(nextToken)) isEscaping = true;
+            else if (ESCAPE_CHAR.matches(nextToken)) isEscaping = true;
             else builder.append(nextToken);
         }
     }
 
     private static @Nullable Character parseCharacter(@NotNull Tokenizer tokenizer) {
         String terminator = tokenizer.peekNext(WHITESPACE);
-        if (!CHARACTER.equals(terminator)) return null;
+        if (!CHARACTER.matches(terminator)) return null;
         tokenizer.consumeNext(WHITESPACE);
 
         String nextToken = tokenizer.consumeNext();
         if (nextToken == null) return null;
 
-        if (ESCAPE_CHAR.equals(nextToken)) {
+        if (ESCAPE_CHAR.matches(nextToken)) {
             String charToEscape = tokenizer.consumeNext();
             if (charToEscape == null || charToEscape.length() > 1) return null;
             if (!terminator.equals(tokenizer.consumeNext())) return null;
@@ -81,13 +84,13 @@ public class KeyValueParser {
             Tokenizer tokenizer = new Tokenizer(line, true, STRING, CHARACTER, ESCAPE_CHAR, ASSIGN, WHITESPACE, COMMENT);
             tokenizer.removeEmpties();
 
-            if (COMMENT.equals(tokenizer.peekNext(WHITESPACE))) continue;
+            if (COMMENT.matches(tokenizer.peekNext(WHITESPACE))) continue;
 
             String key = parseString(tokenizer);
             if (key == null) continue;
 
             String nextToken = tokenizer.consumeNext(WHITESPACE);
-            if (!ASSIGN.equals(nextToken)) continue;
+            if (!ASSIGN.matches(nextToken)) continue;
 
             String str = parseString(tokenizer);
             if (str != null) {

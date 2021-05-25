@@ -1,8 +1,14 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.config.ConfigManager;
+import io.github.hds.pemu.config.IConfigurable;
+import io.github.hds.pemu.localization.ITranslatable;
+import io.github.hds.pemu.localization.Translation;
+import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.memory.flags.IFlag;
 import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.processor.IProcessor;
+import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
 import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 

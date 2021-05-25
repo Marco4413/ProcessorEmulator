@@ -1,9 +1,9 @@
 package io.github.hds.pemu.app;
 
-import io.github.hds.pemu.utils.ITranslatable;
+import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.utils.IconUtils;
-import io.github.hds.pemu.utils.Translation;
-import io.github.hds.pemu.utils.TranslationManager;
+import io.github.hds.pemu.localization.Translation;
+import io.github.hds.pemu.localization.TranslationManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

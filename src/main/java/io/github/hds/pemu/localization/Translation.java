@@ -1,4 +1,4 @@
-package io.github.hds.pemu.utils;
+package io.github.hds.pemu.localization;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
