@@ -11,7 +11,7 @@
    * [Constants](#constants)
    * [Labels](#labels)
    * [Compiler Instructions](#compiler-instructions)
-   * [Registers](#registers)
+   * [Registers and Flags](#registers-and-flags)
  - [Instructions](#instructions)
    * [NULL](#null)
    * [BRK](#brk)
@@ -230,9 +230,9 @@ array: #DA { 10, 3, 2, enter_key: @VK_ENTER }
 ;  word instructions 
 ```
 
-## Registers
+## Registers and Flags
 
-If the specified Register supports it, Registers can be used in the same places as [Labels](#labels).
+If the specified Register/Flag supports it, Registers/Flags can be used in the same places as [Labels](#labels).
 
 For Example: They're useful if you want to get the location of the Stack:
 
@@ -241,8 +241,12 @@ For Example: They're useful if you want to get the location of the Stack:
 SP_ptr: #DW SP
 ```
 
-If the specified Register doesn't support this type of operation (aka The Register isn't an instance of MemoryRegister),
+If the specified Register/Flag doesn't support this type of operation
+(aka The Register/Flag isn't an instance of MemoryRegister/MemoryFlag),
 then an error will be thrown on the Debug Console.
+
+**NOTE:** Multiple Flags can be stored at the same address, so it isn't that useful to reference Flags
+unless you're certain about the bit that represents the Flag you want to get.
 
 # Instructions
 
