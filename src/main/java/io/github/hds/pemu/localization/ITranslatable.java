@@ -2,8 +2,7 @@ package io.github.hds.pemu.localization;
 
 import org.jetbrains.annotations.NotNull;
 
+@FunctionalInterface
 public interface ITranslatable {
-
-    public void updateTranslations(@NotNull Translation translation);
-
+    void updateTranslations(@NotNull Translation translation);
 }

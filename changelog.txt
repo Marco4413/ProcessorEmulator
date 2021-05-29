@@ -1,5 +1,22 @@
 
 -- Version (v1.4.0-RELEASE)
+-- Changes from commit @09e6d21
+
+Added Instruction XMOV, which is an expanded version of the MOV instruction (see docs)
+Actually implemented flag referencing from commit @c3452b0
+
+Made Instruction#execute return void
+Added InstructionError class, which can be used by Processor to throw if an Instruction threw an error
+Made Instructions throw if a Flag/Register wasn't found instead of returning
+
+Removed methods from InstructionSet: parse, parseAndExecute
+Removed class InstructionSet.ExecutionData
+
+Added method MathUtils.getBits
+
+Added @NotNull annotation to arguments of methods in IConfigurable
+Removed useless modifiers from Interfaces and added some annotations
+
 -- Changes from commit @38d9d71
 
 Overhauled project's layout
@@ -28,7 +45,7 @@ Added class compiler.RegisterData (Which holds all registers parsed by the Compi
 -- Version (v1.3.0-RELEASE)
 -- Changes from commit @8d1aa2f
 
-Now programs can reference Registers and Flags if they support it
+Now programs can reference Registers (and Flags... Forgot to implement it) if they support it
 
 Renamed method IProcessor#getRegistry to getRegister
 

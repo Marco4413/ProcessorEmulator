@@ -1,12 +1,11 @@
 package io.github.hds.pemu.processor;
 
 import io.github.hds.pemu.instructions.Instruction;
+import io.github.hds.pemu.instructions.InstructionError;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.*;
 import io.github.hds.pemu.memory.flags.IFlag;
 import io.github.hds.pemu.memory.flags.MemoryFlag;
-import io.github.hds.pemu.memory.registers.AbstractRegister;
-import io.github.hds.pemu.memory.registers.BasicRegister;
 import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.memory.registers.MemoryRegister;
 import io.github.hds.pemu.utils.StringUtils;
@@ -158,14 +157,20 @@ public class Processor implements IProcessor {
                     stop();
                 } else {
                     int currentIP = IP.getValue();
-                    Instruction instruction = INSTRUCTIONSET.parse(MEMORY, currentIP);
+                    Instruction instruction = INSTRUCTIONSET.getInstruction(MEMORY.getValueAt(currentIP));
+                    if (instruction == null) throw new InstructionError("Unknown", "Unknown Instruction", currentIP);
                     HISTORY.put(currentIP, instruction.KEYWORD);
 
                     IP.setValue(currentIP + instruction.getWords());
-                    instruction.execute(
-                            this,
-                            instruction.ARGUMENTS == 0 ? new int[0] : MEMORY.getValuesAt(currentIP + 1, instruction.ARGUMENTS)
-                    );
+                    try {
+                        instruction.execute(
+                                this,
+                                // Here we check instruction.ARGUMENTS == 0 because Memory#getValuesAt always throws if the address is out of bounds
+                                instruction.ARGUMENTS == 0 ? new int[0] : MEMORY.getValuesAt(currentIP + 1, instruction.ARGUMENTS)
+                        );
+                    } catch (Exception err) {
+                        throw new InstructionError(instruction.KEYWORD, err.getMessage(), currentIP);
+                    }
                 }
             }
         }

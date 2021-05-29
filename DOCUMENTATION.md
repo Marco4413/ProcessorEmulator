@@ -18,6 +18,7 @@
    * [DATA](#data)
    * [MOV](#mov)
    * [SWP](#swp)
+   * [XMOV](#xmov)
    * [OUTI](#outi)
    * [OUTC](#outc)
    * [GETI](#geti)
@@ -88,6 +89,9 @@ HLT
 The code above won't execute the contents of the declared variable.
 
 ## Dividing by ZERO
+
+**NOTE:** Since 1.3.X the error should be more clear, an `InstructionError` exception should be thrown describing which
+instruction gave that error with its address.
 
 The processor crashes when dividing a number by zero, no division by zero is executed inside the emulator's code,
 so most of the time it's the user's fault.
@@ -321,6 +325,41 @@ HLT
 _value1: #DW 0
 _value2: #DW 25
 space: #DW ' '
+```
+
+## XMOV
+
+`XMOV dst src opt`
+
+This moves `src` to `dst` using `opt` that describes how to move the contents of `src` to `dst`.
+
+The first 3 bits of `opt` are used as flags by the instruction to know how to perform the movement, `0bXSD`:
+ - `D` says whether to use the contents of `dst` as the address of the destination
+ - `S` says whether to use the contents of `src` as the address of the source
+ - `X` says whether to swap `src` and `dst`
+
+**Example:**
+
+```Assembly
+; This example is best viewed by looking at
+;  the Memory using the MemoryView panel (Ctrl + M)
+; And by stepping through the instructions
+;  using Processor->Step (Shift + S)
+
+BRK
+; This moves to val1 the contents of src
+XMOV val1 src 0b000
+; This swaps the contents of whatever dst
+;  and src's contents are pointing to
+XMOV dst  src 0b111
+
+HLT
+
+dst: #DW val1
+src: #DW val2
+
+val1: #DW 3
+val2: #DW 5
 ```
 
 ## OUTI

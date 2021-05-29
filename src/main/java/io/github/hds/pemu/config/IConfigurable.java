@@ -1,11 +1,12 @@
 package io.github.hds.pemu.config;
 
 import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
+import org.jetbrains.annotations.NotNull;
 
 public interface IConfigurable {
 
-    public void loadConfig(KeyValueData config);
-    public void saveConfig(KeyValueData config);
-    public default void setDefaults(KeyValueData defaultConfig) { }
+    void loadConfig(@NotNull KeyValueData config);
+    void saveConfig(@NotNull KeyValueData config);
+    default void setDefaults(@NotNull KeyValueData defaultConfig) { }
 
 }
