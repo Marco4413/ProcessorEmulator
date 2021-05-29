@@ -17,6 +17,6 @@ public class Instruction {
         return ARGUMENTS + 1;
     }
 
-    public boolean execute(@NotNull IProcessor p, int[] args) { return false; }
+    public void execute(@NotNull IProcessor p, int[] args) { }
 
 }

@@ -116,7 +116,7 @@ public class FileMenu extends JMenu implements ITranslatable, IConfigurable {
     }
 
     @Override
-    public void loadConfig(KeyValueData config) {
+    public void loadConfig(@NotNull KeyValueData config) {
         String languageName = config.get(String.class, "selectedLanguage");
         TranslationManager.setCurrentTranslation(
                 TranslationManager.loadTranslation(
@@ -126,13 +126,13 @@ public class FileMenu extends JMenu implements ITranslatable, IConfigurable {
     }
 
     @Override
-    public void saveConfig(KeyValueData config) {
+    public void saveConfig(@NotNull KeyValueData config) {
         String selectedLanguage = TranslationManager.getCurrentTranslation().getShortName();
         config.put("selectedLanguage", selectedLanguage);
     }
 
     @Override
-    public void setDefaults(KeyValueData defaultConfig) {
+    public void setDefaults(@NotNull KeyValueData defaultConfig) {
         defaultConfig.put("selectedLanguage", "en-us");
     }
 }

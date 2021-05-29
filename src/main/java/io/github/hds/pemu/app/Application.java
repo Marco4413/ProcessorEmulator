@@ -23,7 +23,7 @@ import java.util.function.Function;
 public class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
     public static final String APP_TITLE = "PEMU";
-    public static final String APP_VERSION = "1.3.0";
+    public static final String APP_VERSION = "1.4.0";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
@@ -110,7 +110,7 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
     }
 
     @Override
-    public void loadConfig(KeyValueData config) {
+    public void loadConfig(@NotNull KeyValueData config) {
         // Check if the config is on the right version, if not reset it to defaults
         String configVersion = config.get(String.class, "version");
         if (configVersion == null || StringUtils.compareVersions(configVersion, APP_VERSION) != 0) {
@@ -118,6 +118,7 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
             // Stopping event propagation to prevent from loading twice
             ConfigManager.stopEvent();
         } else {
+            // We let the app crash if config couldn't be loaded successfully
             processorConfig.setBits(config.get(Integer.class, "processorConfig.bits"));
             processorConfig.setMemorySize(config.get(Integer.class, "processorConfig.memSize"));
             processorConfig.setClock(config.get(Integer.class, "processorConfig.clock"));
@@ -125,14 +126,14 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
     }
 
     @Override
-    public void saveConfig(KeyValueData config) {
+    public void saveConfig(@NotNull KeyValueData config) {
         config.put("processorConfig.bits", processorConfig.getBits());
         config.put("processorConfig.memSize", processorConfig.getMemorySize());
         config.put("processorConfig.clock", processorConfig.getClock());
     }
 
     @Override
-    public void setDefaults(KeyValueData defaultConfig) {
+    public void setDefaults(@NotNull KeyValueData defaultConfig) {
         defaultConfig.put("version", APP_VERSION);
         defaultConfig.put("processorConfig.bits", ProcessorConfig.DEFAULT_BITS);
         defaultConfig.put("processorConfig.memSize", ProcessorConfig.DEFAULT_MEMORY_SIZE);

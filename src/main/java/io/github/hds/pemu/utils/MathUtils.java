@@ -23,4 +23,18 @@ public class MathUtils {
         return Math.round(val / (float) divisor) * divisor;
     }
 
+    /**
+     * Puts into bits the first bits.length bits of number
+     * @param number The number to get the first bits.length bits from
+     * @param bits The array to put the bits in
+     * @return bits
+     */
+    public static boolean[] getBits(int number, boolean[] bits) {
+        for (int i = 0; i < bits.length; i++) {
+            bits[i] = (number & 1) != 0;
+            number >>= 1;
+        }
+        return bits;
+    }
+
 }

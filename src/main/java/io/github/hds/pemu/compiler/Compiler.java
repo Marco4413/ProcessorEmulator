@@ -2,6 +2,8 @@ package io.github.hds.pemu.compiler;
 
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionSet;
+import io.github.hds.pemu.memory.flags.IFlag;
+import io.github.hds.pemu.memory.flags.MemoryFlag;
 import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.memory.registers.MemoryRegister;
 import io.github.hds.pemu.processor.IProcessor;
@@ -227,19 +229,31 @@ public class Compiler {
     }
 
     private static ParseResult<Integer> parseRegister(CompilerData cd, boolean addToProgram) {
-        String lastToken = cd.tokenizer.getLast();
-        if (lastToken == null) return new ParseResult<>(PARSE_STATUS.FAIL);
+        String registerName = cd.tokenizer.getLast();
+        if (registerName == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
-        IRegister register = cd.processor.getRegister(lastToken);
-        if (register == null) return new ParseResult<>(PARSE_STATUS.FAIL);
-        else if (register instanceof MemoryRegister) {
-            int address = ((MemoryRegister) register).getAddress();
-            if (!addToProgram) return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, lastToken, address);
+        int address;
 
-            cd.registers.put(cd.program.size(), lastToken);
-            cd.program.add(address);
-            return new ParseResult<>(PARSE_STATUS.SUCCESS, lastToken, address);
-        } else throw new ProcessorError("Reading/Writing to Register \"" + lastToken + "\" isn't supported!", cd.tokenizer);
+        // We search for a Register with the specified name
+        IRegister register = cd.processor.getRegister(registerName);
+        if (register == null) {
+            // If no register was found we search for a valid flag
+            IFlag flag = cd.processor.getFlag(registerName);
+            if (flag == null) return new ParseResult<>(PARSE_STATUS.FAIL);
+            else if (flag instanceof MemoryFlag) {
+                // If the flag is valid get its address
+                address = ((MemoryFlag) flag).getAddress();
+            } else throw new ProcessorError("Reading/Writing to Flag \"" + registerName + "\" isn't supported!", cd.tokenizer);
+        } else if (register instanceof MemoryRegister) {
+            // If the register is valid get its address
+            address = ((MemoryRegister) register).getAddress();
+        } else throw new ProcessorError("Reading/Writing to Register \"" + registerName + "\" isn't supported!", cd.tokenizer);
+
+        if (!addToProgram) return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, registerName, address);
+
+        cd.registers.put(cd.program.size(), registerName);
+        cd.program.add(address);
+        return new ParseResult<>(PARSE_STATUS.SUCCESS, registerName, address);
     }
 
     private static ParseResult<String> parseString(@NotNull CompilerData cd, boolean addToProgram) {
