@@ -21,6 +21,10 @@ import java.util.HashMap;
 
 public class Compiler {
 
+    protected static final String CI_DEFINE_WORD   = "DW";
+    protected static final String CI_DEFINE_STRING = "DS";
+    protected static final String CI_DEFINE_ARRAY  = "DA";
+
     protected static class Tokens {
 
         public static final Token COMMENT   = new Token(';');
@@ -49,6 +53,7 @@ public class Compiler {
         public final @NotNull LabelData labels;
         public final @NotNull HashMap<String, Integer> constants;
         public final @NotNull RegisterData registers;
+        public final @NotNull OffsetsData offsets;
         public final @NotNull Tokenizer tokenizer;
 
         protected CompilerData(@NotNull IProcessor processor, @NotNull Tokenizer tokenizer) {
@@ -57,6 +62,7 @@ public class Compiler {
             this.labels = new LabelData();
             this.constants = Constants.getDefaultConstants();
             this.registers = new RegisterData();
+            this.offsets = new OffsetsData();
             this.tokenizer = tokenizer;
         }
     }
@@ -139,6 +145,7 @@ public class Compiler {
             String offEndToken = cd.tokenizer.consumeNext(Tokens.SPACE);
             if (Tokens.OFF_END.matches(offEndToken)) {
                 if (addToProgram) {
+                    cd.offsets.put(cd.program.size(), offset);
                     int address = cd.program.size() + offset;
                     cd.program.add(address);
                     return new ParseResult<>(PARSE_STATUS.SUCCESS, null, address);
@@ -373,13 +380,13 @@ public class Compiler {
                 String compilerInstr = cd.tokenizer.consumeNext(Tokens.SPACE);
                 if (compilerInstr == null)
                     throw new SyntaxError("Compiler Instruction", "null", cd.tokenizer);
-                else if (compilerInstr.equals("DW")) {
+                else if (compilerInstr.equals(CI_DEFINE_WORD)) {
                     parseValues(cd);
-                } else if (compilerInstr.equals("DS")) {
+                } else if (compilerInstr.equals(CI_DEFINE_STRING)) {
                     cd.tokenizer.consumeNext(Tokens.SPACE);
                     if (parseString(cd, true).STATUS == PARSE_STATUS.FAIL)
                         throw new SyntaxError("String", cd.tokenizer.getLast(), cd.tokenizer);
-                } else if (compilerInstr.equals("DA")) {
+                } else if (compilerInstr.equals(CI_DEFINE_ARRAY)) {
                     // Be sure that there's the character that starts the array
                     String arrayStart = cd.tokenizer.consumeNext(Tokens.SPACE);
                     if (Tokens.ARR_START.matches(arrayStart)) {
@@ -402,7 +409,7 @@ public class Compiler {
             } else {
                 // Parsing Labels and Constants
                 if (parseConstant(cd, false, true).STATUS == PARSE_STATUS.FAIL && parseLabel(cd, true).STATUS == PARSE_STATUS.FAIL)
-                    throw new SyntaxError("Constant or Label declaration", cd.tokenizer.getLast(), cd.tokenizer);
+                    throw new SyntaxError("Instruction, Constant or Label declaration", cd.tokenizer.getLast(), cd.tokenizer);
             }
         }
 
@@ -417,36 +424,117 @@ public class Compiler {
         for (int i = 0; i < cd.program.size(); i++)
             primitiveIntProgram[i] = cd.program.get(i);
 
-        return new CompiledProgram(processor, cd.labels, cd.registers, primitiveIntProgram);
+        return new CompiledProgram(processor, cd.labels, cd.registers, cd.offsets, primitiveIntProgram);
     }
 
-    public static @NotNull String obfuscateProgram(CompiledProgram compiledProgram) {
+    /**
+     * Function that generates a pseudo-random String using the specified seed
+     * @param seed The seed to generate the String from
+     * @return A randomly generated String based on the specified seed
+     */
+    private static @NotNull String generateRandomString(int seed) {
+        final char[] VALID_CHARS = new char[] {
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+        };
+
+        StringBuilder str = new StringBuilder();
+        int num = seed;
+
+        do {
+            int remainder = num % VALID_CHARS.length;
+            str.append(VALID_CHARS[remainder]);
+            num /= VALID_CHARS.length;
+        } while (num != 0);
+
+        return str.toString();
+    }
+
+    public static @NotNull String obfuscateProgram(@NotNull CompiledProgram compiledProgram) {
         int[] programData = compiledProgram.getData();
-        switch (programData.length) {
-            case 0: return Tokens.COMMENT.getPattern() + " Nothing to see here ;)";
-            case 1: {
-                return Tokens.COMPILER.getPattern() + "DW " +
-                        ( compiledProgram.getRegisters().containsKey(0) ? compiledProgram.getRegisters().get(0) : programData[0] );
-            }
-            default: {
-                StringBuilder obfProgram = new StringBuilder();
-                obfProgram.append(Tokens.COMPILER.getPattern())
-                          .append("DA ")
-                          .append(Tokens.ARR_START.getPattern())
-                          .append(" ");
+        if (programData.length == 0) return Tokens.COMMENT.getCharacter() + " Nothing to see here ;)";
 
-                RegisterData programRegisters = compiledProgram.getRegisters();
-                for (int i = 0; i < programData.length; i++) {
-                    if (programRegisters.hasRegisterOnLine(i))
-                        obfProgram.append( programRegisters.getRegisterOnLine(i) );
-                    else obfProgram.append( programData[i] );
-                    obfProgram.append(' ');
+        StringBuilder obfProgram = new StringBuilder();
+        obfProgram.append(Tokens.COMPILER.getCharacter())
+                  .append(CI_DEFINE_ARRAY)
+                  .append(Tokens.SPACE.getCharacter())
+                  .append(Tokens.ARR_START.getCharacter())
+                  .append(Tokens.SPACE.getCharacter());
+
+        // Holds all registers used in the program
+        RegisterData programRegisters = compiledProgram.getRegisters();
+        // Holds all offsets used in the program
+        OffsetsData programOffsets = compiledProgram.getOffsets();
+
+        // Holds all labels used in the program
+        LabelData programLabels = compiledProgram.getLabels();
+        // Contains <OldName, NewName> of all labels
+        HashMap<String, String> renamedLabels = new HashMap<>();
+        // The count of all parsed labels
+        int labelCount = 0;
+
+        // For each address of the program
+        for (int currentAddress = 0; currentAddress < programData.length; currentAddress++) {
+            // Check if there are labels declared at this address of the program
+            if (programLabels.hasLabelsAtAddress(currentAddress)) {
+                // For each label declared at this address
+                String[] labelNames = programLabels.getLabelsAtAddress(currentAddress);
+                for (String labelName : labelNames) {
+                    // If the label is never used then don't add it
+                    if (programLabels.get(labelName).occurrences.size() == 0) continue;
+
+                    // If the label was never renamed generate a new name for it
+                    if (!renamedLabels.containsKey(labelName))
+                        renamedLabels.put(labelName, generateRandomString(labelCount++));
+
+                    // Add the label to the program
+                    obfProgram.append(
+                            renamedLabels.get(labelName)
+                    ).append(Tokens.LABEL.getCharacter()).append(Tokens.SPACE.getCharacter());
                 }
-
-                obfProgram.append(Tokens.ARR_END.getPattern());
-                return obfProgram.toString();
             }
-        }
-    }
 
+            // If there's a register at the current program address add it
+            if (programRegisters.hasRegisterAtAddress(currentAddress))
+                obfProgram.append( programRegisters.getRegisterAtAddress(currentAddress) );
+            // If a label was used at the current program address
+            else if (programLabels.hasOccurrenceAtAddress(currentAddress)) {
+                // Get its name
+                String labelName = programLabels.getOccurrenceAtAddress(currentAddress);
+                // If the label was never renamed generate a new name for it
+                if (!renamedLabels.containsKey(labelName))
+                    renamedLabels.put(labelName, generateRandomString(labelCount++));
+
+                // Add the label to the program
+                obfProgram.append(renamedLabels.get(labelName));
+
+                // If the label has an offset that isn't 0, add it
+                Label label = programLabels.get(labelName);
+                for (int i = 0; i < label.occurrences.size(); i++) {
+                    int occurrence = label.occurrences.get(i);
+                    if (occurrence == currentAddress) {
+                        int offset = label.offsets.get(i);
+                        if (offset != 0)
+                            obfProgram.append(Tokens.OFF_START.getCharacter())
+                                      .append(offset)
+                                      .append(Tokens.OFF_END.getCharacter());
+                        break;
+                    }
+                }
+            // If an offset was used at the current program address add it
+            } else if (programOffsets.hasOffsetAtAddress(currentAddress))
+                obfProgram.append(Tokens.OFF_START.getCharacter())
+                          .append(programOffsets.getOffsetAtAddress(currentAddress))
+                          .append(Tokens.OFF_END.getCharacter());
+            // If none of the above then just add the number to the program
+            else obfProgram.append( programData[currentAddress] );
+
+            // Add a space character if there's none at the end
+            if (obfProgram.charAt(obfProgram.length() - 1) != Tokens.SPACE.getCharacter())
+                obfProgram.append(Tokens.SPACE.getCharacter());
+        }
+
+        obfProgram.append(Tokens.ARR_END.getCharacter());
+        return obfProgram.toString();
+    }
 }
