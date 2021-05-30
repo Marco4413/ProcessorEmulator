@@ -1,4 +1,19 @@
 
+-- Version (v1.4.2-RELEASE)
+-- Changes from commit @9dc1196
+
+Overhauled Program Obfuscation, now labels are also saved, so adding instructions before the program will now be possible
+Improved some SyntaxError(s)
+
+Added class OffsetsData
+Made class CompiledProgram also hold data about offsets
+
+Put Compiler Instruction's keywords into variables, modifying their name will be much easier
+Now Compiler saves data about Memory Offsets in the program
+
+Added a bunch of methods to class LabelData
+Renamed some methods of class RegisterData
+
 -- Version (v1.4.0-RELEASE)
 -- Changes from commit @09e6d21
 

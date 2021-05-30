@@ -3,18 +3,18 @@ package io.github.hds.pemu.compiler;
 import io.github.hds.pemu.processor.IProcessor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-
 public class CompiledProgram {
     private final @NotNull IProcessor PROCESSOR;
     private final @NotNull LabelData LABELS;
     private final @NotNull RegisterData REGISTERS;
+    private final @NotNull OffsetsData OFFSETS;
     private final int[] DATA;
 
-    protected CompiledProgram(@NotNull IProcessor processor, @NotNull LabelData labels, @NotNull RegisterData registers, int[] programData) {
+    protected CompiledProgram(@NotNull IProcessor processor, @NotNull LabelData labels, @NotNull RegisterData registers, @NotNull OffsetsData offsets, int[] programData) {
         PROCESSOR = processor;
         LABELS = labels;
         REGISTERS = registers;
+        OFFSETS = offsets;
         DATA = programData;
     }
 
@@ -28,6 +28,10 @@ public class CompiledProgram {
 
     public @NotNull RegisterData getRegisters() {
         return REGISTERS;
+    }
+
+    public @NotNull OffsetsData getOffsets() {
+        return OFFSETS;
     }
 
     public int[] getData() {

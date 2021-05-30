@@ -24,23 +24,23 @@ public class RegisterData extends HashMap<Integer, String> {
         super(m);
     }
 
-    @Nullable String getRegisterOnLine(int line) {
+    @Nullable String getRegisterAtAddress(int line) {
         return this.get(line);
     }
 
-    boolean hasRegisterOnLine(int line) {
+    boolean hasRegisterAtAddress(int line) {
         return this.containsKey(line);
     }
 
-    @NotNull Integer[] getRegisterLines(@NotNull String registerName) {
-        ArrayList<Integer> lines = new ArrayList<>();
+    @NotNull Integer[] getRegisterAddresses(@NotNull String registerName) {
+        ArrayList<Integer> addresses = new ArrayList<>();
 
         this.forEach((line, name) -> {
             if (name.equals(registerName))
-                lines.add(line);
+                addresses.add(line);
         });
 
-        return lines.toArray(new Integer[0]);
+        return addresses.toArray(new Integer[0]);
     }
 
     boolean hasRegister(@NotNull String registerName) {
