@@ -29,6 +29,7 @@ public interface IProcessor extends Runnable, IStoppable {
     long getTimeRunning();
 
     @Nullable String loadProgram(int[] program);
+    int getProgramAddress();
     int getReservedWords();
 
     boolean isRunning();

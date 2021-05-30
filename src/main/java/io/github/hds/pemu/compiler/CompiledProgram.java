@@ -8,14 +8,14 @@ public class CompiledProgram {
     private final @NotNull LabelData LABELS;
     private final @NotNull RegisterData REGISTERS;
     private final @NotNull OffsetsData OFFSETS;
-    private final int[] DATA;
+    private final int[] PROGRAM;
 
-    protected CompiledProgram(@NotNull IProcessor processor, @NotNull LabelData labels, @NotNull RegisterData registers, @NotNull OffsetsData offsets, int[] programData) {
+    protected CompiledProgram(@NotNull IProcessor processor, @NotNull LabelData labels, @NotNull RegisterData registers, @NotNull OffsetsData offsets, int[] program) {
         PROCESSOR = processor;
         LABELS = labels;
         REGISTERS = registers;
         OFFSETS = offsets;
-        DATA = programData;
+        PROGRAM = program;
     }
 
     public @NotNull IProcessor getProcessor() {
@@ -34,7 +34,7 @@ public class CompiledProgram {
         return OFFSETS;
     }
 
-    public int[] getData() {
-        return DATA;
+    public int[] getProgram() {
+        return PROGRAM;
     }
 }
