@@ -233,7 +233,7 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
         CompiledProgram compiledProgram = compileProgram(null);
 
         if (compiledProgram != null) {
-            int[] compiledProgramData = compiledProgram.getData();
+            int[] compiledProgramData = compiledProgram.getProgram();
             Console.Debug.println(
                     String.format("The specified program compiled successfully!\nIt occupies %d Word%s.", compiledProgramData.length, compiledProgramData.length == 1 ? "" : "s")
             );
@@ -275,13 +275,13 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
 
         Console.Debug.println(
                 "Compiled file (" + currentProgram.getName() + ") occupies "
-                        + compiledProgram.getData().length + " / " + ( currentProcessor.getMemory().getSize() - currentProcessor.getReservedWords() ) + " Words"
+                        + compiledProgram.getProgram().length + " / " + ( currentProcessor.getMemory().getSize() - currentProcessor.getReservedWords() ) + " Words"
         );
 
         // Load compiled program into memory
         String loadError = null;
         try {
-            loadError = currentProcessor.loadProgram(compiledProgram.getData());
+            loadError = currentProcessor.loadProgram(compiledProgram.getProgram());
         } catch (Exception err) {
             Console.Debug.println("Error while loading program into memory!");
             Console.Debug.printStackTrace(err, false);

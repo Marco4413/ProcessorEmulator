@@ -48,12 +48,10 @@ public class Processor implements IProcessor {
         INSTRUCTIONSET = config.instructionSet;
         HISTORY = new HashMap<>();
 
-        int lastAddress = MEMORY.getSize() - 1;
-        IP = new MemoryRegister(0, "Instruction Pointer", "IP", MEMORY, lastAddress);
-        SP = new MemoryRegister(lastAddress - (REGISTRIES_WORDS + FLAGS_WORDS), "Stack Pointer", "SP", MEMORY, lastAddress - 1);
-
-        ZERO  = new MemoryFlag(false, "Zero Flag", MEMORY, lastAddress - REGISTRIES_WORDS, 0);
-        CARRY = new MemoryFlag(false, "Carry Flag", MEMORY, lastAddress - REGISTRIES_WORDS, 1);
+        IP = new MemoryRegister(getProgramAddress(), "Instruction Pointer", MEMORY, 0);
+        SP = new MemoryRegister(MEMORY.getSize() - 1, "Stack Pointer", MEMORY, 1);
+        ZERO  = new MemoryFlag(false, "Zero Flag" , MEMORY, REGISTRIES_WORDS, 0);
+        CARRY = new MemoryFlag(false, "Carry Flag", MEMORY, REGISTRIES_WORDS, 1);
     }
 
     @Override
@@ -128,8 +126,13 @@ public class Processor implements IProcessor {
         if (program.length > MEMORY.getSize() - (getReservedWords()))
             return "Couldn't load program because there's not enough space!";
 
-        MEMORY.setValuesAt(0, program);
+        MEMORY.setValuesAt(getProgramAddress(), program);
         return null;
+    }
+
+    @Override
+    public int getProgramAddress() {
+        return REGISTRIES_WORDS + FLAGS_WORDS;
     }
 
     @Override

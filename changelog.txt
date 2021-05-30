@@ -1,4 +1,13 @@
 
+-- Version (v1.5.0-RELEASE)
+-- Changes from commit @05a22f0
+
+Now programs can have a dedicated starting address on the Processor
+
+Added method IProcessor#getProgramAddress
+Moved Processor's Registers and Flags at the first addresses of Memory
+Renamed method CompiledProgram#getData to getProgram
+
 -- Version (v1.4.2-RELEASE)
 -- Changes from commit @9dc1196
 

@@ -146,9 +146,8 @@ public class Compiler {
             if (Tokens.OFF_END.matches(offEndToken)) {
                 if (addToProgram) {
                     cd.offsets.put(cd.program.size(), offset);
-                    int address = cd.program.size() + offset;
-                    cd.program.add(address);
-                    return new ParseResult<>(PARSE_STATUS.SUCCESS, null, address);
+                    cd.program.add(0);
+                    return new ParseResult<>(PARSE_STATUS.SUCCESS, null, offset);
                 } else return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, null, offset);
             } else throw new SyntaxError("Offset terminator ('" + Tokens.OFF_END.getPattern() + "')", offEndToken, cd.tokenizer);
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
@@ -413,13 +412,17 @@ public class Compiler {
             }
         }
 
+        // Processing Offsets and Labels
+        cd.offsets.forEach((index, offset) -> cd.program.set(index, index + offset + cd.processor.getProgramAddress()));
+
         cd.labels.forEach((key, data) -> {
             if (data.pointer == Label.NULL_PTR) throw new ReferenceError("Label", key, -1, -1);
             if (data.occurrences.size() != data.offsets.size()) throw new IllegalStateException("Label '" + key + "' has different amounts of occurrences and offsets.");
             for (int i = 0; i < data.occurrences.size(); i++)
-                cd.program.set(data.occurrences.get(i), data.pointer + data.offsets.get(i));
+                cd.program.set(data.occurrences.get(i), data.pointer + data.offsets.get(i) + cd.processor.getProgramAddress());
         });
 
+        // Converting cd.program from Integer to int
         int[] primitiveIntProgram = new int[cd.program.size()];
         for (int i = 0; i < cd.program.size(); i++)
             primitiveIntProgram[i] = cd.program.get(i);
@@ -451,7 +454,7 @@ public class Compiler {
     }
 
     public static @NotNull String obfuscateProgram(@NotNull CompiledProgram compiledProgram) {
-        int[] programData = compiledProgram.getData();
+        int[] programData = compiledProgram.getProgram();
         if (programData.length == 0) return Tokens.COMMENT.getCharacter() + " Nothing to see here ;)";
 
         StringBuilder obfProgram = new StringBuilder();
