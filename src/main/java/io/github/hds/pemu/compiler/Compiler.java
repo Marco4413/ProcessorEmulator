@@ -477,7 +477,8 @@ public class Compiler {
         int labelCount = 0;
 
         // For each address of the program
-        for (int currentAddress = 0; currentAddress < programData.length; currentAddress++) {
+        //  (it's <= because we also want to get any label that was declared at the end of the file)
+        for (int currentAddress = 0; currentAddress <= programData.length; currentAddress++) {
             // Check if there are labels declared at this address of the program
             if (programLabels.hasLabelsAtAddress(currentAddress)) {
                 // For each label declared at this address
@@ -497,40 +498,44 @@ public class Compiler {
                 }
             }
 
-            // If there's a register at the current program address add it
-            if (programRegisters.hasRegisterAtAddress(currentAddress))
-                obfProgram.append( programRegisters.getRegisterAtAddress(currentAddress) );
-            // If a label was used at the current program address
-            else if (programLabels.hasOccurrenceAtAddress(currentAddress)) {
-                // Get its name
-                String labelName = programLabels.getOccurrenceAtAddress(currentAddress);
-                // If the label was never renamed generate a new name for it
-                if (!renamedLabels.containsKey(labelName))
-                    renamedLabels.put(labelName, generateRandomString(labelCount++));
+            // Meanwhile if we're putting data into the program there's none at
+            //  programData.length, so we only do this if it's < instead of <=
+            if (currentAddress < programData.length) {
+                // If there's a register at the current program address add it
+                if (programRegisters.hasRegisterAtAddress(currentAddress))
+                    obfProgram.append( programRegisters.getRegisterAtAddress(currentAddress) );
+                // If a label was used at the current program address
+                else if (programLabels.hasOccurrenceAtAddress(currentAddress)) {
+                    // Get its name
+                    String labelName = programLabels.getOccurrenceAtAddress(currentAddress);
+                    // If the label was never renamed generate a new name for it
+                    if (!renamedLabels.containsKey(labelName))
+                        renamedLabels.put(labelName, generateRandomString(labelCount++));
 
-                // Add the label to the program
-                obfProgram.append(renamedLabels.get(labelName));
+                    // Add the label to the program
+                    obfProgram.append(renamedLabels.get(labelName));
 
-                // If the label has an offset that isn't 0, add it
-                Label label = programLabels.get(labelName);
-                for (int i = 0; i < label.occurrences.size(); i++) {
-                    int occurrence = label.occurrences.get(i);
-                    if (occurrence == currentAddress) {
-                        int offset = label.offsets.get(i);
-                        if (offset != 0)
-                            obfProgram.append(Tokens.OFF_START.getCharacter())
-                                      .append(offset)
-                                      .append(Tokens.OFF_END.getCharacter());
-                        break;
+                    // If the label has an offset that isn't 0, add it
+                    Label label = programLabels.get(labelName);
+                    for (int i = 0; i < label.occurrences.size(); i++) {
+                        int occurrence = label.occurrences.get(i);
+                        if (occurrence == currentAddress) {
+                            int offset = label.offsets.get(i);
+                            if (offset != 0)
+                                obfProgram.append(Tokens.OFF_START.getCharacter())
+                                          .append(offset)
+                                          .append(Tokens.OFF_END.getCharacter());
+                            break;
+                        }
                     }
-                }
-            // If an offset was used at the current program address add it
-            } else if (programOffsets.hasOffsetAtAddress(currentAddress))
-                obfProgram.append(Tokens.OFF_START.getCharacter())
-                          .append(programOffsets.getOffsetAtAddress(currentAddress))
-                          .append(Tokens.OFF_END.getCharacter());
-            // If none of the above then just add the number to the program
-            else obfProgram.append( programData[currentAddress] );
+                // If an offset was used at the current program address add it
+                } else if (programOffsets.hasOffsetAtAddress(currentAddress))
+                    obfProgram.append(Tokens.OFF_START.getCharacter())
+                              .append(programOffsets.getOffsetAtAddress(currentAddress))
+                              .append(Tokens.OFF_END.getCharacter());
+                // If none of the above then just add the number to the program
+                else obfProgram.append( programData[currentAddress] );
+            }
 
             // Add a space character if there's none at the end
             if (obfProgram.charAt(obfProgram.length() - 1) != Tokens.SPACE.getCharacter())

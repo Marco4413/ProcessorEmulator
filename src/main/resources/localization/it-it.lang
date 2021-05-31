@@ -17,12 +17,14 @@
 "fileMenu.selectLanguageTitle" = "Cambia Lingua"
 "fileMenu.selectLanguageMsg"   = "Seleziona la Lingua:"
 
-"programMenu._text"               = "Programma"
-"programMenu._mnemonic"           = 'P'
-"programMenu.verify._text"        = "Verifica"
-"programMenu.verify._mnemonic"    = 'V'
-"programMenu.obfuscate._text"     = "Offusca"
-"programMenu.obfuscate._mnemonic" = 'O'
+"programMenu._text"                      = "Programma"
+"programMenu._mnemonic"                  = 'P'
+"programMenu.verify._text"               = "Verifica"
+"programMenu.verify._mnemonic"           = 'V'
+"programMenu.obfuscate._text"            = "Offusca"
+"programMenu.obfuscate._mnemonic"        = 'O'
+"programMenu.obfuscateWarningPanelTitle" = "Avviso di Offuscazione"
+"programMenu.obfuscateWarningPanelMsg"   = "Codice offuscato potrebbe non funzionare tra varie versioni,\nperché Istruzioni possono essere sia aggiunte che rimosse,\nquindi il loro codice operativo potrebbe cambiare."
 
 "processorMenu._text"                    = "Processore"
 "processorMenu._mnemonic"                = 'P'

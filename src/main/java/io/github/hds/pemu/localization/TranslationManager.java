@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -34,7 +35,7 @@ public class TranslationManager {
 
     public static @NotNull Translation loadTranslation(@NotNull String resourcePath) {
         InputStream stream = Main.class.getResourceAsStream(resourcePath);
-        return parseTranslation(new InputStreamReader(stream));
+        return parseTranslation(new InputStreamReader(stream, StandardCharsets.UTF_8));
     }
 
     private static @NotNull Translation parseTranslation(@NotNull Readable readable) {

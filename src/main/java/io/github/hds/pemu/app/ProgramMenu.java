@@ -19,6 +19,9 @@ public class ProgramMenu extends JMenu implements ITranslatable {
     private final ImageIcon ICON_VERIFY;
     private final ImageIcon ICON_OBFUSCATE;
 
+    private @NotNull String obfuscateWarningPanelTitle = "";
+    private @NotNull String obfuscateWarningPanelMsg = "";
+
     protected ProgramMenu(@NotNull Application parentApp) {
         super();
         app = parentApp;
@@ -37,7 +40,10 @@ public class ProgramMenu extends JMenu implements ITranslatable {
 
         OBFUSCATE = new TJMenuItem(i -> app.currentProgram != null);
         OBFUSCATE.setIcon(ICON_OBFUSCATE);
-        OBFUSCATE.addActionListener(app::obfuscateProgram);
+        OBFUSCATE.addActionListener(e -> {
+            int response = JOptionPane.showConfirmDialog(app, obfuscateWarningPanelMsg, obfuscateWarningPanelTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (response == JOptionPane.OK_OPTION) app.obfuscateProgram(e);
+        });
         add(OBFUSCATE);
     }
 
@@ -46,5 +52,7 @@ public class ProgramMenu extends JMenu implements ITranslatable {
         translation.translateComponent("programMenu", this);
         translation.translateComponent("programMenu.verify", VERIFY);
         translation.translateComponent("programMenu.obfuscate", OBFUSCATE);
+        obfuscateWarningPanelTitle = translation.getOrDefault("programMenu.obfuscateWarningPanelTitle");
+        obfuscateWarningPanelMsg   = translation.getOrDefault("programMenu.obfuscateWarningPanelMsg"  );
     }
 }
