@@ -1,5 +1,13 @@
 
 -- Version (v1.5.0-RELEASE)
+
+-- Version (v1.4.4-RELEASE)
+-- Changes from commit @3cb3517
+
+Fixed method Compiler.obfuscateProgram not adding labels that were declared at the end of the program
+Added warning message when obfuscating a program which tells the user issues related to obfuscation
+Made TranslationManager open files using UTF-8, so accented characters from localization files should work
+
 -- Changes from commit @05a22f0
 
 Now programs can have a dedicated starting address on the Processor
