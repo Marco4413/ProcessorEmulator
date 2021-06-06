@@ -1,5 +1,12 @@
 
 -- Version (v1.5.0-RELEASE)
+-- Changes from commit @0896610
+
+Added class ConfigEvent
+Made methods of IConfigurable accept ConfigEvent instances instead of KeyValueData
+Added method ConfigManager.setDefaultOnLoadError
+Removed method ConfigManager.stopEvent
+
 -- Changes from commit @3b9868e
 
 Made method Compiler.obfuscateProgram better obfuscate Offsets by turning them into Labels

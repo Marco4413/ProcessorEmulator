@@ -1,5 +1,6 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
 import io.github.hds.pemu.localization.ITranslatable;
@@ -8,7 +9,6 @@ import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.memory.flags.IFlag;
 import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.processor.IProcessor;
-import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
 import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -227,29 +227,29 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
     }
 
     @Override
-    public void loadConfig(@NotNull KeyValueData config) {
-        COLS_SPINNER.setValue(config.get(Integer.class, "memoryView.columns"));
-        UPDATE_INTERVAL_SPINNER.setValue(config.get(Double.class, "memoryView.updateInterval"));
-        SHOW_AS_CHAR.setSelected(config.get(Boolean.class, "memoryView.showAsChar"));
-        SHOW_HISTORY.setSelected(config.get(Boolean.class, "memoryView.showHistory"));
-        SHOW_POINTERS.setSelected(config.get(Boolean.class, "memoryView.showPointers"));
+    public void loadConfig(@NotNull ConfigEvent e) {
+        COLS_SPINNER.setValue(e.CONFIG.get(Integer.class, "memoryView.columns"));
+        UPDATE_INTERVAL_SPINNER.setValue(e.CONFIG.get(Double.class, "memoryView.updateInterval"));
+        SHOW_AS_CHAR.setSelected(e.CONFIG.get(Boolean.class, "memoryView.showAsChar"));
+        SHOW_HISTORY.setSelected(e.CONFIG.get(Boolean.class, "memoryView.showHistory"));
+        SHOW_POINTERS.setSelected(e.CONFIG.get(Boolean.class, "memoryView.showPointers"));
     }
 
     @Override
-    public void saveConfig(@NotNull KeyValueData config) {
-        config.put("memoryView.columns", COLS_SPINNER.getValue());
-        config.put("memoryView.updateInterval", UPDATE_INTERVAL_SPINNER.getValue());
-        config.put("memoryView.showAsChar", SHOW_AS_CHAR.isSelected());
-        config.put("memoryView.showHistory", SHOW_HISTORY.isSelected());
-        config.put("memoryView.showPointers", SHOW_POINTERS.isSelected());
+    public void saveConfig(@NotNull ConfigEvent e) {
+        e.CONFIG.put("memoryView.columns", COLS_SPINNER.getValue());
+        e.CONFIG.put("memoryView.updateInterval", UPDATE_INTERVAL_SPINNER.getValue());
+        e.CONFIG.put("memoryView.showAsChar", SHOW_AS_CHAR.isSelected());
+        e.CONFIG.put("memoryView.showHistory", SHOW_HISTORY.isSelected());
+        e.CONFIG.put("memoryView.showPointers", SHOW_POINTERS.isSelected());
     }
 
     @Override
-    public void setDefaults(@NotNull KeyValueData defaultConfig) {
-        defaultConfig.put("memoryView.columns", 8);
-        defaultConfig.put("memoryView.updateInterval", 1.0f);
-        defaultConfig.put("memoryView.showAsChar", false);
-        defaultConfig.put("memoryView.showHistory", false);
-        defaultConfig.put("memoryView.showPointers", false);
+    public void setDefaults(@NotNull ConfigEvent e) {
+        e.CONFIG.put("memoryView.columns", 8);
+        e.CONFIG.put("memoryView.updateInterval", 1.0f);
+        e.CONFIG.put("memoryView.showAsChar", false);
+        e.CONFIG.put("memoryView.showHistory", false);
+        e.CONFIG.put("memoryView.showPointers", false);
     }
 }
