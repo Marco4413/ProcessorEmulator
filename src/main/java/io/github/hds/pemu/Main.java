@@ -37,16 +37,8 @@ public class Main {
         } catch (Exception ignored) { }
 
         // Trying to get an instance of the app
-        Application app;
-        try {
-            app = Application.getInstance();
-        } catch (Exception err) {
-            // If it fails it's probably a bad config file, so we reset it
-            ConfigManager.resetToDefault();
-            ConfigManager.saveConfig(true);
-            // And try to get a new instance of the app, if this also fails, we let the program crash
-            app = Application.getInstance();
-        }
+        ConfigManager.setDefaultOnLoadError(true);
+        Application app = Application.getInstance();
 
         // Setting App's ProcessorConfig based on the specified arguments
         ProcessorConfig processorConfig = app.getProcessorConfig();

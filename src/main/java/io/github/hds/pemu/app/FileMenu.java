@@ -1,12 +1,12 @@
 package io.github.hds.pemu.app;
 
 import io.github.hds.pemu.Main;
+import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
-import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
 import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -116,8 +116,8 @@ public class FileMenu extends JMenu implements ITranslatable, IConfigurable {
     }
 
     @Override
-    public void loadConfig(@NotNull KeyValueData config) {
-        String languageName = config.get(String.class, "selectedLanguage");
+    public void loadConfig(@NotNull ConfigEvent e) {
+        String languageName = e.CONFIG.get(String.class, "selectedLanguage");
         TranslationManager.setCurrentTranslation(
                 TranslationManager.loadTranslation(
                         StringUtils.getPathWExt("/localization/" + languageName, "lang")
@@ -126,13 +126,13 @@ public class FileMenu extends JMenu implements ITranslatable, IConfigurable {
     }
 
     @Override
-    public void saveConfig(@NotNull KeyValueData config) {
+    public void saveConfig(@NotNull ConfigEvent e) {
         String selectedLanguage = TranslationManager.getCurrentTranslation().getShortName();
-        config.put("selectedLanguage", selectedLanguage);
+        e.CONFIG.put("selectedLanguage", selectedLanguage);
     }
 
     @Override
-    public void setDefaults(@NotNull KeyValueData defaultConfig) {
-        defaultConfig.put("selectedLanguage", "en-us");
+    public void setDefaults(@NotNull ConfigEvent e) {
+        e.CONFIG.put("selectedLanguage", "en-us");
     }
 }

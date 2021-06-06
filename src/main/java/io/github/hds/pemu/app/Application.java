@@ -2,6 +2,7 @@ package io.github.hds.pemu.app;
 
 import io.github.hds.pemu.compiler.CompiledProgram;
 import io.github.hds.pemu.compiler.Compiler;
+import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
 import io.github.hds.pemu.localization.ITranslatable;
@@ -9,7 +10,6 @@ import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.processor.ProcessorConfig;
-import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
 import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -110,34 +110,33 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
     }
 
     @Override
-    public void loadConfig(@NotNull KeyValueData config) {
+    public void loadConfig(@NotNull ConfigEvent e) {
         // Check if the config is on the right version, if not reset it to defaults
-        String configVersion = config.get(String.class, "version");
+        String configVersion = e.CONFIG.get(String.class, "version");
         if (configVersion == null || StringUtils.compareVersions(configVersion, APP_VERSION) != 0) {
+            e.stop();
             ConfigManager.resetToDefault();
-            // Stopping event propagation to prevent from loading twice
-            ConfigManager.stopEvent();
         } else {
             // We let the app crash if config couldn't be loaded successfully
-            processorConfig.setBits(config.get(Integer.class, "processorConfig.bits"));
-            processorConfig.setMemorySize(config.get(Integer.class, "processorConfig.memSize"));
-            processorConfig.setClock(config.get(Integer.class, "processorConfig.clock"));
+            processorConfig.setBits(e.CONFIG.get(Integer.class, "processorConfig.bits"));
+            processorConfig.setMemorySize(e.CONFIG.get(Integer.class, "processorConfig.memSize"));
+            processorConfig.setClock(e.CONFIG.get(Integer.class, "processorConfig.clock"));
         }
     }
 
     @Override
-    public void saveConfig(@NotNull KeyValueData config) {
-        config.put("processorConfig.bits", processorConfig.getBits());
-        config.put("processorConfig.memSize", processorConfig.getMemorySize());
-        config.put("processorConfig.clock", processorConfig.getClock());
+    public void saveConfig(@NotNull ConfigEvent e) {
+        e.CONFIG.put("processorConfig.bits", processorConfig.getBits());
+        e.CONFIG.put("processorConfig.memSize", processorConfig.getMemorySize());
+        e.CONFIG.put("processorConfig.clock", processorConfig.getClock());
     }
 
     @Override
-    public void setDefaults(@NotNull KeyValueData defaultConfig) {
-        defaultConfig.put("version", APP_VERSION);
-        defaultConfig.put("processorConfig.bits", ProcessorConfig.DEFAULT_BITS);
-        defaultConfig.put("processorConfig.memSize", ProcessorConfig.DEFAULT_MEMORY_SIZE);
-        defaultConfig.put("processorConfig.clock", ProcessorConfig.DEFAULT_CLOCK);
+    public void setDefaults(@NotNull ConfigEvent e) {
+        e.CONFIG.put("version", APP_VERSION);
+        e.CONFIG.put("processorConfig.bits", ProcessorConfig.DEFAULT_BITS);
+        e.CONFIG.put("processorConfig.memSize", ProcessorConfig.DEFAULT_MEMORY_SIZE);
+        e.CONFIG.put("processorConfig.clock", ProcessorConfig.DEFAULT_CLOCK);
     }
 
     public void updateTitle() {
