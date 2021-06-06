@@ -1,5 +1,7 @@
 package io.github.hds.pemu.compiler;
 
+import io.github.hds.pemu.compiler.labels.BasicLabel;
+import io.github.hds.pemu.compiler.labels.OffsetLabel;
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.flags.IFlag;
@@ -18,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Compiler {
 
@@ -50,7 +53,7 @@ public class Compiler {
     protected static class CompilerData {
         public final @NotNull IProcessor processor;
         public final @NotNull ArrayList<Integer> program;
-        public final @NotNull LabelData labels;
+        public final @NotNull LabelData<OffsetLabel> labels;
         public final @NotNull HashMap<String, Integer> constants;
         public final @NotNull RegisterData registers;
         public final @NotNull OffsetsData offsets;
@@ -59,7 +62,7 @@ public class Compiler {
         protected CompilerData(@NotNull IProcessor processor, @NotNull Tokenizer tokenizer) {
             this.processor = processor;
             this.program = new ArrayList<>();
-            this.labels = new LabelData();
+            this.labels = new LabelData<>();
             this.constants = Constants.getDefaultConstants();
             this.registers = new RegisterData();
             this.offsets = new OffsetsData();
@@ -129,73 +132,76 @@ public class Compiler {
 
     private static ParseResult<Integer> parseOffset(@NotNull CompilerData cd, boolean peekNext, @Nullable Token peekBlacklist, boolean addToProgram) {
 
-        String token = peekNext ? (peekBlacklist == null ? cd.tokenizer.peekNext() : cd.tokenizer.peekNext(peekBlacklist)) : cd.tokenizer.getLast();
-        if (token == null) return new ParseResult<>(PARSE_STATUS.FAIL);
+        String offsetStart = peekNext ? (peekBlacklist == null ? cd.tokenizer.peekNext() : cd.tokenizer.peekNext(peekBlacklist)) : cd.tokenizer.getLast();
+        if (offsetStart == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
-        if (Tokens.OFF_START.matches(token)) {
+        if (Tokens.OFF_START.matches(offsetStart)) {
             if (peekNext) cd.tokenizer.consumeNext(Tokens.SPACE);
-            String offsetToken = cd.tokenizer.consumeNext(Tokens.SPACE);
+            String offsetToParse = cd.tokenizer.consumeNext(Tokens.SPACE);
 
             ParseResult<Integer> lastResult = parseNumber(cd, false);
             if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseConstant(cd, true, false);
-            if (lastResult.STATUS == PARSE_STATUS.FAIL) throw new SyntaxError("Constant or Number", offsetToken, cd.tokenizer);
+            if (lastResult.STATUS == PARSE_STATUS.FAIL) throw new SyntaxError("Constant or Number", offsetToParse, cd.tokenizer);
 
             int offset = lastResult.VALUE;
 
-            String offEndToken = cd.tokenizer.consumeNext(Tokens.SPACE);
-            if (Tokens.OFF_END.matches(offEndToken)) {
+            String offsetEnd = cd.tokenizer.consumeNext(Tokens.SPACE);
+            if (Tokens.OFF_END.matches(offsetEnd)) {
                 if (addToProgram) {
                     cd.offsets.put(cd.program.size(), offset);
                     cd.program.add(0);
                     return new ParseResult<>(PARSE_STATUS.SUCCESS, null, offset);
                 } else return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, null, offset);
-            } else throw new SyntaxError("Offset terminator ('" + Tokens.OFF_END.getPattern() + "')", offEndToken, cd.tokenizer);
+            } else throw new SyntaxError("Offset terminator ('" + Tokens.OFF_END.getPattern() + "')", offsetEnd, cd.tokenizer);
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
     }
 
     private static ParseResult<Integer> parseLabel(@NotNull CompilerData cd, boolean declareOnly) {
-        String lastToken = cd.tokenizer.getLast();
-        if (lastToken == null) return new ParseResult<>(PARSE_STATUS.FAIL);
+        String labelName = cd.tokenizer.getLast();
+        if (labelName == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
-        String nextToken = cd.tokenizer.peekNext(Tokens.SPACE);
-        if (Tokens.LABEL.matches(nextToken)) {
+        boolean isBeingDeclared = Tokens.LABEL.matches(
+                cd.tokenizer.peekNext(Tokens.SPACE)
+        );
+
+        if (isBeingDeclared) {
             // If a label is being declared consume the declaration token
             cd.tokenizer.consumeNext(Tokens.SPACE);
-            if (cd.labels.containsKey(lastToken)) {
+            if (cd.labels.containsKey(labelName)) {
                 // If a label was already created check if it has a pointer
-                Label label = cd.labels.get(lastToken);
-                if (label.pointer == Label.NULL_PTR)
-                    label.pointer = cd.program.size();
+                OffsetLabel label = cd.labels.get(labelName);
+                if (label.getPointer() == OffsetLabel.NULL_PTR)
+                    label.setPointer(cd.program.size());
                 else
                     // If the label has a valid pointer then it was already declared!
-                    throw new TypeError("Label '" + lastToken + "' was already declared", cd.tokenizer);
+                    throw new TypeError("Label '" + labelName + "' was already declared", cd.tokenizer);
             } else
                 // If no label was created then create it
-                cd.labels.put(lastToken, new Label(cd.program.size()));
-            return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, lastToken, cd.program.size());
+                cd.labels.put(labelName, new OffsetLabel().setPointer(cd.program.size()));
+            return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, labelName, cd.program.size());
         } else if (!declareOnly) {
             int offset = 0;
             ParseResult<Integer> offsetResult = parseOffset(cd, true, null, false);
             if (offsetResult.STATUS != PARSE_STATUS.FAIL) offset = offsetResult.VALUE;
 
-            if (cd.labels.containsKey(lastToken)) {
-                Label label = cd.labels.get(lastToken);
-                label.addOccurrence(cd.program.size(), offset);
+            if (cd.labels.containsKey(labelName)) {
+                OffsetLabel label = cd.labels.get(labelName);
+                label.addInstance(cd.program.size(), offset);
             } else {
-                Label label = new Label();
-                label.addOccurrence(cd.program.size(), offset);
-                cd.labels.put(lastToken, label);
+                OffsetLabel label = new OffsetLabel();
+                label.addInstance(cd.program.size(), offset);
+                cd.labels.put(labelName, label);
             }
             cd.program.add(0);
-            return new ParseResult<>(PARSE_STATUS.SUCCESS, lastToken, cd.program.size());
+            return new ParseResult<>(PARSE_STATUS.SUCCESS, labelName, cd.program.size());
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
     }
 
     private static ParseResult<Integer> parseConstant(@NotNull CompilerData cd, boolean isGetting, boolean addToProgram) {
-        String lastToken = cd.tokenizer.getLast();
-        if (lastToken == null) return new ParseResult<>(PARSE_STATUS.FAIL);
+        String constantPrefix = cd.tokenizer.getLast();
+        if (constantPrefix == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
-        if (Tokens.CONSTANT.matches(lastToken)) {
+        if (Tokens.CONSTANT.matches(constantPrefix)) {
             String constantName = cd.tokenizer.consumeNext(Tokens.SPACE);
             if (isGetting) {
                 if (constantName == null) throw new SyntaxError("Constant's name", "null", cd.tokenizer);
@@ -222,11 +228,11 @@ public class Compiler {
     }
 
     private static ParseResult<Integer> parseNumber(@NotNull CompilerData cd, boolean addToProgram) {
-        String lastToken = cd.tokenizer.getLast();
-        if (lastToken == null) return new ParseResult<>(PARSE_STATUS.FAIL);
+        String numberToParse = cd.tokenizer.getLast();
+        if (numberToParse == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
         try {
-            int value = StringUtils.parseInt(lastToken);
+            int value = StringUtils.parseInt(numberToParse);
             if (addToProgram) cd.program.add(value);
             return new ParseResult<>(addToProgram ? PARSE_STATUS.SUCCESS : PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, null, value);
         } catch (Exception err) {
@@ -263,16 +269,16 @@ public class Compiler {
     }
 
     private static ParseResult<String> parseString(@NotNull CompilerData cd, boolean addToProgram) {
-        String terminator = cd.tokenizer.getLast();
-        if (terminator == null) return new ParseResult<>(PARSE_STATUS.FAIL);
+        String stringTerminator = cd.tokenizer.getLast();
+        if (stringTerminator == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
-        if (Tokens.STRING.matches(terminator)) {
+        if (Tokens.STRING.matches(stringTerminator)) {
             boolean escapeChar = false;
             StringBuilder value = new StringBuilder();
             while (true) {
                 String valueToAdd = cd.tokenizer.consumeNext();
                 if (valueToAdd == null)
-                    throw new SyntaxError("String terminator ('" + terminator + "')", String.valueOf(value.charAt(value.length() - 1)), cd.tokenizer);
+                    throw new SyntaxError("String terminator ('" + stringTerminator + "')", String.valueOf(value.charAt(value.length() - 1)), cd.tokenizer);
                 else if (escapeChar) {
                     char escapedChar = valueToAdd.charAt(0);
                     if (StringUtils.SpecialCharacters.MAP.containsKey(escapedChar)) {
@@ -281,7 +287,7 @@ public class Compiler {
                             value.append(valueToAdd.substring(1));
                     } else value.append(valueToAdd);
                     escapeChar = false;
-                } else if (valueToAdd.equals(terminator)) break;
+                } else if (valueToAdd.equals(stringTerminator)) break;
                 else if (Tokens.ESCAPE_CH.matches(valueToAdd)) escapeChar = true;
                 else value.append(valueToAdd);
             }
@@ -293,14 +299,14 @@ public class Compiler {
     }
 
     private static ParseResult<Integer> parseCharacter(@NotNull CompilerData cd, boolean addToProgram) {
-        String terminator = cd.tokenizer.getLast();
-        if (terminator == null) return new ParseResult<>(PARSE_STATUS.FAIL);
+        String charTerminator = cd.tokenizer.getLast();
+        if (charTerminator == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
-        if (Tokens.CHARACTER.matches(terminator)) {
+        if (Tokens.CHARACTER.matches(charTerminator)) {
             char character;
 
             String nextToken = cd.tokenizer.consumeNext();
-            if (nextToken == null || terminator.equals(nextToken) || nextToken.length() > 1)
+            if (nextToken == null || charTerminator.equals(nextToken) || nextToken.length() > 1)
                 throw new SyntaxError("Character", nextToken, cd.tokenizer);
             else if (Tokens.ESCAPE_CH.matches(nextToken)) {
                 String escapedChar = cd.tokenizer.consumeNext();
@@ -309,8 +315,8 @@ public class Compiler {
                 character = StringUtils.SpecialCharacters.MAP.getOrDefault(escapedChar.charAt(0), escapedChar.charAt(0));
             } else character = nextToken.charAt(0);
 
-            if (!terminator.equals(cd.tokenizer.consumeNext()))
-                throw new SyntaxError("Character terminator ('" + terminator + "')", nextToken, cd.tokenizer);
+            if (!charTerminator.equals(cd.tokenizer.consumeNext()))
+                throw new SyntaxError("Character terminator ('" + charTerminator + "')", nextToken, cd.tokenizer);
 
             if (addToProgram) {
                 cd.program.add((int) character);
@@ -341,26 +347,28 @@ public class Compiler {
         if (!file.exists()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file doesn't exist.");
         if (!file.canRead()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file can't be read.");
 
-        String contents;
+        String fileContents;
         try {
-            contents = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);;
+            fileContents = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
         } catch (Exception err) {
             throw new IllegalStateException("Something went wrong while reading the specified file.");
         }
 
         InstructionSet instructionSet = processor.getInstructionSet();
 
+        // Using "cd" as the name to not use "compilerData" which
+        //  would be much longer to write and may clutter lines
         CompilerData cd = new CompilerData(
                 processor,
-                new Tokenizer(contents, true, Tokens.ALL_TOKENS)
+                new Tokenizer(fileContents, true, Tokens.ALL_TOKENS)
         );
         cd.tokenizer.removeEmpties();
 
         while (cd.tokenizer.hasNext()) {
-            String token = cd.tokenizer.consumeNext(Tokens.SPACE);
-            if (token == null) break;
+            String tokenToParse = cd.tokenizer.consumeNext(Tokens.SPACE);
+            if (tokenToParse == null) break;
 
-            int instructionCode = instructionSet.getKeyCode(token);
+            int instructionCode = instructionSet.getKeyCode(tokenToParse);
             Instruction instruction = instructionSet.getInstruction(instructionCode);
 
             if (instruction != null) {
@@ -369,12 +377,12 @@ public class Compiler {
                 for (int i = 0; i < instruction.ARGUMENTS;)
                     if (parseValues(cd).STATUS == PARSE_STATUS.SUCCESS) i++;
 
-            } else if (Tokens.COMMENT.matches(token)) {
-                String nextToken;
+            } else if (Tokens.COMMENT.matches(tokenToParse)) {
+                String comment;
                 do {
-                    nextToken = cd.tokenizer.consumeNext();
-                } while (!Tokens.NEWLINE.matches(nextToken));
-            } else if (Tokens.COMPILER.matches(token)) {
+                    comment = cd.tokenizer.consumeNext();
+                } while (!Tokens.NEWLINE.matches(comment));
+            } else if (Tokens.COMPILER.matches(tokenToParse)) {
                 // Parsing Compiler Instructions
                 String compilerInstr = cd.tokenizer.consumeNext(Tokens.SPACE);
                 if (compilerInstr == null)
@@ -391,8 +399,8 @@ public class Compiler {
                     if (Tokens.ARR_START.matches(arrayStart)) {
                         while (true) {
                             // For each value in the array, check if the next value is the array closer character
-                            String nextToken = cd.tokenizer.peekNext(Tokens.SPACE);
-                            if (Tokens.ARR_END.matches(nextToken)) {
+                            String nextValue = cd.tokenizer.peekNext(Tokens.SPACE);
+                            if (Tokens.ARR_END.matches(nextValue)) {
                                 cd.tokenizer.consumeNext(Tokens.SPACE);
                                 break;
                             }
@@ -415,11 +423,11 @@ public class Compiler {
         // Processing Offsets and Labels
         cd.offsets.forEach((index, offset) -> cd.program.set(index, index + offset + cd.processor.getProgramAddress()));
 
-        cd.labels.forEach((key, data) -> {
-            if (data.pointer == Label.NULL_PTR) throw new ReferenceError("Label", key, -1, -1);
-            if (data.occurrences.size() != data.offsets.size()) throw new IllegalStateException("Label '" + key + "' has different amounts of occurrences and offsets.");
-            for (int i = 0; i < data.occurrences.size(); i++)
-                cd.program.set(data.occurrences.get(i), data.pointer + data.offsets.get(i) + cd.processor.getProgramAddress());
+        cd.labels.forEach((name, label) -> {
+            if (label.getPointer() == OffsetLabel.NULL_PTR) throw new ReferenceError("Label", name, -1, -1);
+            Integer[] instances = label.getInstances();
+            for (Integer instance : instances)
+                cd.program.set(instance, label.getPointerForInstance(instance) + cd.processor.getProgramAddress());
         });
 
         // Converting cd.program from Integer to int
@@ -436,6 +444,8 @@ public class Compiler {
      * @return A randomly generated String based on the specified seed
      */
     private static @NotNull String generateRandomString(int seed) {
+        // Not allowing uppercase characters because Strings may be
+        //  the same as Instruction names which should always be uppercase
         final char[] VALID_CHARS = new char[] {
                 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
@@ -453,9 +463,49 @@ public class Compiler {
         return str.toString();
     }
 
+    private static @NotNull LabelData<BasicLabel> obfuscatePointers(@NotNull LabelData<OffsetLabel> labelData, @NotNull OffsetsData offsetsData) {
+        LabelData<BasicLabel> obfLabels = new LabelData<>();
+
+        AtomicInteger labelsCount = new AtomicInteger();
+        labelData.forEach(
+                (name, label) -> {
+                    Integer[] labelInstances = label.getInstances();
+                    if (labelInstances.length == 0) return;
+
+                    HashMap<Integer, String> parsedOffsets = new HashMap<>();
+                    for (Integer labelInstance : labelInstances) {
+                        int offset = label.getOffsetForInstance(labelInstance);
+                        String basicLabelName;
+                        BasicLabel basicLabel;
+                        if (parsedOffsets.containsKey(offset)) {
+                            basicLabelName = parsedOffsets.get(offset);
+                            basicLabel = obfLabels.get(basicLabelName);
+                        } else {
+                            basicLabelName = generateRandomString(labelsCount.getAndIncrement());
+                            parsedOffsets.put(offset, basicLabelName);
+
+                            basicLabel = new BasicLabel().setPointer(label.getPointer() + offset);
+                            obfLabels.put(basicLabelName, basicLabel);
+                        }
+                        basicLabel.addInstance(labelInstance);
+                    }
+                }
+        );
+
+        offsetsData.forEach(
+                (address, offset) -> {
+                    String labelName = generateRandomString(labelsCount.getAndIncrement());
+                    BasicLabel label = new BasicLabel().setPointer(address + offset).addInstance(address);
+                    obfLabels.put(labelName, label);
+                }
+        );
+
+        return obfLabels;
+    }
+
     public static @NotNull String obfuscateProgram(@NotNull CompiledProgram compiledProgram) {
-        int[] programData = compiledProgram.getProgram();
-        if (programData.length == 0) return Tokens.COMMENT.getCharacter() + " Nothing to see here ;)";
+        int[] program = compiledProgram.getProgram();
+        if (program.length == 0) return Tokens.COMMENT.getCharacter() + " Nothing to see here ;)";
 
         StringBuilder obfProgram = new StringBuilder();
         obfProgram.append(Tokens.COMPILER.getCharacter())
@@ -466,75 +516,40 @@ public class Compiler {
 
         // Holds all registers used in the program
         RegisterData programRegisters = compiledProgram.getRegisters();
-        // Holds all offsets used in the program
-        OffsetsData programOffsets = compiledProgram.getOffsets();
 
         // Holds all labels used in the program
-        LabelData programLabels = compiledProgram.getLabels();
-        // Contains <OldName, NewName> of all labels
-        HashMap<String, String> renamedLabels = new HashMap<>();
-        // The count of all parsed labels
-        int labelCount = 0;
+        LabelData<BasicLabel> obfLabels = obfuscatePointers( compiledProgram.getLabels(), compiledProgram.getOffsets() );
 
         // For each address of the program
         //  (it's <= because we also want to get any label that was declared at the end of the file)
-        for (int currentAddress = 0; currentAddress <= programData.length; currentAddress++) {
+        for (int currentAddress = 0; currentAddress <= program.length; currentAddress++) {
             // Check if there are labels declared at this address of the program
-            if (programLabels.hasLabelsAtAddress(currentAddress)) {
+            if (obfLabels.hasLabelsAtAddress(currentAddress)) {
                 // For each label declared at this address
-                String[] labelNames = programLabels.getLabelsAtAddress(currentAddress);
+                String[] labelNames = obfLabels.getLabelsAtAddress(currentAddress);
                 for (String labelName : labelNames) {
-                    // If the label is never used then don't add it
-                    if (programLabels.get(labelName).occurrences.size() == 0) continue;
-
-                    // If the label was never renamed generate a new name for it
-                    if (!renamedLabels.containsKey(labelName))
-                        renamedLabels.put(labelName, generateRandomString(labelCount++));
-
-                    // Add the label to the program
-                    obfProgram.append(
-                            renamedLabels.get(labelName)
-                    ).append(Tokens.LABEL.getCharacter()).append(Tokens.SPACE.getCharacter());
+                    // Add the label declaration to the program
+                    obfProgram.append(labelName)
+                              .append(Tokens.LABEL.getCharacter())
+                              .append(Tokens.SPACE.getCharacter());
                 }
             }
 
             // Meanwhile if we're putting data into the program there's none at
-            //  programData.length, so we only do this if it's < instead of <=
-            if (currentAddress < programData.length) {
+            //  program.length, so we only do this if it's < instead of <=
+            if (currentAddress < program.length) {
                 // If there's a register at the current program address add it
                 if (programRegisters.hasRegisterAtAddress(currentAddress))
                     obfProgram.append( programRegisters.getRegisterAtAddress(currentAddress) );
                 // If a label was used at the current program address
-                else if (programLabels.hasOccurrenceAtAddress(currentAddress)) {
+                else if (obfLabels.hasInstancesAtAddress(currentAddress)) {
                     // Get its name
-                    String labelName = programLabels.getOccurrenceAtAddress(currentAddress);
-                    // If the label was never renamed generate a new name for it
-                    if (!renamedLabels.containsKey(labelName))
-                        renamedLabels.put(labelName, generateRandomString(labelCount++));
+                    String labelName = obfLabels.getInstancesAtAddress(currentAddress);
 
                     // Add the label to the program
-                    obfProgram.append(renamedLabels.get(labelName));
-
-                    // If the label has an offset that isn't 0, add it
-                    Label label = programLabels.get(labelName);
-                    for (int i = 0; i < label.occurrences.size(); i++) {
-                        int occurrence = label.occurrences.get(i);
-                        if (occurrence == currentAddress) {
-                            int offset = label.offsets.get(i);
-                            if (offset != 0)
-                                obfProgram.append(Tokens.OFF_START.getCharacter())
-                                          .append(offset)
-                                          .append(Tokens.OFF_END.getCharacter());
-                            break;
-                        }
-                    }
-                // If an offset was used at the current program address add it
-                } else if (programOffsets.hasOffsetAtAddress(currentAddress))
-                    obfProgram.append(Tokens.OFF_START.getCharacter())
-                              .append(programOffsets.getOffsetAtAddress(currentAddress))
-                              .append(Tokens.OFF_END.getCharacter());
+                    obfProgram.append(labelName);
                 // If none of the above then just add the number to the program
-                else obfProgram.append( programData[currentAddress] );
+                } else obfProgram.append( program[currentAddress] );
             }
 
             // Add a space character if there's none at the end

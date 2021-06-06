@@ -1,5 +1,17 @@
 
 -- Version (v1.5.0-RELEASE)
+-- Changes from commit @3b9868e
+
+Made method Compiler.obfuscateProgram better obfuscate Offsets by turning them into Labels
+Made more clear lots of variable names
+
+Removed class Label
+Added package compiler.labels
+Added interface compiler.labels.ILabel
+Added classes to package compiler.labels: BasicLabel, OffsetLabel
+Generified class LabelData
+
+Added method overload for IFlag#setValue that uses int instead of boolean
 
 -- Version (v1.4.4-RELEASE)
 -- Changes from commit @3cb3517
