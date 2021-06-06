@@ -1,5 +1,6 @@
 package io.github.hds.pemu.compiler;
 
+import io.github.hds.pemu.compiler.labels.ILabel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,10 +11,10 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class LabelData extends HashMap<String, Label> {
+public class LabelData <T extends ILabel> extends HashMap<String, T> {
 
     private HashMap<Integer, ArrayList<String>> ADDRESS_MAP = new HashMap<>();
-    private HashMap<Integer, String> OCCURRENCES_MAP = new HashMap<>();
+    private HashMap<Integer, String> INSTANCES_MAP = new HashMap<>();
     private boolean dataCached = false;
 
     protected LabelData(int initialCapacity, float loadFactor) {
@@ -28,21 +29,25 @@ public class LabelData extends HashMap<String, Label> {
         super();
     }
 
-    protected LabelData(Map<? extends String, ? extends Label> m) {
+    protected LabelData(Map<? extends String, ? extends T> m) {
         super(m);
     }
 
     public void cacheData() {
         if (dataCached) return;
-        ADDRESS_MAP = new HashMap<>();
-        this.forEach(
-                (n, l) -> {
-                    if (!ADDRESS_MAP.containsKey(l.pointer))
-                        ADDRESS_MAP.put(l.pointer, new ArrayList<>());
-                    ADDRESS_MAP.get(l.pointer).add(n);
+        ADDRESS_MAP   = new HashMap<>();
+        INSTANCES_MAP = new HashMap<>();
 
-                    for (Integer occurrence : l.occurrences) {
-                        OCCURRENCES_MAP.put(occurrence, n);
+        this.forEach(
+                (String labelName, T label) -> {
+                    int labelPointer = label.getPointer();
+                    if (!ADDRESS_MAP.containsKey(labelPointer))
+                        ADDRESS_MAP.put(labelPointer, new ArrayList<>());
+                    ADDRESS_MAP.get(labelPointer).add(labelName);
+
+                    Integer[] instances = label.getInstances();
+                    for (Integer instance : instances) {
+                        INSTANCES_MAP.put(instance, labelName);
                     }
                 }
         );
@@ -50,19 +55,19 @@ public class LabelData extends HashMap<String, Label> {
     }
 
     @Override
-    public Label put(String key, Label value) {
+    public T put(String key, T value) {
         dataCached = false;
         return super.put(key, value);
     }
 
     @Override
-    public void putAll(Map<? extends String, ? extends Label> m) {
+    public void putAll(Map<? extends String, ? extends T> m) {
         dataCached = false;
         super.putAll(m);
     }
 
     @Override
-    public Label remove(Object key) {
+    public T remove(Object key) {
         if (containsKey(key)) dataCached = false;
         return super.remove(key);
     }
@@ -74,7 +79,7 @@ public class LabelData extends HashMap<String, Label> {
     }
 
     @Override
-    public Label putIfAbsent(String key, Label value) {
+    public T putIfAbsent(String key, T value) {
         if (!containsKey(key)) dataCached = false;
         return super.putIfAbsent(key, value);
     }
@@ -87,54 +92,54 @@ public class LabelData extends HashMap<String, Label> {
     }
 
     @Override
-    public boolean replace(String key, Label oldValue, Label newValue) {
+    public boolean replace(String key, T oldValue, T newValue) {
         boolean replaced = super.replace(key, oldValue, newValue);
         if (replaced) dataCached = false;
         return replaced;
     }
 
     @Override
-    public Label replace(String key, Label value) {
+    public T replace(String key, T value) {
         if (containsKey(key)) dataCached = false;
         return super.replace(key, value);
     }
 
     @Override
-    public Label computeIfAbsent(String key, @NotNull Function<? super String, ? extends Label> mappingFunction) {
-        Label newValue = super.computeIfAbsent(key, mappingFunction);
+    public T computeIfAbsent(String key, @NotNull Function<? super String, ? extends T> mappingFunction) {
+        T newValue = super.computeIfAbsent(key, mappingFunction);
         dataCached = false;
         return newValue;
     }
 
     @Override
-    public Label computeIfPresent(String key, @NotNull BiFunction<? super String, ? super Label, ? extends Label> remappingFunction) {
-        Label newValue = super.computeIfPresent(key, remappingFunction);
+    public T computeIfPresent(String key, @NotNull BiFunction<? super String, ? super T, ? extends T> remappingFunction) {
+        T newValue = super.computeIfPresent(key, remappingFunction);
         dataCached = false;
         return newValue;
     }
 
     @Override
-    public Label compute(String key, @NotNull BiFunction<? super String, ? super Label, ? extends Label> remappingFunction) {
-        Label newValue = super.compute(key, remappingFunction);
+    public T compute(String key, @NotNull BiFunction<? super String, ? super T, ? extends T> remappingFunction) {
+        T newValue = super.compute(key, remappingFunction);
         dataCached = false;
         return newValue;
     }
 
     @Override
-    public Label merge(String key, @NotNull Label value, @NotNull BiFunction<? super Label, ? super Label, ? extends Label> remappingFunction) {
-        Label newValue = super.merge(key, value, remappingFunction);
+    public T merge(String key, @NotNull T value, @NotNull BiFunction<? super T, ? super T, ? extends T> remappingFunction) {
+        T newValue = super.merge(key, value, remappingFunction);
         dataCached = false;
         return newValue;
     }
 
     @Override
-    public void forEach(BiConsumer<? super String, ? super Label> action) {
+    public void forEach(BiConsumer<? super String, ? super T> action) {
         super.forEach(action);
         dataCached = false;
     }
 
     @Override
-    public void replaceAll(BiFunction<? super String, ? super Label, ? extends Label> function) {
+    public void replaceAll(BiFunction<? super String, ? super T, ? extends T> function) {
         super.replaceAll(function);
         dataCached = false;
     }
@@ -149,14 +154,14 @@ public class LabelData extends HashMap<String, Label> {
         return ADDRESS_MAP.containsKey(address);
     }
 
-    @Nullable String getOccurrenceAtAddress(int address) {
+    @Nullable String getInstancesAtAddress(int address) {
         cacheData();
-        return OCCURRENCES_MAP.get(address);
+        return INSTANCES_MAP.get(address);
     }
 
-    boolean hasOccurrenceAtAddress(int address) {
+    boolean hasInstancesAtAddress(int address) {
         cacheData();
-        return OCCURRENCES_MAP.containsKey(address);
+        return INSTANCES_MAP.containsKey(address);
     }
 
 }
