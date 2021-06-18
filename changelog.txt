@@ -1,5 +1,10 @@
 
 -- Version (v1.5.0-RELEASE)
+-- Changes from commit @8dc82f5
+
+Added classes: FlagHolder, RegisterHolder
+Improved how Processor class handles storing Registers and Flags
+
 -- Changes from commit @0896610
 
 Added class ConfigEvent

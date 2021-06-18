@@ -4,10 +4,12 @@ import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionError;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.*;
+import io.github.hds.pemu.memory.flags.FlagHolder;
 import io.github.hds.pemu.memory.flags.IFlag;
 import io.github.hds.pemu.memory.flags.MemoryFlag;
 import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.memory.registers.MemoryRegister;
+import io.github.hds.pemu.memory.registers.RegisterHolder;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,13 +21,11 @@ public class Processor implements IProcessor {
 
     private boolean isRunning = false;
 
-    private final int REGISTRIES_WORDS = 2;
-    private final MemoryRegister IP;
-    private final MemoryRegister SP;
+    private final int REGISTERS_WORDS = 2;
+    private final RegisterHolder<MemoryRegister> REGISTERS;
 
     private final int FLAGS_WORDS = 1;
-    private final MemoryFlag ZERO;
-    private final MemoryFlag CARRY;
+    private final FlagHolder<MemoryFlag> FLAGS;
 
     private final Memory MEMORY;
     private final Clock CLOCK;
@@ -48,24 +48,26 @@ public class Processor implements IProcessor {
         INSTRUCTIONSET = config.instructionSet;
         HISTORY = new HashMap<>();
 
-        IP = new MemoryRegister(getProgramAddress(), "Instruction Pointer", MEMORY, 0);
-        SP = new MemoryRegister(MEMORY.getSize() - 1, "Stack Pointer", MEMORY, 1);
-        ZERO  = new MemoryFlag(false, "Zero Flag" , MEMORY, REGISTRIES_WORDS, 0);
-        CARRY = new MemoryFlag(false, "Carry Flag", MEMORY, REGISTRIES_WORDS, 1);
+        REGISTERS = new RegisterHolder<>(
+                new MemoryRegister(getProgramAddress(), "Instruction Pointer", MEMORY, 0),
+                new MemoryRegister(MEMORY.getSize() - 1, "Stack Pointer", MEMORY, 1)
+        );
+
+        FLAGS = new FlagHolder<>(
+                new MemoryFlag(false, "Zero Flag" , MEMORY, REGISTERS_WORDS, 0),
+                new MemoryFlag(false, "Carry Flag", MEMORY, REGISTERS_WORDS, 1)
+        );
+
     }
 
     @Override
     public @Nullable IFlag getFlag(@NotNull String shortName) {
-        if (shortName.equals(ZERO.getShortName())) return ZERO;
-        else if (shortName.equals(CARRY.getShortName())) return CARRY;
-        return null;
+        return FLAGS.getFlag(shortName);
     }
 
     @Override
     public @Nullable IRegister getRegister(@NotNull String shortName) {
-        if (shortName.equals(IP.getShortName())) return IP;
-        else if (shortName.equals(SP.getShortName())) return SP;
-        return null;
+        return REGISTERS.getRegister(shortName);
     }
 
     @Override
@@ -132,13 +134,13 @@ public class Processor implements IProcessor {
 
     @Override
     public int getProgramAddress() {
-        return REGISTRIES_WORDS + FLAGS_WORDS;
+        return REGISTERS_WORDS + FLAGS_WORDS;
     }
 
     @Override
     public int getReservedWords() {
         // The +1 at the end is the first element on the stack
-        return REGISTRIES_WORDS + FLAGS_WORDS + 1;
+        return REGISTERS_WORDS + FLAGS_WORDS + 1;
     }
 
     @Override
@@ -155,6 +157,9 @@ public class Processor implements IProcessor {
         while (isRunning) {
             if (CLOCK.update() && (stepping || !isPaused)) {
                 stepping = false;
+
+                final MemoryRegister IP = REGISTERS.getRegister("IP");
+                assert IP != null : "We should never get to this point.";
 
                 if (IP.getValue() >= MEMORY.getSize()) {
                     stop();
