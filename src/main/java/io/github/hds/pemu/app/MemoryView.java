@@ -1,5 +1,6 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.app.memorytable.MemoryTable;
 import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
@@ -13,7 +14,6 @@ import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
@@ -27,13 +27,14 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
     private final Application app;
 
     private final Timer UPDATE_TIMER;
-    private final JTable MEMORY_TABLE;
+    private final MemoryTable MEMORY_TABLE;
 
     private final JLabel COLS_LABEL;
     private final JLabel UPDATE_INTERVAL_LABEL;
 
     private final JSpinner COLS_SPINNER;
     private final JSpinner UPDATE_INTERVAL_SPINNER;
+    private final JCheckBox SHOW_SELECTED_CELL_POINTER;
     private final JCheckBox SHOW_AS_CHAR;
     private final JCheckBox SHOW_HISTORY;
     private final JCheckBox SHOW_POINTERS;
@@ -75,59 +76,16 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
         SHOW_POINTERS = new JCheckBox();
         addComponent(SHOW_POINTERS, 2, 1);
 
+        SHOW_SELECTED_CELL_POINTER = new JCheckBox();
+        addComponent(SHOW_SELECTED_CELL_POINTER, 1, 2);
+
         REG_VALUES = new JLabel();
-        addComponent(REG_VALUES, 3, 1);
+        addComponent(REG_VALUES, 3, 1, 1,  2);
 
-        // Adding non-editable table
-        MEMORY_TABLE = new JTable() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        MEMORY_TABLE = new MemoryTable();
 
-        // We want to clear the selection if another component is focused
-        //  Or if this Frame loses focus which makes the table lose focus
-        MEMORY_TABLE.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                MEMORY_TABLE.clearSelection();
-            }
-        });
-
-        // And we also want to clear the selection if we click outside the table
-        //  In an empty spot of the Frame, I'm not sure if this is the best way of doing it
-        final boolean[] isOutsideTable = { false };
-        MEMORY_TABLE.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                isOutsideTable[0] = false;
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                isOutsideTable[0] = true;
-            }
-        });
-
-        this.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (isOutsideTable[0]) MEMORY_TABLE.clearSelection();
-            }
-        });
-
-        // Removing table header and adding auto-resize
-        MEMORY_TABLE.setTableHeader(null);
-        MEMORY_TABLE.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        // Setting renderer for strings
-        DefaultTableCellRenderer tableCellRenderer = (DefaultTableCellRenderer) MEMORY_TABLE.getDefaultRenderer(String.class);
-        tableCellRenderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER);
-        // Setting selection mode
-        MEMORY_TABLE.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        MEMORY_TABLE.setCellSelectionEnabled(true);
         // Adding table to Frame
-        addComponent(new JScrollPane(MEMORY_TABLE), 0, 2, 4, 1, 1.0f, 1.0f);
+        addComponent(new JScrollPane(MEMORY_TABLE), 0, 3, 4, 1, 1.0f, 1.0f);
 
         UPDATE_TIMER = new Timer(0, this::updateFrame);
         updateFrame(null);
@@ -141,7 +99,7 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
         translation.translateComponent("memoryView.updateIntervalLabel", UPDATE_INTERVAL_LABEL);
         translation.translateComponent("memoryView.showAsChar", SHOW_AS_CHAR);
         translation.translateComponent("memoryView.showHistory", SHOW_HISTORY);
-        translation.translateComponent("memoryView.showPointers", SHOW_POINTERS);
+        translation.translateComponent("memoryView.showSelectedCellPointer", SHOW_SELECTED_CELL_POINTER);
         SHOW_POINTERS.setText(StringUtils.format(translation.getOrDefault("memoryView.showPointers"), "{", "}", "[", "]"));
     }
 
@@ -171,6 +129,8 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
     }
 
     public void updateFrame(ActionEvent e) {
+        // TODO: When you've got some time to look closely at this code, do it
+        //        I think there are some things you can improve
         UPDATE_TIMER.setDelay((int) ((double) UPDATE_INTERVAL_SPINNER.getValue() * 1000.0f));
 
         if (!isVisible()) return;
@@ -209,12 +169,24 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
         if (model.getRowCount() != rows)
             model.setRowCount(rows);
 
+        int selectedRow = MEMORY_TABLE.getSelectedRow();
+        int selectedCol = MEMORY_TABLE.getSelectedColumn();
+
+        boolean enablePointedCellFeature = SHOW_SELECTED_CELL_POINTER.isSelected();
+        MEMORY_TABLE.setPointedCellEnabled(enablePointedCellFeature);
+        if (enablePointedCellFeature)
+            MEMORY_TABLE.setPointedCell();
+
         for (int i = 0; i < memSize; i++) {
             int x = i % cols;
             int y = i / cols;
 
+            int valueAtCurrentIndex = processor.getMemory().getValueAt(i);
+            if (enablePointedCellFeature && y == selectedRow && x == selectedCol)
+                MEMORY_TABLE.setPointedCell(valueAtCurrentIndex / cols, valueAtCurrentIndex % cols);
+
             String value = SHOW_AS_CHAR.isSelected() ?
-                    String.valueOf((char) processor.getMemory().getValueAt(i)) : String.valueOf(processor.getMemory().getValueAt(i));
+                    String.valueOf((char) valueAtCurrentIndex) : String.valueOf(valueAtCurrentIndex);
 
             if (SHOW_HISTORY.isSelected() && history != null && history.containsKey(i))
                 value = history.get(i);
@@ -233,6 +205,7 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
         SHOW_AS_CHAR.setSelected(e.CONFIG.get(Boolean.class, "memoryView.showAsChar"));
         SHOW_HISTORY.setSelected(e.CONFIG.get(Boolean.class, "memoryView.showHistory"));
         SHOW_POINTERS.setSelected(e.CONFIG.get(Boolean.class, "memoryView.showPointers"));
+        SHOW_SELECTED_CELL_POINTER.setSelected(e.CONFIG.get(Boolean.class, "memoryView.showSelectedCellPointer"));
     }
 
     @Override
@@ -242,6 +215,7 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
         e.CONFIG.put("memoryView.showAsChar", SHOW_AS_CHAR.isSelected());
         e.CONFIG.put("memoryView.showHistory", SHOW_HISTORY.isSelected());
         e.CONFIG.put("memoryView.showPointers", SHOW_POINTERS.isSelected());
+        e.CONFIG.put("memoryView.showSelectedCellPointer", SHOW_SELECTED_CELL_POINTER.isSelected());
     }
 
     @Override
@@ -251,5 +225,6 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
         e.CONFIG.put("memoryView.showAsChar", false);
         e.CONFIG.put("memoryView.showHistory", false);
         e.CONFIG.put("memoryView.showPointers", false);
+        e.CONFIG.put("memoryView.showSelectedCellPointer", false);
     }
 }

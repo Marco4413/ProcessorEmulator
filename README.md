@@ -18,13 +18,13 @@ On Windows: `%USERPROFILE%/PEMU.config`
 
 There are four main ways to run this project:
  1. By downloading the precompiled jar file and running it.
- 2. By compiling it yourself! Download the latest version from the repo and run `gradlew build`,
-    the compiled file should be located in `./build/libs/PEMU-version.jar`.
- 3. By opening the project using **IntelliJ IDEA** and building the **project's artifact**.
- 4. By opening the project using **IntelliJ IDEA** and creating a new **Run Config**:
+ 2. By opening the project using **IntelliJ IDEA** and building the **project's artifact**.
+ 3. By opening the project using **IntelliJ IDEA** and creating a new **Run Config**:
     - Java Version: `1.8`
     - Class Path: `Processor_Emulator.main`
     - Main Class: `io.github.hds.pemu.Main`
+ 4. (**NOTE: This isn't really tested or supported**) By compiling it yourself! Download the latest version from the repo
+    and run `gradlew build`, the compiled file should be located in `./build/libs/PEMU-version.jar`.
 
 ## Examples:
 
