@@ -129,14 +129,15 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
     }
 
     public void updateFrame(ActionEvent e) {
-        // TODO: When you've got some time to look closely at this code, do it
-        //        I think there are some things you can improve
+        // We update the update timer
         UPDATE_TIMER.setDelay((int) ((double) UPDATE_INTERVAL_SPINNER.getValue() * 1000.0f));
-
+        // If this frame isn't visible we don't bother updating it
         if (!isVisible()) return;
 
+        // Getting the processor that is currently attached to the app
         IProcessor processor = app.currentProcessor;
         DefaultTableModel model = (DefaultTableModel) MEMORY_TABLE.getModel();
+        // If no processor was found then we remove the table and set registers to unknown values
         if (processor == null) {
             model.setRowCount(0);
             model.setColumnCount(0);
@@ -145,12 +146,15 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
             return;
         }
 
+        // Getting the history of executed processor instructions
         HashMap<Integer, String> history = processor.getInstructionHistory();
+        // Getting processor's registers and flags
         IRegister IP = processor.getRegister("IP");
         IRegister SP = processor.getRegister("SP");
         IFlag ZF = processor.getFlag("ZF");
         IFlag CF = processor.getFlag("CF");
 
+        // Setting the values of the registers
         REG_VALUES.setText(
                 String.format(
                         R_VALUES_FORMAT,
@@ -159,6 +163,7 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
                 )
         );
 
+        // Making the table large enough to fit all the processor's memory
         int memSize = processor.getMemory().getSize();
         int cols = (int) COLS_SPINNER.getValue();
         int rows = (int) Math.ceil(memSize / (float) cols);
@@ -169,31 +174,54 @@ public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
         if (model.getRowCount() != rows)
             model.setRowCount(rows);
 
+        // Getting the currently selected column and row
         int selectedRow = MEMORY_TABLE.getSelectedRow();
         int selectedCol = MEMORY_TABLE.getSelectedColumn();
 
+        // If the cell pointed by the currently selected one needs to be
+        //  highlighted we do that
         boolean enablePointedCellFeature = SHOW_SELECTED_CELL_POINTER.isSelected();
         MEMORY_TABLE.setPointedCellEnabled(enablePointedCellFeature);
         if (enablePointedCellFeature)
             MEMORY_TABLE.setPointedCell();
 
+        // For each memory address
         for (int i = 0; i < memSize; i++) {
+            // We get its position on the table
             int x = i % cols;
             int y = i / cols;
 
+            // We get the currently stored value at that address
             int valueAtCurrentIndex = processor.getMemory().getValueAt(i);
+            // Highlighting pointed cell if necessary
             if (enablePointedCellFeature && y == selectedRow && x == selectedCol)
                 MEMORY_TABLE.setPointedCell(valueAtCurrentIndex / cols, valueAtCurrentIndex % cols);
 
-            String value = SHOW_AS_CHAR.isSelected() ?
-                    String.valueOf((char) valueAtCurrentIndex) : String.valueOf(valueAtCurrentIndex);
-
+            // Getting the value to show to the user
+            String value;
             if (SHOW_HISTORY.isSelected() && history != null && history.containsKey(i))
+                // If the current value is an executed instruction use its name
                 value = history.get(i);
-            if (SHOW_POINTERS.isSelected())
+            else if (SHOW_AS_CHAR.isSelected()) {
+                // If the character can't be typed
+                if (Character.isISOControl(valueAtCurrentIndex)) {
+                    final String ESCAPE_CHARACTER = "\\";
+                    // If it's a special character convert it
+                    if (StringUtils.SpecialCharacters.isSpecialCharacter(valueAtCurrentIndex))
+                        value = StringUtils.SpecialCharacters.toString((char) valueAtCurrentIndex, ESCAPE_CHARACTER);
+                        // Else put it as a number with a backslash in front of it (That's done to differentiate between '0' and 0)
+                    else value = ESCAPE_CHARACTER + valueAtCurrentIndex;
+                    // Else if the character can be typed then show it
+                } else value = String.valueOf((char) valueAtCurrentIndex);
+            } else value = String.valueOf(valueAtCurrentIndex);
+
+            // If the current cell is pointed by either IP or SP put the corresponding brackets
+            if (SHOW_POINTERS.isSelected()) {
                 if (IP != null && IP.getValue() == i) value = "{ " + value + " }";
                 else if (SP != null && SP.getValue() == i) value = "[ " + value + " ]";
+            }
 
+            // Setting the value to be shown on the table
             model.setValueAt(value, y, x);
         }
     }

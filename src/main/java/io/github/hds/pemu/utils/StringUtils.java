@@ -32,6 +32,24 @@ public class StringUtils {
             MAP.forEach((k, v) -> INVERSE_MAP.put(v, k));
         }
 
+        public static boolean isSpecialCharacter(int codePoint) {
+            return INVERSE_MAP.containsKey((char) codePoint);
+        }
+
+        public static boolean isSpecialCharacter(char c) {
+            return INVERSE_MAP.containsKey(c);
+        }
+
+        public static @NotNull String toString(char c) {
+            return toString(c, "\\");
+        }
+
+        public static @NotNull String toString(char c, @NotNull String escapeCharacter) {
+            if (isSpecialCharacter(c))
+                return escapeCharacter + INVERSE_MAP.get(c);
+            else return String.valueOf(c);
+        }
+
         public static @NotNull String escapeAll(@NotNull String str) {
             StringBuilder escapedStr = new StringBuilder();
             for (int i = 0; i < str.length(); i++) {
