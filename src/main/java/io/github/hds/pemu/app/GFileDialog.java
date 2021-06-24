@@ -21,7 +21,7 @@ public class GFileDialog extends JFileChooser implements ITranslatable {
     private static @NotNull String localeTextFileDesc = "";
     private static @NotNull String localePEMUFileDesc = "";
 
-    private @NotNull String localeOpenDialogTitle;
+    private @NotNull String localeOpenDialogTitle = "";
     private @NotNull String localeSaveDialogTitle = "";
     private @NotNull String localeOverwritePanelTitle = "";
     private @NotNull String localeOverwritePanelMsg = "";

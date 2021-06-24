@@ -72,7 +72,7 @@ public class ProcessorMenu extends JMenu implements ITranslatable {
         OPEN_MEMORY_VIEW.addActionListener(this::openMemoryView);
         add(OPEN_MEMORY_VIEW);
 
-        ICON_PAUSE_RESUME = IconUtils.importIcon("/assets/pause_resume.png", Application.MENU_ITEM_ICON_SIZE);;
+        ICON_PAUSE_RESUME = IconUtils.importIcon("/assets/pause_resume.png", Application.MENU_ITEM_ICON_SIZE);
 
         PAUSE_RESUME = new TJMenuItem(i -> app.currentProcessor != null && app.currentProcessor.isRunning());
         PAUSE_RESUME.setIcon(ICON_PAUSE_RESUME);
@@ -80,7 +80,7 @@ public class ProcessorMenu extends JMenu implements ITranslatable {
         PAUSE_RESUME.addActionListener(app::toggleProcessorExecution);
         add(PAUSE_RESUME);
 
-        ICON_STEP = IconUtils.importIcon("/assets/step.png", Application.MENU_ITEM_ICON_SIZE);;
+        ICON_STEP = IconUtils.importIcon("/assets/step.png", Application.MENU_ITEM_ICON_SIZE);
 
         STEP = new TJMenuItem(i -> app.currentProcessor != null && app.currentProcessor.isRunning() &&  app.currentProcessor.isPaused());
         STEP.setIcon(ICON_STEP);

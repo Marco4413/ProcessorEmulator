@@ -21,7 +21,7 @@ public class ConfigManager {
     private static boolean defaultOnLoadError = false;
     private static final int MAX_ERRORS_ON_LOAD = 10;
 
-    private static ArrayList<IConfigurable> LISTENERS = new ArrayList<>();
+    private static final ArrayList<IConfigurable> LISTENERS = new ArrayList<>();
 
     public static void addConfigListener(@NotNull IConfigurable configurable) {
         LISTENERS.add(configurable);

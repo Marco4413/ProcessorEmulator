@@ -28,7 +28,7 @@ public class ProgramMenu extends JMenu implements ITranslatable {
 
         TranslationManager.addTranslationListener(this);
 
-        ICON_VERIFY = IconUtils.importIcon("/assets/verify.png", Application.MENU_ITEM_ICON_SIZE);;
+        ICON_VERIFY = IconUtils.importIcon("/assets/verify.png", Application.MENU_ITEM_ICON_SIZE);
 
         VERIFY = new TJMenuItem(i -> app.currentProgram != null);
         VERIFY.setIcon(ICON_VERIFY);
@@ -36,7 +36,7 @@ public class ProgramMenu extends JMenu implements ITranslatable {
         VERIFY.addActionListener(app::verifyProgram);
         add(VERIFY);
 
-        ICON_OBFUSCATE = IconUtils.importIcon("/assets/obfuscate.png", Application.MENU_ITEM_ICON_SIZE);;
+        ICON_OBFUSCATE = IconUtils.importIcon("/assets/obfuscate.png", Application.MENU_ITEM_ICON_SIZE);
 
         OBFUSCATE = new TJMenuItem(i -> app.currentProgram != null);
         OBFUSCATE.setIcon(ICON_OBFUSCATE);

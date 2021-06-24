@@ -159,6 +159,10 @@ public class Console {
                 append(String.valueOf(integer));
         }
 
+        public synchronized void println() {
+            print('\n');
+        }
+
         public synchronized void println(String... strings) {
             print(strings);
             print('\n');

@@ -218,16 +218,24 @@ They are 3 and always have an `#` in front of them:
 ;  the address 0, which contains the value defined by #DW, which is 30
 number: #DW 30
 
+; Characters can also be defined using #DW:
+character: #DW '\n'
+
 ; #DS adds all characters in the string to memory, so the label "string"
 ;  is only pointing to the first character ("H")
 string: #DS "Hello World!\0"
-; #DS also supports common special characters: '\0', '\n', '\t'
+
+; Strings and Characters support common special characters: '\n', '\t'
+;   and Code Points: '\0', '\10', '\13'
+; On Strings multiple Code Points can be defined: "\10\0"
+;   If you want to add a digit after a Code Point, it can be terminated using a semicolon (;):
+;   "\10;2\0"
 
 ; #DA adds all elements in the array to memory, constants can be used too
 ;  and labels can be declared pointing to a certain element
 array: #DA { 10, 3, 2, enter_key: @VK_ENTER }
 ; This is useful to define multiple words without using multiple define
-;  word instructions 
+;  word instructions, Note that no string can be defined within an Array
 ```
 
 ## Registers and Flags

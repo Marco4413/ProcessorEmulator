@@ -9,6 +9,7 @@ import io.github.hds.pemu.memory.flags.MemoryFlag;
 import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.memory.registers.MemoryRegister;
 import io.github.hds.pemu.processor.IProcessor;
+import io.github.hds.pemu.tokenizer.TokenGroup;
 import io.github.hds.pemu.utils.StringUtils;
 import io.github.hds.pemu.tokenizer.Token;
 import io.github.hds.pemu.tokenizer.Tokenizer;
@@ -43,10 +44,13 @@ public class Compiler {
         public static final Token OFF_END   = new Token(']', true);
         public static final Token SPACE     = new Token(' ', "\\s", false);
         public static final Token NEWLINE   = new Token('\n');
+        public static final Token STR_CODEPOINT_TERMINATOR = new Token(';');
 
-        public static final Token[] ALL_TOKENS = new Token[] {
-                COMMENT, CONSTANT, LABEL, COMPILER, STRING, CHARACTER, ESCAPE_CH, ARR_START, ARR_END, OFF_START, OFF_END, SPACE, NEWLINE
-        };
+        // The class TokenGroup makes sure that no duplicate pattern is present,
+        //  so it discards a Token if one that is equal is present, this should make Tokenizer faster
+        public static final TokenGroup ALL_TOKENS = new TokenGroup().addTokens(
+                COMMENT, CONSTANT, LABEL, COMPILER, STRING, CHARACTER, ESCAPE_CH, ARR_START, ARR_END, OFF_START, OFF_END, SPACE, NEWLINE, STR_CODEPOINT_TERMINATOR
+        );
 
     }
 
@@ -273,28 +277,71 @@ public class Compiler {
         if (stringTerminator == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
         if (Tokens.STRING.matches(stringTerminator)) {
-            boolean escapeChar = false;
-            StringBuilder value = new StringBuilder();
+            boolean isEscapingCharacter = false;
+            StringBuilder stringBuilder = new StringBuilder();
             while (true) {
-                String valueToAdd = cd.tokenizer.consumeNext();
-                if (valueToAdd == null)
-                    throw new SyntaxError("String terminator ('" + stringTerminator + "')", String.valueOf(value.charAt(value.length() - 1)), cd.tokenizer);
-                else if (escapeChar) {
-                    char escapedChar = valueToAdd.charAt(0);
-                    if (StringUtils.SpecialCharacters.MAP.containsKey(escapedChar)) {
-                        value.append(StringUtils.SpecialCharacters.MAP.get(escapedChar));
-                        if (valueToAdd.length() > 1)
-                            value.append(valueToAdd.substring(1));
-                    } else value.append(valueToAdd);
-                    escapeChar = false;
-                } else if (valueToAdd.equals(stringTerminator)) break;
-                else if (Tokens.ESCAPE_CH.matches(valueToAdd)) escapeChar = true;
-                else value.append(valueToAdd);
+                String currentToken = cd.tokenizer.consumeNext();
+                if (currentToken == null)
+                    throw new SyntaxError("String terminator ('" + stringTerminator + "')", String.valueOf(stringBuilder.charAt(stringBuilder.length() - 1)), cd.tokenizer);
+                else if (isEscapingCharacter) {
+                    char escapedCharacter = currentToken.charAt(0);
+                    // If the character that is being escaped is a digit
+                    if (Character.isDigit(escapedCharacter)) {
+                        // Add the first digit
+                        StringBuilder codePointBuilder = new StringBuilder()
+                                .append(escapedCharacter);
+                        int firstCharacterIndex;
+
+                        // For each character in the current token
+                        for (firstCharacterIndex = 1; firstCharacterIndex < currentToken.length(); firstCharacterIndex++) {
+                            char currentChar = currentToken.charAt(firstCharacterIndex);
+                            // If it's a digit add it to the codePointBuilder
+                            if (Character.isDigit(currentChar))
+                                codePointBuilder.append(currentChar);
+                            // Else break, we've found all digits in the current token
+                            else break;
+                        }
+                        // NOTE: firstCharacterIndex is now the index of the first character
+                        //        which is not a digit in the current Token
+
+                        int codePoint = -1;
+                        boolean isValidCodePoint;
+                        try {
+                            // Parsing the codePoint that was found
+                            codePoint = Integer.parseUnsignedInt(codePointBuilder.toString());
+                            // Check if it's a valid code point
+                            isValidCodePoint = Character.isValidCodePoint(codePoint);
+                        } catch (Exception e) {
+                            // It's also not a valid codepoint if Integer.parseUnsignedInt throws
+                            //  (It can happen if the number is too big)
+                            isValidCodePoint = false;
+                        }
+                        if (!isValidCodePoint) throw new SyntaxError("Valid Code Point", codePointBuilder.toString(), cd.tokenizer);
+                        // Else append the codepoint and add the rest of the token to the final String
+                        stringBuilder.appendCodePoint(codePoint);
+
+                        // If the whole token was a CodePoint
+                        if (firstCharacterIndex >= currentToken.length()) {
+                            // Then if the next token is the one which terminates the CodePoint, consume it
+                            if (Tokens.STR_CODEPOINT_TERMINATOR.matches(cd.tokenizer.peekNext()))
+                                cd.tokenizer.consumeNext();
+                        // Else append the rest of the string and don't consume the next token
+                        } else stringBuilder.append(currentToken.substring(firstCharacterIndex));
+                    } else if (StringUtils.SpecialCharacters.MAP.containsKey(escapedCharacter)) {
+                        stringBuilder.append(StringUtils.SpecialCharacters.MAP.get(escapedCharacter));
+                        if (currentToken.length() > 1)
+                            stringBuilder.append(currentToken.substring(1));
+                    } else stringBuilder.append(currentToken);
+                    isEscapingCharacter = false;
+                } else if (currentToken.equals(stringTerminator)) break;
+                else if (Tokens.ESCAPE_CH.matches(currentToken)) isEscapingCharacter = true;
+                else stringBuilder.append(currentToken);
             }
+
             if (addToProgram) {
-                for (int i = 0; i < value.length(); i++) cd.program.add((int) value.charAt(i));
-                return new ParseResult<>(PARSE_STATUS.SUCCESS, null, value.toString());
-            } else return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, null, value.toString());
+                for (int i = 0; i < stringBuilder.length(); i++) cd.program.add((int) stringBuilder.charAt(i));
+                return new ParseResult<>(PARSE_STATUS.SUCCESS, null, stringBuilder.toString());
+            } else return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, null, stringBuilder.toString());
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
     }
 
@@ -309,10 +356,39 @@ public class Compiler {
             if (nextToken == null || charTerminator.equals(nextToken) || nextToken.length() > 1)
                 throw new SyntaxError("Character", nextToken, cd.tokenizer);
             else if (Tokens.ESCAPE_CH.matches(nextToken)) {
-                String escapedChar = cd.tokenizer.consumeNext();
-                if (escapedChar == null || escapedChar.length() > 1)
-                    throw new SyntaxError("Character", escapedChar, cd.tokenizer);
-                character = StringUtils.SpecialCharacters.MAP.getOrDefault(escapedChar.charAt(0), escapedChar.charAt(0));
+                String escapedValue = cd.tokenizer.consumeNext();
+                if (escapedValue == null)
+                    throw new SyntaxError("Character or Code Point", null, cd.tokenizer);
+                // If the char to add is a digit, then we have a code point
+                else if (Character.isDigit(escapedValue.charAt(0))) {
+                    StringBuilder codePointBuilder = new StringBuilder();
+                    for (int i = 0; i < escapedValue.length(); i++) {
+                        char currentChar = escapedValue.charAt(i);
+                        // If it's not a digit it's not a valid Code Point
+                        //  (Strings don't throw because they can have multiple
+                        //    characters, so the code point can terminate mid-string)
+                        if (!Character.isDigit(currentChar))
+                            throw new SyntaxError("Code Point", escapedValue, cd.tokenizer);
+                        codePointBuilder.append(currentChar);
+                    }
+
+                    int codePoint = -1;
+                    boolean isValidCodePoint;
+                    // Make sure that it's a valid integer and that's a valid code point
+                    try {
+                        codePoint = Integer.parseUnsignedInt(codePointBuilder.toString());
+                        isValidCodePoint = Character.isValidCodePoint(codePoint);
+                    } catch (Exception e) {
+                        isValidCodePoint = false;
+                    }
+
+                    if (!isValidCodePoint)
+                        throw new SyntaxError("Code Point", codePointBuilder.toString(), cd.tokenizer);
+
+                    character = (char) codePoint;
+                } else if (escapedValue.length() == 1)
+                    character = StringUtils.SpecialCharacters.MAP.getOrDefault(escapedValue.charAt(0), escapedValue.charAt(0));
+                else throw new SyntaxError("Character or Code Point", escapedValue, cd.tokenizer);
             } else character = nextToken.charAt(0);
 
             if (!charTerminator.equals(cd.tokenizer.consumeNext()))
@@ -344,6 +420,8 @@ public class Compiler {
     }
 
     public static CompiledProgram compileFile(@NotNull File file, @NotNull IProcessor processor) {
+        long compilationStartTimestamp = System.nanoTime();
+
         if (!file.exists()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file doesn't exist.");
         if (!file.canRead()) throw new IllegalArgumentException("'" + file.getAbsolutePath() + "': The specified file can't be read.");
 
@@ -400,16 +478,13 @@ public class Compiler {
                         while (true) {
                             // For each value in the array, check if the next value is the array closer character
                             String nextValue = cd.tokenizer.peekNext(Tokens.SPACE);
-                            if (Tokens.ARR_END.matches(nextValue)) {
+                            if (nextValue == null) {
+                                throw new SyntaxError("Array terminator ('" + Tokens.ARR_END.getPattern() + "')", cd.tokenizer.getLast(), cd.tokenizer);
+                            } else if (Tokens.ARR_END.matches(nextValue)) {
                                 cd.tokenizer.consumeNext(Tokens.SPACE);
                                 break;
                             }
-
-                            try {
-                                parseValues(cd);
-                            } catch (Exception err) {
-                                throw new SyntaxError("Array terminator ('" + Tokens.ARR_END.getPattern() + "')", cd.tokenizer.getLast(), cd.tokenizer);
-                            }
+                            parseValues(cd);
                         }
                     } else throw new SyntaxError("Array", arrayStart, cd.tokenizer);
                 } else throw new SyntaxError("Compiler Instruction", compilerInstr, cd.tokenizer);
@@ -435,7 +510,7 @@ public class Compiler {
         for (int i = 0; i < cd.program.size(); i++)
             primitiveIntProgram[i] = cd.program.get(i);
 
-        return new CompiledProgram(processor, cd.labels, cd.registers, cd.offsets, primitiveIntProgram);
+        return new CompiledProgram(processor, cd.labels, cd.registers, cd.offsets, primitiveIntProgram, System.nanoTime() - compilationStartTimestamp);
     }
 
     /**

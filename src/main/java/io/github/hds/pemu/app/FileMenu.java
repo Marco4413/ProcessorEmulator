@@ -51,7 +51,7 @@ public class FileMenu extends JMenu implements ITranslatable, IConfigurable {
         CHANGE_LANGUAGE.addActionListener(this::changeLanguage);
         add(CHANGE_LANGUAGE);
 
-        ICON_QUIT = IconUtils.importIcon("/assets/quit.png", Application.MENU_ITEM_ICON_SIZE);;
+        ICON_QUIT = IconUtils.importIcon("/assets/quit.png", Application.MENU_ITEM_ICON_SIZE);
 
         QUIT = new JMenuItem();
         QUIT.setIcon(ICON_QUIT);

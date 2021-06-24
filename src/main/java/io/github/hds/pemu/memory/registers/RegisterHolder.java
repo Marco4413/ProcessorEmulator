@@ -33,7 +33,8 @@ public class RegisterHolder<T extends IRegister> {
         return this;
     }
 
-    public @NotNull RegisterHolder<T> addRegisters(T... registers) {
+    @SafeVarargs
+    public final @NotNull RegisterHolder<T> addRegisters(T... registers) {
         for (T register : registers) addRegister(register);
         return this;
     }
