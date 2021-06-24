@@ -25,8 +25,12 @@ public class Tokenizer {
         String rule = ruleBuilder.toString();
         String regex = keepTokens ?
                 "((?<=[" + rule + "])|(?=[" + rule + "]))" :
-                "[" + rule + "]+";
+                "[" + rule + "]";
         this.tokens = str.split(regex);
+    }
+
+    public Tokenizer(@NotNull String str, boolean keepTokens, @NotNull TokenGroup tokenGroup) {
+        this(str, keepTokens, tokenGroup.getGroup());
     }
 
     public void removeDuplicates() {

@@ -1,5 +1,18 @@
 
 -- Version (v1.6.0-RELEASE)
+-- Changes from commit @691712d
+
+Now Strings and Characters support Code Points
+
+Added methods to CompiledProgram: hasCompileTime, getCompileTimeNanos, getCompileTimeMicros, getCompileTimeMillis
+Added field CompiledProgram.NO_COMPILE_TIME
+
+Improved Debug logs from Application
+Added method Console.ConsoleComponent#println
+Fixed some IntelliJ Idea Warnings
+
+Added class TokenGroup, which should make Tokenizer a bit faster
+
 -- Changes from commit @5740a3e
 
 Now MemoryView is smarter when showing Memory Values as Characters

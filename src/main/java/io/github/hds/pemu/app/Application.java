@@ -23,7 +23,7 @@ import java.util.function.Function;
 public class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
     public static final String APP_TITLE = "PEMU";
-    public static final String APP_VERSION = "1.5.0";
+    public static final String APP_VERSION = "1.6.0";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
@@ -196,7 +196,10 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
     }
 
     public @Nullable IProcessor createProcessor() {
-        if (processorProducer == null) return null;
+        if (processorProducer == null) {
+            Console.Debug.println("Processor Producer was never specified (Try downloading the latest version of the app)!");
+            return null;
+        }
 
         // Create a new Processor with the current ProcessorConfig
         try {
@@ -218,25 +221,28 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
             return null;
         }
 
+        CompiledProgram compiledProgram = null;
         try {
-            return Compiler.compileFile(currentProgram, processorInstance);
+            compiledProgram = Compiler.compileFile(currentProgram, processorInstance);
+            Console.Debug.println(
+                    String.format(
+                            "File was compiled successfully (%s), it occupies %d/%d Words",
+                            currentProgram.getName(), compiledProgram.getProgram().length, processorInstance.getMemory().getSize() - processorInstance.getReservedWords()
+                    )
+            );
+            Console.Debug.println(
+                    String.format("Compilation took %.2fms", compiledProgram.getCompileTimeMillis())
+            );
         } catch (Exception err) {
             Console.Debug.println("Compilation error (for file @'" + currentProgram.getAbsolutePath() + "'):");
             Console.Debug.printStackTrace(err, false);
         }
 
-        return null;
+        return compiledProgram;
     }
 
     public void verifyProgram(ActionEvent e) {
-        CompiledProgram compiledProgram = compileProgram(null);
-
-        if (compiledProgram != null) {
-            int[] compiledProgramData = compiledProgram.getProgram();
-            Console.Debug.println(
-                    String.format("The specified program compiled successfully!\nIt occupies %d Word%s.", compiledProgramData.length, compiledProgramData.length == 1 ? "" : "s")
-            );
-        }
+        compileProgram(null);
     }
 
     public void obfuscateProgram(ActionEvent e) {
@@ -249,7 +255,6 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
     }
 
     public void runProcessor(ActionEvent e) {
-        if (processorProducer == null) throw new IllegalStateException("A Processor Producer was never specified!");
 
         // Make sure that the last thread is dead
         if (currentProcessor != null && currentProcessor.isRunning()) {
@@ -271,11 +276,6 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
         // Compile the selected program
         CompiledProgram compiledProgram = compileProgram(currentProcessor);
         if (compiledProgram == null) return;
-
-        Console.Debug.println(
-                "Compiled file (" + currentProgram.getName() + ") occupies "
-                        + compiledProgram.getProgram().length + " / " + ( currentProcessor.getMemory().getSize() - currentProcessor.getReservedWords() ) + " Words"
-        );
 
         // Load compiled program into memory
         String loadError = null;

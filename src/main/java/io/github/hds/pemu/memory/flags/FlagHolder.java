@@ -33,7 +33,8 @@ public class FlagHolder<T extends IFlag> {
         return this;
     }
 
-    public @NotNull FlagHolder<T> addFlags(T... flags) {
+    @SafeVarargs
+    public final @NotNull FlagHolder<T> addFlags(T ...flags) {
         for (T flag : flags) addFlag(flag);
         return this;
     }
