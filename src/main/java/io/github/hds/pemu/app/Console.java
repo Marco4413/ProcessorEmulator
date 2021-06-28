@@ -14,13 +14,13 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.function.Function;
 
-public class Console {
+public final class Console {
 
     public static final @NotNull ConsoleComponent POutput = new ConsoleComponent();
     public static final @NotNull ConsoleComponent Debug = new ConsoleComponent();
     public static final @NotNull ConsoleContextualMenu CTX_MENU = new ConsoleContextualMenu();
 
-    private static class ConsoleContextualMenu extends JPopupMenu implements ITranslatable {
+    private static final class ConsoleContextualMenu extends JPopupMenu implements ITranslatable {
         private final TJMenuItem SAVE;
         private final TJMenuItem CLEAR;
         private final TJMenuItem RESET_FONT_SIZE;

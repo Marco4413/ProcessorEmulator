@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Pattern;
 
-public class Token {
+public final class Token {
 
     private final char CHARACTER;
     private final @NotNull String PATTERN;

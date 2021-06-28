@@ -1,4 +1,17 @@
 
+-- Version (v1.7.0-RELEASE)
+-- Changes from commit @a74a4f0
+
+Added interface IMemory
+Reworked Memory class because of the added IMemory interface
+Reworked Word class as a project cleanup
+Made Clock class throw if the specified clock is above the max one
+
+Added methods to ProcessorConfig: setInstructionSet, getInstructionSet
+Made private ProcessorConfig's instructionSet field
+
+Threw a dice a bunch of times to pick which classes should be final
+
 -- Version (v1.6.0-RELEASE)
 -- Changes from commit @691712d
 

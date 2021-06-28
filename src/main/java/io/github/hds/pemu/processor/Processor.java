@@ -17,14 +17,18 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 
-public class Processor implements IProcessor {
+public final class Processor implements IProcessor {
 
     private boolean isRunning = false;
 
+    // How many words the registers will occupy
     private final int REGISTERS_WORDS = 2;
-    private final RegisterHolder<MemoryRegister> REGISTERS;
-
+    // How many words are reserved for the stack
+    private final int RESERVED_STACK_ELEMENTS = 1;
+    // How many words are reserved for flags
     private final int FLAGS_WORDS = 1;
+
+    private final RegisterHolder<MemoryRegister> REGISTERS;
     private final FlagHolder<MemoryFlag> FLAGS;
 
     private final Memory MEMORY;
@@ -41,11 +45,13 @@ public class Processor implements IProcessor {
     private volatile boolean stepping = false;
 
     public Processor(@NotNull ProcessorConfig config) {
-        Word word = new Word(config.getBits());
-        MEMORY = new Memory(config.getMemorySize(), word);
+        MEMORY = new Memory(
+                config.getMemorySize(),
+                Word.getClosestWord(config.getBits())
+        );
         CLOCK = new Clock(config.getClock());
 
-        INSTRUCTIONSET = config.instructionSet;
+        INSTRUCTIONSET = config.getInstructionSet();
         HISTORY = new HashMap<>();
 
         REGISTERS = new RegisterHolder<>(
@@ -57,7 +63,6 @@ public class Processor implements IProcessor {
                 new MemoryFlag(false, "Zero Flag" , MEMORY, REGISTERS_WORDS, 0),
                 new MemoryFlag(false, "Carry Flag", MEMORY, REGISTERS_WORDS, 1)
         );
-
     }
 
     @Override
@@ -71,7 +76,7 @@ public class Processor implements IProcessor {
     }
 
     @Override
-    public @NotNull Memory getMemory() {
+    public @NotNull IMemory getMemory() {
         return MEMORY;
     }
 
@@ -108,7 +113,7 @@ public class Processor implements IProcessor {
     @Override
     public @NotNull String getInfo() {
         return "\tClock:\t" + StringUtils.getEngNotationInt(CLOCK.getClock()) + "Hz\n" +
-               "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.WORD.BYTES + " Bytes\n" +
+               "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.getWord().TOTAL_BYTES + " Bytes\n" +
                "\tInstructions:\t" + INSTRUCTIONSET.getSize() + "\n";
     }
 
@@ -139,8 +144,7 @@ public class Processor implements IProcessor {
 
     @Override
     public int getReservedWords() {
-        // The +1 at the end is the first element on the stack
-        return REGISTERS_WORDS + FLAGS_WORDS + 1;
+        return REGISTERS_WORDS + FLAGS_WORDS + RESERVED_STACK_ELEMENTS;
     }
 
     @Override
@@ -159,7 +163,7 @@ public class Processor implements IProcessor {
                 stepping = false;
 
                 final MemoryRegister IP = REGISTERS.getRegister("IP");
-                assert IP != null : "We should never get to this point.";
+                assert IP != null : "Come on, it can't be null...";
 
                 if (IP.getValue() >= MEMORY.getSize()) {
                     stop();

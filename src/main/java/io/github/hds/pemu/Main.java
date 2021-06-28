@@ -9,7 +9,7 @@ import io.github.hds.pemu.processor.ProcessorConfig;
 import javax.swing.*;
 import java.io.File;
 
-public class Main {
+public final class Main {
 
     public static void main(String[] args) {
 

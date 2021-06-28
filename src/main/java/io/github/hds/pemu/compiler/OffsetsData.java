@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class OffsetsData extends HashMap<Integer, Integer> {
+public final class OffsetsData extends HashMap<Integer, Integer> {
 
     protected OffsetsData(int initialCapacity, float loadFactor) {
         super(initialCapacity, loadFactor);

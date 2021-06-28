@@ -12,9 +12,12 @@ import java.util.HashMap;
 
 public interface IProcessor extends Runnable, IStoppable {
 
+    // Are you here because you want to implement this interface?
+    //  Note: The run method is the only one that can throw if the processor encounters any error while running
+
     @Nullable IFlag getFlag(@NotNull String shortName);
     @Nullable IRegister getRegister(@NotNull String shortName);
-    @NotNull Memory getMemory();
+    @NotNull IMemory getMemory();
     @NotNull Clock getClock();
     @NotNull InstructionSet getInstructionSet();
 

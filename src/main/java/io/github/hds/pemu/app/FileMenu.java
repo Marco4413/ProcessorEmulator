@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class FileMenu extends JMenu implements ITranslatable, IConfigurable {
+public final class FileMenu extends JMenu implements ITranslatable, IConfigurable {
 
     private final Application app;
 

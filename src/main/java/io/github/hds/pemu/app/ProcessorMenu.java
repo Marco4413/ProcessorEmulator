@@ -10,7 +10,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-public class ProcessorMenu extends JMenu implements ITranslatable {
+public final class ProcessorMenu extends JMenu implements ITranslatable {
 
     private final Application app;
 
@@ -28,7 +28,7 @@ public class ProcessorMenu extends JMenu implements ITranslatable {
     private final ImageIcon ICON_PAUSE_RESUME;
     private final ImageIcon ICON_STEP;
 
-    private final ProcessorConfigPanel CONFIG_PANEL;
+    protected final ProcessorConfigPanel CONFIG_PANEL;
 
     private @NotNull String localeConfigPanelTitle = "";
 

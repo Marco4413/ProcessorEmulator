@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
 
-public class ArgumentOptions {
+public final class ArgumentOptions {
 
     public static class Int extends ArgumentOption<Integer> {
         public Int(@NotNull String name, @NotNull String shortName, @NotNull Integer defaultValue) {

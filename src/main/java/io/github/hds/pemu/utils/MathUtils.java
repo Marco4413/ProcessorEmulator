@@ -1,6 +1,6 @@
 package io.github.hds.pemu.utils;
 
-public class MathUtils {
+public final class MathUtils {
 
     /**
      * Constrains the specified value to the range [min; max]

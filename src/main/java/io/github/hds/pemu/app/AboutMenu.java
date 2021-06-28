@@ -10,7 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
 
-public class AboutMenu extends JMenu implements ITranslatable {
+public final class AboutMenu extends JMenu implements ITranslatable {
 
     private final Application app;
     private static final String WEBPAGE = "https://github.com/hds536jhmk/ProcessorEmulator";

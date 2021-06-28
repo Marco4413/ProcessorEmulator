@@ -8,7 +8,7 @@ import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.utils.MathUtils;
 import org.jetbrains.annotations.NotNull;
 
-public class Instructions {
+public final class Instructions {
 
     private static void updateMathFlags(@NotNull IProcessor p, int value, boolean zero, boolean carry) {
         IFlag ZF = p.getFlag("ZF");
@@ -17,7 +17,7 @@ public class Instructions {
         if (CF == null) throw new NullPointerException("Carry Flag isn't present on the Processor.");
 
         if (zero) ZF.setValue(value == 0);
-        if (carry) CF.setValue((value & ~p.getMemory().WORD.MASK) != 0);
+        if (carry) CF.setValue((value & ~p.getMemory().getWord().BIT_MASK) != 0);
     }
 
     public static final Instruction NULL = new Instruction("NULL", 0);
@@ -42,7 +42,7 @@ public class Instructions {
     public static final Instruction MOV = new Instruction("MOV", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             memory.setValueAt(args[0], memory.getValueAt(args[1]));
         }
     };
@@ -50,7 +50,7 @@ public class Instructions {
     public static final Instruction SWP = new Instruction("SWP", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             memory.setValueAt(args[0], memory.setValueAt(args[1], memory.getValueAt(args[0])));
         }
     };
@@ -58,7 +58,7 @@ public class Instructions {
     public static final Instruction XMOV = new Instruction("XMOV", 3) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
 
             boolean[] options = MathUtils.getBits(args[2], new boolean[3]);
             int firstAddress  = options[0] ? memory.getValueAt(args[0]) : args[0];
@@ -81,7 +81,7 @@ public class Instructions {
     public static final Instruction OUTC = new Instruction("OUTC", 1) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             char character = (char) memory.getValueAt(args[0]);
             if (character == '\0') Console.POutput.clear();
             else Console.POutput.print((char) memory.getValueAt(args[0]));
@@ -128,7 +128,7 @@ public class Instructions {
     public static final Instruction INC = new Instruction("INC", 1) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int result = memory.getValueAt(args[0]) + 1;
             memory.setValueAt(args[0], result);
             updateMathFlags(p, result, true, true);
@@ -138,7 +138,7 @@ public class Instructions {
     public static final Instruction DEC = new Instruction("DEC", 1) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int result = memory.getValueAt(args[0]) - 1;
             memory.setValueAt(args[0], result);
             updateMathFlags(p, result, true, true);
@@ -148,7 +148,7 @@ public class Instructions {
     public static final Instruction ADD = new Instruction("ADD", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int result = memory.getValueAt(args[0]) + memory.getValueAt(args[1]);
             memory.setValueAt(args[0], result);
             updateMathFlags(p, result, true, true);
@@ -158,7 +158,7 @@ public class Instructions {
     public static final Instruction SUB = new Instruction("SUB", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int result = memory.getValueAt(args[0]) - memory.getValueAt(args[1]);
             memory.setValueAt(args[0], result);
             updateMathFlags(p, result, true, true);
@@ -168,7 +168,7 @@ public class Instructions {
     public static final Instruction MUL = new Instruction("MUL", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int result = memory.getValueAt(args[0]) * memory.getValueAt(args[1]);
             memory.setValueAt(args[0], result);
             updateMathFlags(p, result, true, true);
@@ -178,7 +178,7 @@ public class Instructions {
     public static final Instruction DIV = new Instruction("DIV", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int result = memory.getValueAt(args[0]) / memory.getValueAt(args[1]);
             memory.setValueAt(args[0], result);
             updateMathFlags(p, result, true, true);
@@ -188,7 +188,7 @@ public class Instructions {
     public static final Instruction MOD = new Instruction("MOD", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int result = memory.getValueAt(args[0]) % memory.getValueAt(args[1]);
             memory.setValueAt(args[0], result);
             updateMathFlags(p, result, true, true);
@@ -198,7 +198,7 @@ public class Instructions {
     public static final Instruction AND = new Instruction("AND", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int res = memory.getValueAt(args[0]) & memory.getValueAt(args[1]);
             memory.setValueAt(args[0], res);
             updateMathFlags(p, res, true, false);
@@ -208,7 +208,7 @@ public class Instructions {
     public static final Instruction OR = new Instruction("OR", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int res = memory.getValueAt(args[0]) | memory.getValueAt(args[1]);
             memory.setValueAt(args[0], res);
             updateMathFlags(p, res, true, false);
@@ -218,7 +218,7 @@ public class Instructions {
     public static final Instruction NOT = new Instruction("NOT", 1) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int res = ~memory.getValueAt(args[0]);
             memory.setValueAt(args[0], res);
             updateMathFlags(p, res, true, false);
@@ -228,7 +228,7 @@ public class Instructions {
     public static final Instruction XOR = new Instruction("XOR", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int res = memory.getValueAt(args[0]) ^ memory.getValueAt(args[1]);
             memory.setValueAt(args[0], res);
             updateMathFlags(p, res, true, false);
@@ -238,7 +238,7 @@ public class Instructions {
     public static final Instruction CMP = new Instruction("CMP", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             IFlag ZF = p.getFlag("ZF");
             IFlag CF = p.getFlag("CF");
             if (ZF == null) throw new NullPointerException("Zero Flag isn't present on the Processor.");
@@ -404,7 +404,7 @@ public class Instructions {
             IRegister SP = p.getRegister("SP");
             if (SP == null) throw new NullPointerException("Stack Pointer Register isn't present on the Processor.");
 
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             memory.setValueAt(SP.setValue(SP.getValue() - 1), memory.getValueAt(args[0]));
         }
     };
@@ -415,7 +415,7 @@ public class Instructions {
             IRegister SP = p.getRegister("SP");
             if (SP == null) throw new NullPointerException("Stack Pointer Register isn't present on the Processor.");
 
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             SP.setValue(SP.getValue() + 1);
             memory.setValueAt(args[0], memory.getValueAt(SP.getValue()));
         }
@@ -424,7 +424,7 @@ public class Instructions {
     public static final Instruction LOOP = new Instruction("LOOP", 2) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Memory memory = p.getMemory();
+            IMemory memory = p.getMemory();
             int counter = memory.getValueAt(args[1]);
             memory.setValueAt(args[1], --counter);
 

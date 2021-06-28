@@ -5,6 +5,8 @@ import io.github.hds.pemu.compiler.Compiler;
 import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
+import io.github.hds.pemu.instructions.InstructionSet;
+import io.github.hds.pemu.instructions.Instructions;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
@@ -20,7 +22,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.util.function.Function;
 
-public class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
+public final class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
     public static final String APP_TITLE = "PEMU";
     public static final String APP_VERSION = "1.6.0";
@@ -48,7 +50,6 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
 
     private Application() throws HeadlessException {
         super();
-        processorConfig = new ProcessorConfig();
         setTitle(APP_TITLE);
 
         setIconImage(IconUtils.importIcon("/assets/icon.png", FRAME_ICON_SIZE).getImage());
@@ -82,6 +83,7 @@ public class Application extends JFrame implements KeyListener, ITranslatable, I
         // PROCESSOR MENU
         PROCESSOR_MENU = new ProcessorMenu(this);
         menuBar.add(PROCESSOR_MENU);
+        processorConfig = PROCESSOR_MENU.CONFIG_PANEL.getConfig();
 
         // ABOUT MENU
         ABOUT_MENU = new AboutMenu(this);

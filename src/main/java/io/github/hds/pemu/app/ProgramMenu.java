@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 
-public class ProgramMenu extends JMenu implements ITranslatable {
+public final class ProgramMenu extends JMenu implements ITranslatable {
 
     private final Application app;
 

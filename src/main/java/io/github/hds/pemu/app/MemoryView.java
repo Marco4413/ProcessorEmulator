@@ -19,7 +19,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.HashMap;
 
-public class MemoryView extends JFrame implements ITranslatable, IConfigurable {
+public final class MemoryView extends JFrame implements ITranslatable, IConfigurable {
 
     private static final String R_VALUES_FORMAT = "<html><table><tr><td>IP=%s</td><td>SP=%s</td></tr><tr><td>ZF=%s</td><td>CF=%s</td></tr></table></html>";
     private static final String R_VALUES_UNKNOWN = "?";

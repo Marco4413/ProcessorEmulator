@@ -3,7 +3,7 @@ package io.github.hds.pemu.config;
 import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
 import io.github.hds.pemu.utils.IStoppable;
 
-public class ConfigEvent implements IStoppable {
+public final class ConfigEvent implements IStoppable {
     public enum EVENT_TYPE {
         SAVE, LOAD, DEFAULTS
     }

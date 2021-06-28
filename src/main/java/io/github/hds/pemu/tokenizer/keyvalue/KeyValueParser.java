@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Scanner;
 
-public class KeyValueParser {
+public final class KeyValueParser {
     private static final Token STRING      = new Token('"');
     private static final Token CHARACTER   = new Token('\'');
     private static final Token ESCAPE_CHAR = new Token('\\', true);
