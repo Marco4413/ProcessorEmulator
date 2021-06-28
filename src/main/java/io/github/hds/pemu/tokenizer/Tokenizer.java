@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 
-public class Tokenizer {
+public final class Tokenizer {
 
     private String[] tokens;
     private int nextToken = 0;

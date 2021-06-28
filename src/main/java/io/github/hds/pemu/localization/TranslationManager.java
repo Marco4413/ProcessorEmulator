@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class TranslationManager {
+public final class TranslationManager {
 
     private static Translation currentTranslation;
     private static final ArrayList<ITranslatable> LISTENERS = new ArrayList<>();

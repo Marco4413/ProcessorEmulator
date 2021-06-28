@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 
-public class IconUtils {
+public final class IconUtils {
 
     public static @NotNull ImageIcon importIcon(@NotNull String resourceLocation, int size) {
         return new ImageIcon(

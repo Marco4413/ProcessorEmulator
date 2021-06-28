@@ -4,7 +4,7 @@ import io.github.hds.pemu.compiler.labels.OffsetLabel;
 import io.github.hds.pemu.processor.IProcessor;
 import org.jetbrains.annotations.NotNull;
 
-public class CompiledProgram {
+public final class CompiledProgram {
     public static final long NO_COMPILE_TIME = -1;
 
     private final @NotNull IProcessor PROCESSOR;

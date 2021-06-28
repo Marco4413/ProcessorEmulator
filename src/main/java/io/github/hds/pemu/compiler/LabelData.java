@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class LabelData <T extends ILabel> extends HashMap<String, T> {
+public final class LabelData <T extends ILabel> extends HashMap<String, T> {
 
     private HashMap<Integer, ArrayList<String>> ADDRESS_MAP = new HashMap<>();
     private HashMap<Integer, String> INSTANCES_MAP = new HashMap<>();

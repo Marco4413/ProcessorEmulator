@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RegisterData extends HashMap<Integer, String> {
+public final class RegisterData extends HashMap<Integer, String> {
     protected RegisterData(int initialCapacity, float loadFactor) {
         super(initialCapacity, loadFactor);
     }

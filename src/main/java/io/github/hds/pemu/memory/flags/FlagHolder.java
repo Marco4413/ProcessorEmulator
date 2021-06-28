@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
 
-public class FlagHolder<T extends IFlag> {
+public final class FlagHolder<T extends IFlag> {
 
     private final HashMap<String, T> FLAGS;
 

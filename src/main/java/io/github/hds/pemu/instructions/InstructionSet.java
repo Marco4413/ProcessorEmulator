@@ -3,7 +3,7 @@ package io.github.hds.pemu.instructions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class InstructionSet {
+public final class InstructionSet {
 
     private final Instruction[] INSTRUCTIONS;
 

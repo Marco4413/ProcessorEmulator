@@ -1,44 +1,43 @@
 package io.github.hds.pemu.memory;
 
-import io.github.hds.pemu.utils.MathUtils;
+import org.jetbrains.annotations.NotNull;
 
-public class Word {
+public final class Word {
 
-    public static final int SizeBit8  =  8;
-    public static final int SizeBit16 = 16;
-    public static final int SizeBit24 = 24;
+    public static final Word WordBit8  = new Word( 8, 0x000000ff);
+    public static final Word WordBit16 = new Word(16, 0x0000ffff);
+    public static final Word WordBit24 = new Word(24, 0x00ffffff);
+    private static final Word[] ALL_WORDS = new Word[] { WordBit8, WordBit16, WordBit24 };
 
-    public static final int MaskBit8  = 0x000000ff;
-    public static final int MaskBit16 = 0x0000ffff;
-    public static final int MaskBit24 = 0x00ffffff;
+    public final int TOTAL_BITS;
+    public final int TOTAL_BYTES;
+    public final int BIT_MASK;
 
-    public final int SIZE;
-    public final int MASK;
-    public final int BYTES;
-
-    public Word(int size) {
-        switch (size) {
-            case 8:
-                SIZE = SizeBit8;
-                MASK = MaskBit8;
-                break;
-            case 16:
-                SIZE = SizeBit16;
-                MASK = MaskBit16;
-                break;
-            case 24:
-                SIZE = SizeBit24;
-                MASK = MaskBit24;
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid Word size: " + size);
-        }
-
-        BYTES = SIZE / Byte.SIZE;
+    private Word(int bits, int bitMask) {
+        TOTAL_BITS  = bits;
+        TOTAL_BYTES = bits / Byte.SIZE;
+        BIT_MASK    = bitMask;
     }
 
-    public static int getClosestSize(int targetSize) {
-        return MathUtils.constrain(MathUtils.makeMultipleOf(Byte.SIZE, targetSize), SizeBit8, SizeBit24);
+    public static @NotNull Word getClosestWord(int totalBits) {
+        int bestIndex = -1;
+        int bestDifference = Integer.MAX_VALUE;
+        for (int i = 0; i < ALL_WORDS.length; i++) {
+            Word currentWord = ALL_WORDS[i];
+            int currentDifference = Math.abs(currentWord.TOTAL_BITS - totalBits);
+            if (currentDifference == 0) return ALL_WORDS[i];
+            else if (currentDifference < bestDifference) {
+                bestDifference = currentDifference;
+                bestIndex = i;
+            }
+        }
+
+        if (bestIndex < 0) throw new IllegalStateException("How did this happen? No word close to " + totalBits + " bits found!");
+        return ALL_WORDS[bestIndex];
+    }
+
+    public static int getClosestSize(int totalBits) {
+        return getClosestWord(totalBits).TOTAL_BITS;
     }
 
     public int combineBytes(int... bytes) {
@@ -46,13 +45,13 @@ public class Word {
         for (int i = 0; i < bytes.length; i++) {
             result |= bytes[i] << (i * Byte.SIZE);
         }
-        return result & MASK;
+        return result & BIT_MASK;
     }
 
     public int[] getBytes(int value) {
-        int[] bytes = new int[BYTES];
+        int[] bytes = new int[TOTAL_BYTES];
         for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = (value >> (i * Byte.SIZE)) & MaskBit8;
+            bytes[i] = (value >> (i * Byte.SIZE)) & WordBit8.BIT_MASK;
         }
         return bytes;
     }

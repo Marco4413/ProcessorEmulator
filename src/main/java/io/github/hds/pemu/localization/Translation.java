@@ -7,7 +7,7 @@ import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 
-public class Translation {
+public final class Translation {
 
     private final HashMap<String, String> MAP;
 

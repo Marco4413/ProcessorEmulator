@@ -13,7 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Vector;
 
-public class MemoryTable extends JTable {
+public final class MemoryTable extends JTable {
 
     private boolean pointedCellEnabled = false;
     private Integer[] pointedCell = null;

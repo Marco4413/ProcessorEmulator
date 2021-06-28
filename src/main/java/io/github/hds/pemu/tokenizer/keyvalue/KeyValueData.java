@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
 
-public class KeyValueData {
+public final class KeyValueData {
     protected final HashMap<String, Object> ENTRIES;
 
     public KeyValueData() {
@@ -64,7 +64,7 @@ public class KeyValueData {
         return ENTRIES.containsKey(key);
     }
 
-    protected @NotNull String ObjectToString(@Nullable Object object) {
+    protected @NotNull String objectToString(@Nullable Object object) {
         if (object == null) return "";
         if (object instanceof String)
             return "\"" + StringUtils.SpecialCharacters.escapeAll((String) object).replaceAll("\"", "\\\\\"") + "\"";
@@ -82,7 +82,7 @@ public class KeyValueData {
                 (k, v) -> {
                     thisAsString.append('"').append(
                             StringUtils.SpecialCharacters.escapeAll(k).replaceAll("\"", "\\\\\"")
-                    ).append("\" = ").append(ObjectToString(v)).append('\n');
+                    ).append("\" = ").append(objectToString(v)).append('\n');
                 }
         );
         return thisAsString.toString();

@@ -6,7 +6,7 @@ import java.awt.event.KeyEvent;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
-public class Constants {
+public final class Constants {
 
     private static final HashMap<String, Integer> CONSTANTS = new HashMap<>();
 

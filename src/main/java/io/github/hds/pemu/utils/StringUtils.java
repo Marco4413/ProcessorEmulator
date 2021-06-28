@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 
-public class StringUtils {
+public final class StringUtils {
 
     public static class SpecialCharacters {
         public static final HashMap<Character, Character> MAP = new HashMap<>();

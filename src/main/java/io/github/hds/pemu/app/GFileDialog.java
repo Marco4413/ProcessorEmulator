@@ -11,7 +11,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 
-public class GFileDialog extends JFileChooser implements ITranslatable {
+public final class GFileDialog extends JFileChooser implements ITranslatable {
 
     public static final ImageIcon ICON_SAVE = IconUtils.importIcon("/assets/save.png", Application.MENU_ITEM_ICON_SIZE);
     public static final ImageIcon ICON_OPEN = IconUtils.importIcon("/assets/open_file.png", Application.MENU_ITEM_ICON_SIZE);

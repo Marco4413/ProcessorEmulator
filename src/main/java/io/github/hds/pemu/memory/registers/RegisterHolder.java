@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
 
-public class RegisterHolder<T extends IRegister> {
+public final class RegisterHolder<T extends IRegister> {
 
     private final HashMap<String, T> REGISTERS;
 

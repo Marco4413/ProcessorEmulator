@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class TokenGroup {
 
-    private final ArrayList<Token> GROUP;
+    protected final ArrayList<Token> GROUP;
 
     public TokenGroup() {
         GROUP = new ArrayList<>();
