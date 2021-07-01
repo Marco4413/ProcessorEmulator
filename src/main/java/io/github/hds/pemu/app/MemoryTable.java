@@ -1,17 +1,14 @@
-package io.github.hds.pemu.app.memorytable;
+package io.github.hds.pemu.app;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Vector;
 
 public final class MemoryTable extends JTable {
 
@@ -20,19 +17,20 @@ public final class MemoryTable extends JTable {
     private Color pointedCellForeground = Color.BLACK;
     private Color pointedCellBackground = Color.GREEN;
 
-    public MemoryTable() {
+    protected MemoryTable() {
         super();
 
-        // We want to clear the selection if another component is focused
+        // We want to clear the selection and the pointed cell if another component is focused
         //  Or if the Frame loses focus which makes the table lose focus
         addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
                 clearSelection();
+                clearPointedCell();
             }
         });
 
-        // And we also want to clear the selection if we click outside the table
+        // And we also want to clear the selection and the currently pointed cell if we click outside the table
         //  In an empty spot of the Frame, I'm not sure if this is the best way of doing it
         final boolean[] isOutsideTable = { false };
         addMouseListener(new MouseAdapter() {
@@ -50,7 +48,10 @@ public final class MemoryTable extends JTable {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (isOutsideTable[0]) clearSelection();
+                if (isOutsideTable[0]) {
+                    clearSelection();
+                    clearPointedCell();
+                }
             }
         });
 
@@ -64,30 +65,6 @@ public final class MemoryTable extends JTable {
         // Setting selection mode
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         setCellSelectionEnabled(true);
-    }
-
-    private MemoryTable(TableModel dm) {
-        super(dm);
-    }
-
-    private MemoryTable(TableModel dm, TableColumnModel cm) {
-        super(dm, cm);
-    }
-
-    private MemoryTable(TableModel dm, TableColumnModel cm, ListSelectionModel sm) {
-        super(dm, cm, sm);
-    }
-
-    private MemoryTable(int numRows, int numColumns) {
-        super(numRows, numColumns);
-    }
-
-    private MemoryTable(Vector rowData, Vector columnNames) {
-        super(rowData, columnNames);
-    }
-
-    private MemoryTable(@NotNull Object[][] rowData, @NotNull Object[] columnNames) {
-        super(rowData, columnNames);
     }
 
     @Override
@@ -115,7 +92,7 @@ public final class MemoryTable extends JTable {
         pointedCell = new Integer[] { row, column };
     }
 
-    public void setPointedCell() {
+    public void clearPointedCell() {
         pointedCell = null;
     }
 

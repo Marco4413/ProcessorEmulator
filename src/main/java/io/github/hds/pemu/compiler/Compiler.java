@@ -160,7 +160,7 @@ public class Compiler {
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
     }
 
-    private static ParseResult<Integer> parseLabel(@NotNull CompilerData cd, boolean declareOnly) {
+    private static ParseResult<Integer> parseLabel(@NotNull CompilerData cd, boolean canDeclare, boolean canUse) {
         String labelName = cd.tokenizer.getLast();
         if (labelName == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
@@ -169,6 +169,8 @@ public class Compiler {
         );
 
         if (isBeingDeclared) {
+            if (!canDeclare) throw new TypeError("Label Declaration is not allowed here", cd.tokenizer);
+
             // If a label is being declared consume the declaration token
             cd.tokenizer.consumeNext(Tokens.SPACE);
             if (cd.labels.containsKey(labelName)) {
@@ -183,7 +185,7 @@ public class Compiler {
                 // If no label was created then create it
                 cd.labels.put(labelName, new OffsetLabel().setPointer(cd.program.size()));
             return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, labelName, cd.program.size());
-        } else if (!declareOnly) {
+        } else if (canUse) {
             int offset = 0;
             ParseResult<Integer> offsetResult = parseOffset(cd, true, null, false);
             if (offsetResult.STATUS != PARSE_STATUS.FAIL) offset = offsetResult.VALUE;
@@ -412,7 +414,7 @@ public class Compiler {
         if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseCharacter(cd, true);
         if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseOffset(cd, false, null, true);
         if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseConstant(cd, true, true);
-        if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseLabel(cd, false);
+        if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseLabel(cd, true, true);
 
         if (lastResult.STATUS == PARSE_STATUS.FAIL)
             throw new SyntaxError("Number, Char, Offset, Constant or Label", valueToParse, cd.tokenizer);
@@ -490,7 +492,7 @@ public class Compiler {
                 } else throw new SyntaxError("Compiler Instruction", compilerInstr, cd.tokenizer);
             } else {
                 // Parsing Labels and Constants
-                if (parseConstant(cd, false, true).STATUS == PARSE_STATUS.FAIL && parseLabel(cd, true).STATUS == PARSE_STATUS.FAIL)
+                if (parseConstant(cd, false, true).STATUS == PARSE_STATUS.FAIL && parseLabel(cd, true, false).STATUS == PARSE_STATUS.FAIL)
                     throw new SyntaxError("Instruction, Constant or Label declaration", cd.tokenizer.getLast(), cd.tokenizer);
             }
         }

@@ -17,20 +17,8 @@ public final class LabelData <T extends ILabel> extends HashMap<String, T> {
     private HashMap<Integer, String> INSTANCES_MAP = new HashMap<>();
     private boolean dataCached = false;
 
-    protected LabelData(int initialCapacity, float loadFactor) {
-        super(initialCapacity, loadFactor);
-    }
-
-    protected LabelData(int initialCapacity) {
-        super(initialCapacity);
-    }
-
     protected LabelData() {
         super();
-    }
-
-    protected LabelData(Map<? extends String, ? extends T> m) {
-        super(m);
     }
 
     public void cacheData() {

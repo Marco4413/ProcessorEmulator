@@ -1,10 +1,14 @@
-package io.github.hds.pemu.app.memorytable;
+package io.github.hds.pemu.app;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
 public final class MemoryCellRenderer extends DefaultTableCellRenderer {
+
+    protected MemoryCellRenderer() {
+        super();
+    }
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {

@@ -14,13 +14,14 @@ public abstract class RangedArgumentOption <T extends Comparable<T>> extends Arg
         MIN_VALUE = minValue;
     }
 
-    public void validate() {
-        if (this.value.compareTo(MAX_VALUE) > 0) this.value = MAX_VALUE;
-        else if (this.value.compareTo(MIN_VALUE) < 0) this.value = MIN_VALUE;
+    protected void constrain() {
+        T optValue = getValue();
+        if (optValue.compareTo(MAX_VALUE) > 0) setValue(MAX_VALUE);
+        else if (optValue.compareTo(MIN_VALUE) < 0) setValue(MIN_VALUE);
     }
 
     @Override
-    public String valueToString() {
-        return super.valueToString() + "[" + MIN_VALUE.toString() + "; " + MAX_VALUE.toString() + "]";
+    public @NotNull String valueTypeToString() {
+        return super.valueTypeToString() + "[" + MIN_VALUE.toString() + "; " + MAX_VALUE.toString() + "]";
     }
 }

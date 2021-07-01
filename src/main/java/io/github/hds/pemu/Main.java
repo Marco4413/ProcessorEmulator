@@ -26,7 +26,7 @@ public final class Main {
         parser.parse(args);
 
         // If help flag was specified, print help and return
-        if ((boolean) parser.getOption("-help").value) {
+        if ((boolean) parser.getOption("-help").getValue()) {
             System.out.println("PEMU [options]:\n" + parser.getUsage());
             return;
         }
@@ -43,16 +43,16 @@ public final class Main {
         // Setting App's ProcessorConfig based on the specified arguments
         ProcessorConfig processorConfig = app.getProcessorConfig();
         if (parser.isSpecified("-bits"))
-            processorConfig.setBits((int) parser.getOption("-bits").value);
+            processorConfig.setBits((int) parser.getOption("-bits").getValue());
         if (parser.isSpecified("-memory"))
-            processorConfig.setMemorySize((int) parser.getOption("-memory").value);
+            processorConfig.setMemorySize((int) parser.getOption("-memory").getValue());
         if (parser.isSpecified("-clock"))
-            processorConfig.setClock((int) parser.getOption("-clock").value);
+            processorConfig.setClock((int) parser.getOption("-clock").getValue());
 
         // Setting up app instance and showing it
         app.setProducer(Processor::new);
-        app.setCurrentProgram(new File((String) parser.getOption("-program").value));
-        if ((boolean) parser.getOption("-run").value)
+        app.setCurrentProgram(new File((String) parser.getOption("-program").getValue()));
+        if ((boolean) parser.getOption("-run").getValue())
             app.runProcessor(null);
         app.setVisible(true);
     }
