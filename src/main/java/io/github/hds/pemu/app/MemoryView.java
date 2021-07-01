@@ -1,6 +1,5 @@
 package io.github.hds.pemu.app;
 
-import io.github.hds.pemu.app.memorytable.MemoryTable;
 import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
@@ -183,7 +182,7 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
         boolean enablePointedCellFeature = SHOW_SELECTED_CELL_POINTER.isSelected();
         MEMORY_TABLE.setPointedCellEnabled(enablePointedCellFeature);
         if (enablePointedCellFeature)
-            MEMORY_TABLE.setPointedCell();
+            MEMORY_TABLE.clearPointedCell();
 
         // For each memory address
         for (int i = 0; i < memSize; i++) {
