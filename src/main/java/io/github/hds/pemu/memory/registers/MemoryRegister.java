@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * A Register that is held in Memory
  */
-public class MemoryRegister extends AbstractRegister {
+public class MemoryRegister extends AbstractRegister implements IMemoryRegister {
 
     private final @NotNull IMemory BOUND_MEMORY;
     private final int BOUND_ADDRESS;
