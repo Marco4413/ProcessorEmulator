@@ -1,4 +1,11 @@
 
+-- Version (v1.7.1-RELEASE)
+-- Changes from commit @fba8880
+
+Hotfix for Verify and Obfuscate throwing
+Added interfaces: IMemoryFlag, IMemoryRegister
+ - The above mentioned interfaces are now what defines an addressable Flag/Register
+
 -- Version (v1.7.0-RELEASE)
 -- Changes from commit @6c1af86
 

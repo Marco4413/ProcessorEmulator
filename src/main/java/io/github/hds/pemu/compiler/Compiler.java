@@ -5,9 +5,9 @@ import io.github.hds.pemu.compiler.labels.OffsetLabel;
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.flags.IFlag;
-import io.github.hds.pemu.memory.flags.MemoryFlag;
+import io.github.hds.pemu.memory.flags.IMemoryFlag;
+import io.github.hds.pemu.memory.registers.IMemoryRegister;
 import io.github.hds.pemu.memory.registers.IRegister;
-import io.github.hds.pemu.memory.registers.MemoryRegister;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.tokenizer.TokenGroup;
 import io.github.hds.pemu.utils.StringUtils;
@@ -266,13 +266,13 @@ public class Compiler {
             // If no register was found we search for a valid flag
             IFlag flag = cd.processor.getFlag(registerName);
             if (flag == null) return new ParseResult<>(PARSE_STATUS.FAIL);
-            else if (flag instanceof MemoryFlag) {
+            else if (flag instanceof IMemoryFlag) {
                 // If the flag is valid get its address
-                address = ((MemoryFlag) flag).getAddress();
+                address = ((IMemoryFlag) flag).getAddress();
             } else throw new ProcessorError("Reading/Writing to Flag \"" + registerName + "\" isn't supported!", cd.tokenizer);
-        } else if (register instanceof MemoryRegister) {
+        } else if (register instanceof IMemoryRegister) {
             // If the register is valid get its address
-            address = ((MemoryRegister) register).getAddress();
+            address = ((IMemoryRegister) register).getAddress();
         } else throw new ProcessorError("Reading/Writing to Register \"" + registerName + "\" isn't supported!", cd.tokenizer);
 
         if (!addToProgram) return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, registerName, address);

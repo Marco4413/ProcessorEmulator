@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * A Flag that is held in Memory
  */
-public class MemoryFlag extends AbstractFlag {
+public class MemoryFlag extends AbstractFlag implements IMemoryFlag {
 
     private final @NotNull IMemory BOUND_MEMORY;
     private final int BOUND_ADDRESS;
