@@ -10,11 +10,17 @@ public final class ConfigEvent implements IStoppable {
 
     private boolean stopping = false;
     private final EVENT_TYPE TYPE;
-    public final KeyValueData CONFIG;
+
+    /* Might seem odd that this is lower case (since it's final)
+     * I've done that so that event listeners don't have to write event.CONFIG to access it
+     * But they need to write event.config which is more easy on the eyes
+     * Also not wrapping this into a getter to make it easily accessible
+     */
+    public final KeyValueData config;
 
     public ConfigEvent(EVENT_TYPE type, KeyValueData config) {
-        TYPE = type;
-        CONFIG = config;
+        this.TYPE = type;
+        this.config = config;
     }
 
     @Override

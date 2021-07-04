@@ -23,6 +23,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/* Adding this comment just to let people know that this thing
+ * is pretty sketchy, though I've never done something
+ * like this so it was to be expected
+ */
 public class Compiler {
 
     protected static final String CI_DEFINE_WORD   = "DW";
@@ -43,11 +47,15 @@ public class Compiler {
         public static final Token OFF_START = new Token('[', true);
         public static final Token OFF_END   = new Token(']', true);
         public static final Token SPACE     = new Token(' ', "\\s", false);
-        public static final Token NEWLINE   = new Token('\n');
+        public static final Token NEWLINE   = new Token('\n', "\\n\\r?", false);
         public static final Token STR_CODEPOINT_TERMINATOR = new Token(';');
 
+        // This matches all characters except for the new line one
+        // And shouldn't be added to the Tokenizer, it's just used to ignore Comments until new line
+        public static final Token NOT_NEWLINE = new Token('\0', "^[^\\n]", false);
+
         // The class TokenGroup makes sure that no duplicate pattern is present,
-        //  so it discards a Token if one that is equal is present, this should make Tokenizer faster
+        //  so it discards a Token if one that is equal is present, this should make Tokenizer a bit faster
         public static final TokenGroup ALL_TOKENS = new TokenGroup().addTokens(
                 COMMENT, CONSTANT, LABEL, COMPILER, STRING, CHARACTER, ESCAPE_CH, ARR_START, ARR_END, OFF_START, OFF_END, SPACE, NEWLINE, STR_CODEPOINT_TERMINATOR
         );
@@ -454,14 +462,12 @@ public class Compiler {
             if (instruction != null) {
                 // If an instruction was found add it to the memory
                 cd.program.add(instructionCode);
-                for (int i = 0; i < instruction.ARGUMENTS;)
+                for (int i = 0; i < instruction.getArgumentsCount();)
+                    // We go to the next argument ONLY if something was added to the program
                     if (parseValues(cd).STATUS == PARSE_STATUS.SUCCESS) i++;
 
             } else if (Tokens.COMMENT.matches(tokenToParse)) {
-                String comment;
-                do {
-                    comment = cd.tokenizer.consumeNext();
-                } while (!Tokens.NEWLINE.matches(comment));
+                cd.tokenizer.consumeNext(Tokens.NOT_NEWLINE);
             } else if (Tokens.COMPILER.matches(tokenToParse)) {
                 // Parsing Compiler Instructions
                 String compilerInstr = cd.tokenizer.consumeNext(Tokens.SPACE);
@@ -518,7 +524,7 @@ public class Compiler {
     /**
      * Function that generates a pseudo-random String using the specified seed
      * @param seed The seed to generate the String from
-     * @return A randomly generated String based on the specified seed
+     * @return A pseudo-randomly generated String based on the specified seed
      */
     private static @NotNull String generateRandomString(int seed) {
         // Not allowing uppercase characters because Strings may be

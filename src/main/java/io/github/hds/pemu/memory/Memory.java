@@ -10,7 +10,7 @@ public final class Memory implements IMemory {
     private final Word WORD;
     private final byte[] MEMORY;
 
-    public Memory(int size, Word word) {
+    public Memory(int size, @NotNull Word word) {
         if (size < 0) throw new IllegalArgumentException("Memory size can't be negative!");
         MEMORY = new byte[word.TOTAL_BYTES * size];
         WORD = word;
@@ -45,11 +45,11 @@ public final class Memory implements IMemory {
 
     @Override
     public synchronized int setValueAt(int address, int value) {
-        int index = getIndexFromAddress(address);
 
         validateAddress(address);
         int oldValue = getValueAt(address);
 
+        int index = getIndexFromAddress(address);
         int[] bytes = WORD.getBytes(value);
         for (int i = 0; i < bytes.length; i++) {
             MEMORY[index + i] = (byte) bytes[i];
@@ -60,9 +60,9 @@ public final class Memory implements IMemory {
 
     @Override
     public synchronized int getValueAt(int address) {
-        int index = getIndexFromAddress(address);
         validateAddress(address);
 
+        int index = getIndexFromAddress(address);
         int[] bytes = new int[WORD.TOTAL_BYTES];
         for (int i = 0; i < bytes.length; i++) {
             bytes[i] = Byte.toUnsignedInt(MEMORY[index + i]);

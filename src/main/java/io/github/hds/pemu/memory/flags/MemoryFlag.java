@@ -1,23 +1,24 @@
 package io.github.hds.pemu.memory.flags;
 
-import io.github.hds.pemu.memory.Memory;
+import io.github.hds.pemu.memory.IMemory;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A Flag that is held in Memory
  */
 public class MemoryFlag extends AbstractFlag {
 
-    private final @NotNull Memory BOUND_MEMORY;
+    private final @NotNull IMemory BOUND_MEMORY;
     private final int BOUND_ADDRESS;
     private final int BOUND_BIT;
 
-    public MemoryFlag(boolean value, @NotNull String fullName, @NotNull Memory boundMemory, int boundAddress, int boundBit) {
+    public MemoryFlag(boolean value, @NotNull String fullName, @NotNull IMemory boundMemory, int boundAddress, int boundBit) {
         this(value, fullName, StringUtils.toShortName(fullName), boundMemory, boundAddress, boundBit);
     }
 
-    public MemoryFlag(boolean value, @NotNull String fullName, @NotNull String shortName, @NotNull Memory boundMemory, int boundAddress, int boundBit) {
+    public MemoryFlag(boolean value, @Nullable String fullName, @NotNull String shortName, @NotNull IMemory boundMemory, int boundAddress, int boundBit) {
         super(fullName, shortName);
 
         BOUND_MEMORY = boundMemory;
@@ -44,13 +45,13 @@ public class MemoryFlag extends AbstractFlag {
     }
 
     @Override
-    public boolean getValue() {
+    public synchronized boolean getValue() {
         int boundValue = BOUND_MEMORY.getValueAt(BOUND_ADDRESS);
         return ( boundValue & (1 << BOUND_BIT) ) != 0;
     }
 
     @Override
-    public boolean setValue(boolean value) {
+    public synchronized boolean setValue(boolean value) {
         int boundValue = BOUND_MEMORY.getValueAt(BOUND_ADDRESS);
 
         int bitMask = 1 << BOUND_BIT;

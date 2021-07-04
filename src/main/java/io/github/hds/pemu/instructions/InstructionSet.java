@@ -13,7 +13,7 @@ public final class InstructionSet {
 
     public int getKeyCode(@NotNull String keyword) {
         for (int i = 0; i < INSTRUCTIONS.length; i++) {
-            if (INSTRUCTIONS[i].KEYWORD.equals(keyword)) return i;
+            if (INSTRUCTIONS[i].getKeyword().equals(keyword)) return i;
         }
         return -1;
     }

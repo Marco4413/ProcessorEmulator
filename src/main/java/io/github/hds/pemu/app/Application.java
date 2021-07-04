@@ -5,8 +5,6 @@ import io.github.hds.pemu.compiler.Compiler;
 import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
-import io.github.hds.pemu.instructions.InstructionSet;
-import io.github.hds.pemu.instructions.Instructions;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
@@ -25,7 +23,7 @@ import java.util.function.Function;
 public final class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
     public static final String APP_TITLE = "PEMU";
-    public static final String APP_VERSION = "1.6.0";
+    public static final String APP_VERSION = "1.7.0";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
@@ -37,6 +35,8 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     protected final ProgramMenu PROGRAM_MENU;
     protected final ProcessorMenu PROCESSOR_MENU;
     protected final AboutMenu ABOUT_MENU;
+
+    protected @Nullable Function<ProcessorConfig, IProcessor> dummyProcessorProducer = null;
 
     protected @Nullable File currentProgram = null;
     protected @Nullable Function<ProcessorConfig, IProcessor> processorProducer = null;
@@ -114,31 +114,31 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     @Override
     public void loadConfig(@NotNull ConfigEvent e) {
         // Check if the config is on the right version, if not reset it to defaults
-        String configVersion = e.CONFIG.get(String.class, "version");
+        String configVersion = e.config.get(String.class, "version");
         if (configVersion == null || StringUtils.compareVersions(configVersion, APP_VERSION) != 0) {
             e.stop();
             ConfigManager.resetToDefault();
         } else {
             // We let the app crash if config couldn't be loaded successfully
-            processorConfig.setBits(e.CONFIG.get(Integer.class, "processorConfig.bits"));
-            processorConfig.setMemorySize(e.CONFIG.get(Integer.class, "processorConfig.memSize"));
-            processorConfig.setClock(e.CONFIG.get(Integer.class, "processorConfig.clock"));
+            processorConfig.setBits(e.config.get(Integer.class, "processorConfig.bits"));
+            processorConfig.setMemorySize(e.config.get(Integer.class, "processorConfig.memSize"));
+            processorConfig.setClock(e.config.get(Integer.class, "processorConfig.clock"));
         }
     }
 
     @Override
     public void saveConfig(@NotNull ConfigEvent e) {
-        e.CONFIG.put("processorConfig.bits", processorConfig.getBits());
-        e.CONFIG.put("processorConfig.memSize", processorConfig.getMemorySize());
-        e.CONFIG.put("processorConfig.clock", processorConfig.getClock());
+        e.config.put("processorConfig.bits", processorConfig.getBits());
+        e.config.put("processorConfig.memSize", processorConfig.getMemorySize());
+        e.config.put("processorConfig.clock", processorConfig.getClock());
     }
 
     @Override
     public void setDefaults(@NotNull ConfigEvent e) {
-        e.CONFIG.put("version", APP_VERSION);
-        e.CONFIG.put("processorConfig.bits", ProcessorConfig.DEFAULT_BITS);
-        e.CONFIG.put("processorConfig.memSize", ProcessorConfig.DEFAULT_MEMORY_SIZE);
-        e.CONFIG.put("processorConfig.clock", ProcessorConfig.DEFAULT_CLOCK);
+        e.config.put("version", APP_VERSION);
+        e.config.put("processorConfig.bits", ProcessorConfig.DEFAULT_BITS);
+        e.config.put("processorConfig.memSize", ProcessorConfig.DEFAULT_MEMORY_SIZE);
+        e.config.put("processorConfig.clock", ProcessorConfig.DEFAULT_CLOCK);
     }
 
     public void updateTitle() {
@@ -150,6 +150,10 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     public void setProducer(@NotNull Function<ProcessorConfig, IProcessor> producer) {
         processorProducer = producer;
+    }
+
+    public void setDummyProducer(@NotNull Function<ProcessorConfig, IProcessor> producer) {
+        dummyProcessorProducer = producer;
     }
 
     public void setCurrentProgram(@NotNull File program) {
@@ -199,7 +203,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     public @Nullable IProcessor createProcessor() {
         if (processorProducer == null) {
-            Console.Debug.println("Processor Producer was never specified (Try downloading the latest version of the app)!");
+            Console.Debug.println("Processor Producer was never specified (Try downloading the latest version of the app)!\n");
             return null;
         }
 
@@ -207,8 +211,26 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         try {
             return processorProducer.apply(processorConfig);
         } catch (Exception err) {
-            Console.Debug.println("Couldn't create processor.");
+            Console.Debug.println("Couldn't create Processor.");
             Console.Debug.printStackTrace(err, false);
+            Console.Debug.println();
+        }
+
+        return null;
+    }
+
+    public @Nullable IProcessor createDummyProcessor() {
+        if (dummyProcessorProducer == null) {
+            Console.Debug.println("Dummy Processor Producer was never specified (Try downloading the latest version of the app)!\n");
+            return null;
+        }
+
+        try {
+            return dummyProcessorProducer.apply(processorConfig);
+        } catch (Exception err) {
+            Console.Debug.println("Couldn't create Dummy Processor.");
+            Console.Debug.printStackTrace(err, false);
+            Console.Debug.println();
         }
 
         return null;
@@ -218,56 +240,64 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         if (processorInstance == null) processorInstance = createProcessor();
         if (processorInstance == null) return null;
 
+        CompiledProgram compiledProgram = null;
+
         if (currentProgram == null) {
             Console.Debug.println("No program specified!");
-            return null;
+        } else {
+            try {
+                compiledProgram = Compiler.compileFile(currentProgram, processorInstance);
+                Console.Debug.println(
+                        String.format(
+                                "File was compiled successfully (%s), it occupies %d/%d Words",
+                                currentProgram.getName(), compiledProgram.getProgram().length, processorInstance.getMemory().getSize() - processorInstance.getReservedWords()
+                        )
+                );
+                Console.Debug.println(
+                        String.format("Compilation took %.2fms", compiledProgram.getCompileTimeMillis())
+                );
+            } catch (Exception err) {
+                Console.Debug.println("Compilation error (for file @'" + currentProgram.getAbsolutePath() + "'):");
+                Console.Debug.printStackTrace(err, false);
+            }
         }
 
-        CompiledProgram compiledProgram = null;
-        try {
-            compiledProgram = Compiler.compileFile(currentProgram, processorInstance);
-            Console.Debug.println(
-                    String.format(
-                            "File was compiled successfully (%s), it occupies %d/%d Words",
-                            currentProgram.getName(), compiledProgram.getProgram().length, processorInstance.getMemory().getSize() - processorInstance.getReservedWords()
-                    )
-            );
-            Console.Debug.println(
-                    String.format("Compilation took %.2fms", compiledProgram.getCompileTimeMillis())
-            );
-        } catch (Exception err) {
-            Console.Debug.println("Compilation error (for file @'" + currentProgram.getAbsolutePath() + "'):");
-            Console.Debug.printStackTrace(err, false);
-        }
+        Console.Debug.println();
 
         return compiledProgram;
     }
 
     public void verifyProgram(ActionEvent e) {
-        compileProgram(null);
+        IProcessor dummyProcessor = createDummyProcessor();
+        if (dummyProcessor == null) return;
+
+        compileProgram(dummyProcessor);
     }
 
     public void obfuscateProgram(ActionEvent e) {
-        CompiledProgram compiledProgram = compileProgram(null);
+        IProcessor dummyProcessor = createDummyProcessor();
+        if (dummyProcessor == null) return;
 
-        if (compiledProgram != null) {
-            Console.Debug.println("Program obfuscated successfully:");
-            Console.Debug.println(Compiler.obfuscateProgram(compiledProgram));
-        }
+        CompiledProgram compiledProgram = compileProgram(dummyProcessor);
+        if (compiledProgram == null) return;
+
+        Console.Debug.println("Program obfuscated successfully:");
+        Console.Debug.println(Compiler.obfuscateProgram(compiledProgram));
+        Console.Debug.println();
     }
 
     public void runProcessor(ActionEvent e) {
 
         // Make sure that the last thread is dead
         if (currentProcessor != null && currentProcessor.isRunning()) {
-            Console.Debug.println("Processor is already running!");
+            Console.Debug.println("Processor is already running!\n");
             return;
         }
 
         // Clear Debug console and check if a program is specified
         Console.Debug.clear();
         if (currentProgram == null) {
-            Console.Debug.println("No program specified!");
+            Console.Debug.println("No program specified!\n");
             return;
         }
 
@@ -286,11 +316,13 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         } catch (Exception err) {
             Console.Debug.println("Error while loading program into memory!");
             Console.Debug.printStackTrace(err, false);
+            Console.Debug.println();
+            return;
         }
 
         if (loadError != null) {
             Console.Debug.println("Error while loading program!");
-            Console.Debug.println("Processor Error: " + loadError);
+            Console.Debug.println("Processor Error: " + loadError + "\n");
             return;
         }
 
@@ -317,12 +349,14 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         } catch (Exception err) {
             Console.Debug.println("Error while starting processor's thread!");
             Console.Debug.printStackTrace(err, false);
+            Console.Debug.println();
         }
     }
 
     public void stopProcessor(ActionEvent e) {
         if (currentProcessor == null || !currentProcessor.isRunning()) {
             Console.Debug.println("Couldn't stop processor because it isn't currently running!");
+            Console.Debug.println();
             return;
         }
         currentProcessor.stop();
@@ -331,26 +365,26 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public void toggleProcessorExecution(ActionEvent e) {
         if (currentProcessor == null || !currentProcessor.isRunning()) {
             Console.Debug.println("Couldn't pause or resume processor because it isn't currently running!");
-            return;
-        }
-
-        if (currentProcessor.isPaused()) {
+        } else if (currentProcessor.isPaused()) {
             currentProcessor.resume();
             Console.Debug.println("Processor was resumed!");
         } else {
             currentProcessor.pause();
             Console.Debug.println("Processor was paused!");
         }
+
+        Console.Debug.println();
     }
 
     public void stepProcessor(ActionEvent e) {
         if (currentProcessor == null || !currentProcessor.isRunning()) {
             Console.Debug.println("Couldn't step processor because it isn't currently running!");
-            return;
+        } else {
+            currentProcessor.step();
+            Console.Debug.println("Processor stepped forward!");
         }
 
-        currentProcessor.step();
-        Console.Debug.println("Processor stepped forward!");
+        Console.Debug.println();
     }
 
     protected void close(ActionEvent e) {

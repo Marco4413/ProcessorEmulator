@@ -229,31 +229,31 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
     // Suppressing all, because the app should throw if the config isn't a good one
     @SuppressWarnings("all")
     public void loadConfig(@NotNull ConfigEvent e) {
-        COLS_SPINNER.setValue(e.CONFIG.get(Integer.class, "memoryView.columns"));
-        UPDATE_INTERVAL_SPINNER.setValue(e.CONFIG.get(Double.class, "memoryView.updateInterval"));
-        SHOW_AS_CHAR.setSelected(e.CONFIG.get(Boolean.class, "memoryView.showAsChar"));
-        SHOW_HISTORY.setSelected(e.CONFIG.get(Boolean.class, "memoryView.showHistory"));
-        SHOW_POINTERS.setSelected(e.CONFIG.get(Boolean.class, "memoryView.showPointers"));
-        SHOW_SELECTED_CELL_POINTER.setSelected(e.CONFIG.get(Boolean.class, "memoryView.showSelectedCellPointer"));
+        COLS_SPINNER.setValue(e.config.get(Integer.class, "memoryView.columns"));
+        UPDATE_INTERVAL_SPINNER.setValue(e.config.get(Double.class, "memoryView.updateInterval"));
+        SHOW_AS_CHAR.setSelected(e.config.get(Boolean.class, "memoryView.showAsChar"));
+        SHOW_HISTORY.setSelected(e.config.get(Boolean.class, "memoryView.showHistory"));
+        SHOW_POINTERS.setSelected(e.config.get(Boolean.class, "memoryView.showPointers"));
+        SHOW_SELECTED_CELL_POINTER.setSelected(e.config.get(Boolean.class, "memoryView.showSelectedCellPointer"));
     }
 
     @Override
     public void saveConfig(@NotNull ConfigEvent e) {
-        e.CONFIG.put("memoryView.columns", COLS_SPINNER.getValue());
-        e.CONFIG.put("memoryView.updateInterval", UPDATE_INTERVAL_SPINNER.getValue());
-        e.CONFIG.put("memoryView.showAsChar", SHOW_AS_CHAR.isSelected());
-        e.CONFIG.put("memoryView.showHistory", SHOW_HISTORY.isSelected());
-        e.CONFIG.put("memoryView.showPointers", SHOW_POINTERS.isSelected());
-        e.CONFIG.put("memoryView.showSelectedCellPointer", SHOW_SELECTED_CELL_POINTER.isSelected());
+        e.config.put("memoryView.columns", COLS_SPINNER.getValue());
+        e.config.put("memoryView.updateInterval", UPDATE_INTERVAL_SPINNER.getValue());
+        e.config.put("memoryView.showAsChar", SHOW_AS_CHAR.isSelected());
+        e.config.put("memoryView.showHistory", SHOW_HISTORY.isSelected());
+        e.config.put("memoryView.showPointers", SHOW_POINTERS.isSelected());
+        e.config.put("memoryView.showSelectedCellPointer", SHOW_SELECTED_CELL_POINTER.isSelected());
     }
 
     @Override
     public void setDefaults(@NotNull ConfigEvent e) {
-        e.CONFIG.put("memoryView.columns", 8);
-        e.CONFIG.put("memoryView.updateInterval", 1.0f);
-        e.CONFIG.put("memoryView.showAsChar", false);
-        e.CONFIG.put("memoryView.showHistory", false);
-        e.CONFIG.put("memoryView.showPointers", false);
-        e.CONFIG.put("memoryView.showSelectedCellPointer", false);
+        e.config.put("memoryView.columns", 8);
+        e.config.put("memoryView.updateInterval", 1.0f);
+        e.config.put("memoryView.showAsChar", false);
+        e.config.put("memoryView.showHistory", false);
+        e.config.put("memoryView.showPointers", false);
+        e.config.put("memoryView.showSelectedCellPointer", false);
     }
 }

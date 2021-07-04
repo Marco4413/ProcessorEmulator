@@ -17,7 +17,7 @@ public abstract class AbstractFlag implements IFlag {
         this(fullName, StringUtils.toShortName(fullName));
     }
 
-    public AbstractFlag(@NotNull String fullName, @NotNull String shortName) {
+    public AbstractFlag(@Nullable String fullName, @NotNull String shortName) {
         FULL_NAME = fullName;
         SHORT_NAME = shortName;
     }

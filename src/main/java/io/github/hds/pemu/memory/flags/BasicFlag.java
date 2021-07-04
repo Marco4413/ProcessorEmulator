@@ -2,6 +2,7 @@ package io.github.hds.pemu.memory.flags;
 
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A Basic Flag that holds its value inside its instance
@@ -14,18 +15,18 @@ public class BasicFlag extends AbstractFlag {
         this(value, fullName, StringUtils.toShortName(fullName));
     }
 
-    public BasicFlag(boolean value, @NotNull String fullName, @NotNull String shortName) {
+    public BasicFlag(boolean value, @Nullable String fullName, @NotNull String shortName) {
         super(fullName, shortName);
         this.value = value;
     }
 
     @Override
-    public boolean getValue() {
+    public synchronized boolean getValue() {
         return this.value;
     }
 
     @Override
-    public boolean setValue(boolean value) {
+    public synchronized boolean setValue(boolean value) {
         boolean oldValue = this.value;
         this.value = value;
         return oldValue;
