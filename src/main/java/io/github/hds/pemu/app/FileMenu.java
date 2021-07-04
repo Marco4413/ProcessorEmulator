@@ -117,7 +117,7 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
 
     @Override
     public void loadConfig(@NotNull ConfigEvent e) {
-        String languageName = e.CONFIG.get(String.class, "selectedLanguage");
+        String languageName = e.config.get(String.class, "selectedLanguage");
         TranslationManager.setCurrentTranslation(
                 TranslationManager.loadTranslation(
                         StringUtils.getPathWExt("/localization/" + languageName, "lang")
@@ -128,11 +128,11 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
     @Override
     public void saveConfig(@NotNull ConfigEvent e) {
         String selectedLanguage = TranslationManager.getCurrentTranslation().getShortName();
-        e.CONFIG.put("selectedLanguage", selectedLanguage);
+        e.config.put("selectedLanguage", selectedLanguage);
     }
 
     @Override
     public void setDefaults(@NotNull ConfigEvent e) {
-        e.CONFIG.put("selectedLanguage", "en-us");
+        e.config.put("selectedLanguage", "en-us");
     }
 }

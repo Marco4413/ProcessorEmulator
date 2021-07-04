@@ -42,7 +42,6 @@ public final class KeyValueParser {
     private static @Nullable Character parseCharacter(@NotNull Tokenizer tokenizer) {
         String terminator = tokenizer.peekNext(WHITESPACE);
         if (!CHARACTER.matches(terminator)) return null;
-        assert terminator != null;
         tokenizer.consumeNext(WHITESPACE);
 
         String nextToken = tokenizer.consumeNext();

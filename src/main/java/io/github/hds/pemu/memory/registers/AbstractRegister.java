@@ -17,7 +17,7 @@ public abstract class AbstractRegister implements IRegister {
         this(fullName, StringUtils.toShortName(fullName));
     }
 
-    public AbstractRegister(@NotNull String fullName, @NotNull String shortName) {
+    public AbstractRegister(@Nullable String fullName, @NotNull String shortName) {
         FULL_NAME = fullName;
         SHORT_NAME = shortName;
     }

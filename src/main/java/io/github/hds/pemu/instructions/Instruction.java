@@ -5,8 +5,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class Instruction {
 
-    public final String KEYWORD;
-    public final int ARGUMENTS;
+    private final String KEYWORD;
+    private final int ARGUMENTS;
 
     public Instruction(@NotNull String keyword, int arguments) {
         KEYWORD = keyword;
@@ -15,6 +15,14 @@ public class Instruction {
 
     public int getWords() {
         return ARGUMENTS + 1;
+    }
+
+    public @NotNull String getKeyword() {
+        return KEYWORD;
+    }
+
+    public int getArgumentsCount() {
+        return ARGUMENTS;
     }
 
     public void execute(@NotNull IProcessor p, int[] args) { }

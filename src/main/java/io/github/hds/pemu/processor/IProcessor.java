@@ -14,6 +14,8 @@ public interface IProcessor extends Runnable, IStoppable {
 
     // Are you here because you want to implement this interface?
     //  Note: The run method is the only one that can throw if the processor encounters any error while running
+    //    **  Also add/remove Registers/Flags from the static fields of the class DummyProcessor to make the app
+    //        verify your programs successfully
 
     @Nullable IFlag getFlag(@NotNull String shortName);
     @Nullable IRegister getRegister(@NotNull String shortName);

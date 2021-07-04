@@ -1,5 +1,26 @@
 
 -- Version (v1.7.0-RELEASE)
+-- Changes from commit @6c1af86
+
+Made Application add a new line to the debug console each time an important task was completed
+Now Application uses a different Processor to verify and obfuscate programs
+
+Changed how Compiler parses comments, if this breaks programs then create an issue
+Now Compiler's New Line Token will include carriage return
+
+Added static fields to Processor: IMPLEMENTED_REGISTERS, IMPLEMENTED_FLAGS
+
+Hopefully made Flags and Registers thread-safe
+Added classes: DummyFlag, DummyMemoryFlag, DummyRegister, DummyMemoryRegister, DummyMemory, DummyProcessor
+ - The above mentioned classes were introduced to make it possible to verify programs without allocating memory
+
+Made all Clock's fields private
+
+Renamed field ConfigEvent.CONFIG to ConfigEvent.config
+
+Made all fields of class Instruction private
+Added methods to Instruction: getKeyword, getArgumentsCount
+
 -- Changes from commit @39588fe
 
 Made MemoryTable clear its pointed cell with its selection, this also fixes some bugs when removing focus from it

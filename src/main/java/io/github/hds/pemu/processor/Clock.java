@@ -9,9 +9,9 @@ public final class Clock {
     // 1 is the minimum because floating Hz aren't supported
     public static final int MIN_CLOCK = 1;
 
-    protected int clock;
-    protected long interval;
-    protected long lastUpdated = 0;
+    private int clock;
+    private long interval;
+    private long lastUpdated = 0;
 
     public Clock(int clock) {
         setClock(clock);

@@ -19,6 +19,9 @@ import java.util.HashMap;
 
 public final class Processor implements IProcessor {
 
+    public static final String[] IMPLEMENTED_REGISTERS = new String[] { "IP", "SP" };
+    public static final String[] IMPLEMENTED_FLAGS     = new String[] { "ZF", "CF" };
+
     private boolean isRunning = false;
 
     // How many words the registers will occupy
@@ -171,17 +174,17 @@ public final class Processor implements IProcessor {
                     int currentIP = IP.getValue();
                     Instruction instruction = INSTRUCTIONSET.getInstruction(MEMORY.getValueAt(currentIP));
                     if (instruction == null) throw new InstructionError("Unknown", "Unknown Instruction", currentIP);
-                    HISTORY.put(currentIP, instruction.KEYWORD);
+                    HISTORY.put(currentIP, instruction.getKeyword());
 
                     IP.setValue(currentIP + instruction.getWords());
                     try {
                         instruction.execute(
                                 this,
                                 // Here we check instruction.ARGUMENTS == 0 because Memory#getValuesAt always throws if the address is out of bounds
-                                instruction.ARGUMENTS == 0 ? new int[0] : MEMORY.getValuesAt(currentIP + 1, instruction.ARGUMENTS)
+                                instruction.getArgumentsCount() == 0 ? new int[0] : MEMORY.getValuesAt(currentIP + 1, instruction.getArgumentsCount())
                         );
                     } catch (Exception err) {
-                        throw new InstructionError(instruction.KEYWORD, err.getMessage(), currentIP);
+                        throw new InstructionError(instruction.getKeyword(), err.getMessage(), currentIP);
                     }
                 }
             }
