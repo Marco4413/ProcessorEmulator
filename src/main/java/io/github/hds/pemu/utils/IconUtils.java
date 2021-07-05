@@ -8,9 +8,13 @@ import java.awt.*;
 public final class IconUtils {
 
     public static @NotNull ImageIcon importIcon(@NotNull String resourceLocation, int size) {
+        return importIcon(resourceLocation, size, size);
+    }
+
+    public static @NotNull ImageIcon importIcon(@NotNull String resourceLocation, int width, int height) {
         return new ImageIcon(
                 new ImageIcon(System.class.getResource(resourceLocation))
-                        .getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH)
+                        .getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH)
         );
     }
 

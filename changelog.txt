@@ -1,4 +1,12 @@
 
+-- Version (v1.8.0-RELEASE)
+-- Changes from commit @2d4ee8a
+
+Added more JavaDoc
+Added method Processor.getDummyProcessor
+Removed static fields from Processor
+Added overload for IconUtils.importIcon
+
 -- Version (v1.7.1-RELEASE)
 -- Changes from commit @fba8880
 

@@ -5,9 +5,6 @@ import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * A Flag that is held in Memory
- */
 public class MemoryFlag extends AbstractFlag implements IMemoryFlag {
 
     private final @NotNull IMemory BOUND_MEMORY;
@@ -28,18 +25,12 @@ public class MemoryFlag extends AbstractFlag implements IMemoryFlag {
         setValue(value);
     }
 
-    /**
-     * Returns the Memory address where this Flag is held
-     * @return The address at which this Flag is held in Memory
-     */
+    @Override
     public int getAddress() {
         return BOUND_ADDRESS;
     }
 
-    /**
-     * Returns the Bit that holds this Flag's value
-     * @return The Bit that holds this Flag's value
-     */
+    @Override
     public int getBit() {
         return BOUND_BIT;
     }

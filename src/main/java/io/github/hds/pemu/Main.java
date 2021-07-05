@@ -56,21 +56,8 @@ public final class Main {
         app.setProducer(Processor::new);
 
         // This could also create a full processor if you don't want to create a Dummy one
-        app.setDummyProducer(
-                cfg -> {
-                    // Creating all registers that are present on a Processor
-                    DummyMemoryRegister[] registers = new DummyMemoryRegister[Processor.IMPLEMENTED_REGISTERS.length];
-                    for (int i = 0; i < Processor.IMPLEMENTED_REGISTERS.length; i++)
-                        registers[i] = new DummyMemoryRegister(null, Processor.IMPLEMENTED_REGISTERS[i]);
-
-                    // Creating all flags that are present on a Processor
-                    DummyMemoryFlag[] flags = new DummyMemoryFlag[Processor.IMPLEMENTED_FLAGS.length];
-                    for (int i = 0; i < Processor.IMPLEMENTED_FLAGS.length; i++)
-                        flags[i] = new DummyMemoryFlag(null, Processor.IMPLEMENTED_FLAGS[i]);
-
-                    return new DummyProcessor(cfg, registers, flags);
-                }
-        );
+        // app.setDummyProducer(Processor::new);
+        app.setDummyProducer(Processor::getDummyProcessor);
 
         app.setCurrentProgram(new File((String) parser.getOption("-program").getValue()));
         if ((boolean) parser.getOption("-run").getValue())
