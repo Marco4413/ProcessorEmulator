@@ -4,9 +4,11 @@ import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionError;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.*;
+import io.github.hds.pemu.memory.flags.DummyMemoryFlag;
 import io.github.hds.pemu.memory.flags.FlagHolder;
 import io.github.hds.pemu.memory.flags.IFlag;
 import io.github.hds.pemu.memory.flags.MemoryFlag;
+import io.github.hds.pemu.memory.registers.DummyMemoryRegister;
 import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.memory.registers.MemoryRegister;
 import io.github.hds.pemu.memory.registers.RegisterHolder;
@@ -18,9 +20,6 @@ import java.awt.event.KeyEvent;
 import java.util.HashMap;
 
 public final class Processor implements IProcessor {
-
-    public static final String[] IMPLEMENTED_REGISTERS = new String[] { "IP", "SP" };
-    public static final String[] IMPLEMENTED_FLAGS     = new String[] { "ZF", "CF" };
 
     private boolean isRunning = false;
 
@@ -65,6 +64,20 @@ public final class Processor implements IProcessor {
         FLAGS = new FlagHolder<>(
                 new MemoryFlag(false, "Zero Flag" , MEMORY, REGISTERS_WORDS, 0),
                 new MemoryFlag(false, "Carry Flag", MEMORY, REGISTERS_WORDS, 1)
+        );
+    }
+
+    public static @NotNull DummyProcessor getDummyProcessor(@NotNull ProcessorConfig config) {
+        return new DummyProcessor(
+                config,
+                new IRegister[] {
+                        new DummyMemoryRegister("Instruction Pointer"),
+                        new DummyMemoryRegister("Stack Pointer")
+                },
+                new IFlag[] {
+                        new DummyMemoryFlag("Zero Flag"),
+                        new DummyMemoryFlag("Carry Flag"),
+                }
         );
     }
 

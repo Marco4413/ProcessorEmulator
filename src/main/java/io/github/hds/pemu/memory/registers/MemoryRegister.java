@@ -5,9 +5,6 @@ import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * A Register that is held in Memory
- */
 public class MemoryRegister extends AbstractRegister implements IMemoryRegister {
 
     private final @NotNull IMemory BOUND_MEMORY;
@@ -26,10 +23,7 @@ public class MemoryRegister extends AbstractRegister implements IMemoryRegister 
         setValue(value);
     }
 
-    /**
-     * Returns the Memory address where this Register is held
-     * @return The address at which this Register is held in Memory
-     */
+    @Override
     public int getAddress() {
         return BOUND_ADDRESS;
     }
