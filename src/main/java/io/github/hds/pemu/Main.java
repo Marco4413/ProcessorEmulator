@@ -1,9 +1,6 @@
 package io.github.hds.pemu;
 
 import io.github.hds.pemu.app.Application;
-import io.github.hds.pemu.memory.flags.DummyMemoryFlag;
-import io.github.hds.pemu.memory.registers.DummyMemoryRegister;
-import io.github.hds.pemu.processor.DummyProcessor;
 import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.arguments.ArgumentsParser;
@@ -55,8 +52,8 @@ public final class Main {
         // Setting up app instance and showing it
         app.setProducer(Processor::new);
 
-        // This could also create a full processor if you don't want to create a Dummy one
-        // app.setDummyProducer(Processor::new);
+        // If not specified the app will create a full Processor instead
+        //  This is used when verifying or obfuscating code
         app.setDummyProducer(Processor::getDummyProcessor);
 
         app.setCurrentProgram(new File((String) parser.getOption("-program").getValue()));

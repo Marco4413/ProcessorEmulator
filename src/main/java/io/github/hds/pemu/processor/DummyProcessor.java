@@ -1,36 +1,45 @@
 package io.github.hds.pemu.processor;
 
 import io.github.hds.pemu.instructions.InstructionSet;
-import io.github.hds.pemu.memory.DummyMemory;
-import io.github.hds.pemu.memory.IMemory;
-import io.github.hds.pemu.memory.Word;
-import io.github.hds.pemu.memory.flags.DummyFlag;
-import io.github.hds.pemu.memory.flags.FlagHolder;
-import io.github.hds.pemu.memory.flags.IFlag;
-import io.github.hds.pemu.memory.registers.DummyRegister;
-import io.github.hds.pemu.memory.registers.IRegister;
-import io.github.hds.pemu.memory.registers.RegisterHolder;
+import io.github.hds.pemu.memory.*;
+import io.github.hds.pemu.memory.flags.*;
+import io.github.hds.pemu.memory.registers.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 
-public final class DummyProcessor implements IProcessor {
+public final class DummyProcessor implements IDummyProcessor {
 
-    private static final Clock CLOCK = new Clock(1);
 
     private final RegisterHolder<IRegister> REGISTER_HOLDER;
     private final FlagHolder<IFlag> FLAG_HOLDER;
 
     private final DummyMemory MEMORY;
-    private final @NotNull InstructionSet INSTRUCTIONSET;
+    private final Clock CLOCK;
+    private final InstructionSet INSTRUCTIONSET;
 
-    public DummyProcessor(@NotNull ProcessorConfig config, @NotNull IRegister[] registers, @NotNull IFlag[] flags) {
+    /**
+     * Creates a new {@link DummyProcessor}'s instance
+     * @param config The {@link ProcessorConfig} to create the new instance with
+     */
+    public DummyProcessor(@NotNull ProcessorConfig config) {
+        this(config, new IDummyRegister[0], new IDummyFlag[0]);
+    }
+
+    /**
+     * Creates a new {@link DummyProcessor}'s instance
+     * @param config The {@link ProcessorConfig} to create the new instance with
+     * @param registers The {@link IRegister}s to add to this {@link IProcessor}
+     * @param flags The {@link IFlag}s to add to this {@link IProcessor}
+     */
+    public DummyProcessor(@NotNull ProcessorConfig config, @NotNull IDummyRegister[] registers, @NotNull IDummyFlag[] flags) {
         REGISTER_HOLDER = new RegisterHolder<>(registers);
         FLAG_HOLDER = new FlagHolder<>(flags);
 
         MEMORY = new DummyMemory(Word.getClosestWord(config.getBits()));
+        CLOCK = new Clock(config.getClock());
         INSTRUCTIONSET = config.getInstructionSet();
     }
 
