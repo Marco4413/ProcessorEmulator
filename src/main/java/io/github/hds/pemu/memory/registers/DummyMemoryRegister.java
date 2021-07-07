@@ -3,7 +3,7 @@ package io.github.hds.pemu.memory.registers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class DummyMemoryRegister extends AbstractRegister implements IMemoryRegister {
+public final class DummyMemoryRegister extends AbstractRegister implements IDummyRegister, IMemoryRegister {
     public DummyMemoryRegister(@NotNull String fullName) {
         super(fullName);
     }

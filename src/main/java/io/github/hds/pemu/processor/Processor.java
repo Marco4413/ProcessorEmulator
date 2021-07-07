@@ -4,14 +4,8 @@ import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionError;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.*;
-import io.github.hds.pemu.memory.flags.DummyMemoryFlag;
-import io.github.hds.pemu.memory.flags.FlagHolder;
-import io.github.hds.pemu.memory.flags.IFlag;
-import io.github.hds.pemu.memory.flags.MemoryFlag;
-import io.github.hds.pemu.memory.registers.DummyMemoryRegister;
-import io.github.hds.pemu.memory.registers.IRegister;
-import io.github.hds.pemu.memory.registers.MemoryRegister;
-import io.github.hds.pemu.memory.registers.RegisterHolder;
+import io.github.hds.pemu.memory.flags.*;
+import io.github.hds.pemu.memory.registers.*;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -70,11 +64,11 @@ public final class Processor implements IProcessor {
     public static @NotNull DummyProcessor getDummyProcessor(@NotNull ProcessorConfig config) {
         return new DummyProcessor(
                 config,
-                new IRegister[] {
+                new IDummyRegister[] {
                         new DummyMemoryRegister("Instruction Pointer"),
                         new DummyMemoryRegister("Stack Pointer")
                 },
-                new IFlag[] {
+                new IDummyFlag[] {
                         new DummyMemoryFlag("Zero Flag"),
                         new DummyMemoryFlag("Carry Flag"),
                 }

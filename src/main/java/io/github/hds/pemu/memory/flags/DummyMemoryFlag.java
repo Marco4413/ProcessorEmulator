@@ -3,7 +3,7 @@ package io.github.hds.pemu.memory.flags;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class DummyMemoryFlag extends AbstractFlag implements IMemoryFlag {
+public final class DummyMemoryFlag extends AbstractFlag implements IDummyFlag, IMemoryFlag {
     public DummyMemoryFlag(@NotNull String fullName) {
         super(fullName);
     }

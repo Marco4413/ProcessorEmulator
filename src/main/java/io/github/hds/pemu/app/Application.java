@@ -8,6 +8,7 @@ import io.github.hds.pemu.config.IConfigurable;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
+import io.github.hds.pemu.processor.IDummyProcessor;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.processor.ProcessorConfig;
 import io.github.hds.pemu.utils.*;
@@ -36,7 +37,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     protected final ProcessorMenu PROCESSOR_MENU;
     protected final AboutMenu ABOUT_MENU;
 
-    protected @Nullable Function<ProcessorConfig, IProcessor> dummyProcessorProducer = null;
+    protected @Nullable Function<ProcessorConfig, IDummyProcessor> dummyProcessorProducer = null;
 
     protected @Nullable File currentProgram = null;
     protected @Nullable Function<ProcessorConfig, IProcessor> processorProducer = null;
@@ -152,7 +153,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         processorProducer = producer;
     }
 
-    public void setDummyProducer(@NotNull Function<ProcessorConfig, IProcessor> producer) {
+    public void setDummyProducer(@NotNull Function<ProcessorConfig, IDummyProcessor> producer) {
         dummyProcessorProducer = producer;
     }
 
@@ -220,10 +221,9 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     }
 
     public @Nullable IProcessor createDummyProcessor() {
-        if (dummyProcessorProducer == null) {
-            Console.Debug.println("Dummy Processor Producer was never specified (Try downloading the latest version of the app)!\n");
-            return null;
-        }
+        // If no DummyProcessor was specified then create a full Processor
+        if (dummyProcessorProducer == null)
+            return createProcessor();
 
         try {
             return dummyProcessorProducer.apply(processorConfig);

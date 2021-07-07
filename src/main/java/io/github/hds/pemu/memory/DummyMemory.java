@@ -2,7 +2,7 @@ package io.github.hds.pemu.memory;
 
 import org.jetbrains.annotations.NotNull;
 
-public final class DummyMemory implements IMemory {
+public final class DummyMemory implements IDummyMemory {
 
     /* Not sure if I need to make this Thread Safe... Maybe for consistency with the default Memory? */
 

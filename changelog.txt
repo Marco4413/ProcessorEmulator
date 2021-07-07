@@ -1,5 +1,16 @@
 
 -- Version (v1.8.0-RELEASE)
+-- Changes from commit @75bca10
+
+Now if Application#dummyProcessorProducer is null then Application#processorProducer will be used instead
+
+Made field DummyProcessor.CLOCK not static, this was done to better emulate a real Processor's implementation
+Added constructor overload for DummyProcessor
+
+Added interfaces: IDummyProcessor, IDummyMemory, IDummyFlag, IDummyRegister
+ - The above mentioned interfaces should be used when implementing new Dummy variants
+ - They should only be used as a method's argument type to require a Dummy variant
+
 -- Changes from commit @2d4ee8a
 
 Added more JavaDoc
