@@ -18,6 +18,18 @@ import java.util.HashMap;
 public interface IProcessor extends Runnable, IStoppable {
 
     /**
+     * Returns all {@link IFlag}s implemented by this {@link IProcessor}
+     * @return All {@link IFlag}s implemented by this {@link IProcessor}
+     */
+    @NotNull IFlag[] getFlags();
+
+    /**
+     * Returns all {@link IRegister}s implemented by this {@link IProcessor}
+     * @return All {@link IRegister}s implemented by this {@link IProcessor}
+     */
+    @NotNull IRegister[] getRegisters();
+
+    /**
      * Returns the {@link IFlag} with the specified short name or null if not present
      * @param shortName The name of the {@link IFlag} that is being requested
      * @return The specified {@link IFlag} or null if not present

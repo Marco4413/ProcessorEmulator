@@ -20,8 +20,7 @@ import java.util.HashMap;
 
 public final class MemoryView extends JFrame implements ITranslatable, IConfigurable {
 
-    private static final String R_VALUES_FORMAT = "<html><table><tr><td>IP=%s</td><td>SP=%s</td></tr><tr><td>ZF=%s</td><td>CF=%s</td></tr></table></html>";
-    private static final String R_VALUES_UNKNOWN = "?";
+    private static final String UNKNOWN_PROCESSOR = "?";
 
     private final Application app;
 
@@ -37,7 +36,7 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
     private final JCheckBox SHOW_AS_CHAR;
     private final JCheckBox SHOW_HISTORY;
     private final JCheckBox SHOW_POINTERS;
-    private final JLabel REG_VALUES;
+    private final JLabel RF_VALUES;
 
     protected MemoryView(@NotNull Application parentApp) {
         super();
@@ -78,8 +77,8 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
         SHOW_SELECTED_CELL_POINTER = new JCheckBox();
         addComponent(SHOW_SELECTED_CELL_POINTER, 1, 2);
 
-        REG_VALUES = new JLabel();
-        addComponent(REG_VALUES, 3, 1, 1,  2);
+        RF_VALUES = new JLabel();
+        addComponent(RF_VALUES, 3, 1, 1,  2);
 
         MEMORY_TABLE = new MemoryTable();
 
@@ -141,26 +140,53 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
             model.setRowCount(0);
             model.setColumnCount(0);
 
-            REG_VALUES.setText(String.format(R_VALUES_FORMAT, R_VALUES_UNKNOWN, R_VALUES_UNKNOWN, R_VALUES_UNKNOWN, R_VALUES_UNKNOWN));
+            RF_VALUES.setText(UNKNOWN_PROCESSOR);
             return;
         }
 
         // Getting the history of executed processor instructions
         HashMap<Integer, String> history = processor.getInstructionHistory();
-        // Getting processor's registers and flags
-        IRegister IP = processor.getRegister("IP");
-        IRegister SP = processor.getRegister("SP");
-        IFlag ZF = processor.getFlag("ZF");
-        IFlag CF = processor.getFlag("CF");
 
-        // Setting the values of the registers
-        REG_VALUES.setText(
-                String.format(
-                        R_VALUES_FORMAT,
-                        IP == null ? -1 : IP.getValue(), SP == null ? -1 : SP.getValue(),
-                        ZF == null ? -1 : ZF.getValue(), CF == null ? -1 : CF.getValue()
-                )
-        );
+        // These will be populated when looking through registers
+        Integer IPValue = null;
+        Integer SPValue = null;
+
+        /* Register/Flag Table */
+        StringBuilder rfTable = new StringBuilder("<html><table><tr>");
+
+        // Appending all registers to the table
+        for (IRegister register : processor.getRegisters()) {
+            String shortName = register.getShortName();
+            int value = register.getValue();
+
+            // If the name is either IP or SP,
+            //  populate the above defined variables
+            if (IPValue == null && shortName.equals("IP"))
+                IPValue = value;
+            else if (SPValue == null && shortName.equals("SP"))
+                SPValue = value;
+
+            rfTable.append("<td>")
+                   .append(shortName)
+                   .append("=")
+                   .append(value)
+                   .append("</td>");
+        }
+
+        rfTable.append("</tr><tr>");
+
+        // Appending all flags to the table
+        for (IFlag flag : processor.getFlags()) {
+            rfTable.append("<td>")
+                   .append(flag.getShortName())
+                   .append("=")
+                   .append(flag.getValue())
+                   .append("</td>");
+        }
+
+        rfTable.append("</tr></table></html>");
+
+        RF_VALUES.setText(rfTable.toString());
 
         // Making the table large enough to fit all the processor's memory
         int memSize = processor.getMemory().getSize();
@@ -216,8 +242,8 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
 
             // If the current cell is pointed by either IP or SP put the corresponding brackets
             if (SHOW_POINTERS.isSelected()) {
-                if (IP != null && IP.getValue() == i) value = "{ " + value + " }";
-                else if (SP != null && SP.getValue() == i) value = "[ " + value + " ]";
+                if (IPValue != null && IPValue == i) value = "{ " + value + " }";
+                else if (SPValue != null && SPValue == i) value = "[ " + value + " ]";
             }
 
             // Setting the value to be shown on the table

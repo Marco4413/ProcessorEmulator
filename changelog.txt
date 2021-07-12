@@ -1,5 +1,12 @@
 
 -- Version (v1.8.0-RELEASE)
+-- Changes from commit @75e55fd
+
+Now MemoryView shows all registers and flags of the current Processor, before it only displayed some
+
+Added methods to FlagHolder and RegisterHolder: getCount, toArray
+Added methods to interface IProcessor: getFlags, getRegisters
+
 -- Changes from commit @75bca10
 
 Now if Application#dummyProcessorProducer is null then Application#processorProducer will be used instead

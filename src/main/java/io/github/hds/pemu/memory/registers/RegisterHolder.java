@@ -25,6 +25,18 @@ public final class RegisterHolder<T extends IRegister> {
         addRegisters(registers);
     }
 
+    public int getCount() {
+        return REGISTERS.size();
+    }
+
+    public @NotNull IRegister[] toArray() {
+        return REGISTERS.values().toArray(new IRegister[0]);
+    }
+
+    public @NotNull T[] toArray(T[] array) {
+        return REGISTERS.values().toArray(array);
+    }
+
     public @NotNull RegisterHolder<T> addRegister(T register) {
         String shortName = register.getShortName();
         if (REGISTERS.containsKey(shortName))
