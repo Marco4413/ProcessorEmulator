@@ -25,6 +25,18 @@ public final class FlagHolder<T extends IFlag> {
         addFlags(flags);
     }
 
+    public int getCount() {
+        return FLAGS.size();
+    }
+
+    public @NotNull IFlag[] toArray() {
+        return FLAGS.values().toArray(new IFlag[0]);
+    }
+
+    public @NotNull T[] toArray(T[] array) {
+        return FLAGS.values().toArray(array);
+    }
+
     public @NotNull FlagHolder<T> addFlag(T flag) {
         String shortName = flag.getShortName();
         if (FLAGS.containsKey(shortName))

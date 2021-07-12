@@ -44,6 +44,16 @@ public final class DummyProcessor implements IDummyProcessor {
     }
 
     @Override
+    public @NotNull IFlag[] getFlags() {
+        return FLAG_HOLDER.toArray();
+    }
+
+    @Override
+    public @NotNull IRegister[] getRegisters() {
+        return REGISTER_HOLDER.toArray();
+    }
+
+    @Override
     public @Nullable IFlag getFlag(@NotNull String shortName) {
         return FLAG_HOLDER.getFlag(shortName);
     }

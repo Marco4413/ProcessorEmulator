@@ -76,6 +76,16 @@ public final class Processor implements IProcessor {
     }
 
     @Override
+    public @NotNull IFlag[] getFlags() {
+        return FLAGS.toArray();
+    }
+
+    @Override
+    public @NotNull IRegister[] getRegisters() {
+        return REGISTERS.toArray();
+    }
+
+    @Override
     public @Nullable IFlag getFlag(@NotNull String shortName) {
         return FLAGS.getFlag(shortName);
     }
