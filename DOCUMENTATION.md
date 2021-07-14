@@ -3,7 +3,16 @@
 
 # Documentation
 
+ - [Command Line Arguments](#command-line-arguments)
+   * [--help](#--help)
+   * [--run](#--run)
+   * [--command-line](#--command-line)
+   * [--bits](#--bits)
+   * [--memory](#--memory)
+   * [--clock](#--clock)
+   * [--program](#--program)
  - [Common Mistakes](#common-mistakes)
+   * [Running on the command line](#running-on-the-command-line)
    * [Declaring variables between instructions](#declaring-variables-between-instructions)
    * [Dividing by ZERO](#dividing-by-zero)
    * [Setting the clock too high](#setting-the-clock-too-high)
@@ -60,7 +69,94 @@
    * [LOOP](#loop)
    * [HLT](#hlt)
 
+# Command Line Arguments
+
+**NOTE:** I may have forgotten some arguments, so to be sure there's the [--help](#--help) flag which will show all
+ possible command line arguments that can be used.
+
+## --help
+
+Type: `Flag`
+
+Short: `-h`
+
+If specified, this flag will show you all the valid command line options, their type and their range if they have one.
+
+## --run
+
+Type: `Flag`
+
+Short: `-r`
+
+If specified, this flag will automatically run the specified program at the Application's start.
+
+It's more useful if used with the [--command-line](#--command-line) flag.
+
+## --command-line
+
+Type: `Flag`
+
+Short: `-cl`
+
+If specified, this will run the Application on the command line.
+
+This is an experimental feature, because everything takes
+for granted that it's running on the full app.
+
+The [--run](#--run) flag must be specified when using this one.
+
+See Also [Common Mistakes](#common-mistakes) -> [Running on the command line](#running-on-the-command-line).
+
+## --bits
+
+Type: `Integer`
+
+Short: `-b`
+
+If specified, the following argument will be treated as an Integer and will be used as the Processor's Word Size.
+
+## --memory
+
+Type: `Integer`
+
+Short: `-mem`
+
+If specified, the following argument will be treated as an Integer and will be used as the Processor's Memory Size.
+
+## --clock
+
+Type: `Integer`
+
+Short: `-c`
+
+If specified, the following argument will be treated as an Integer and will be used as the Processor's Clock.
+
+## --program
+
+Type: `String`
+
+Short: `-p`
+
+If specified, the following argument will be used to open the program it points to.
+
 # Common Mistakes
+
+## Running on the command line
+
+While it's so cool to be able to run everything on the command line there are some drawbacks that I'm never even going
+to attempt to fix, because they are what made me create a Swing application in the first place:
+
+ - There's no easy way of getting key strokes
+ - There's no easy Platform-Independent way of clearing the command line
+
+Other issues include:
+
+ - [Breakpoints](#brk) are actual Instructions that pause the Processor, because there's no way of resuming its
+    execution through the command line then breakpoints will break (pun intended)
+ - No debugging features
+
+Those are the main issues with running programs on your beautiful command line. So don't expect all programs to work
+properly on it, if something feels wrong then just run it on the full app.
 
 ## Declaring variables between instructions
 
@@ -267,6 +363,9 @@ This instruction doesn't do anything and its code is 0, this is used to ignore e
 This instruction is a simple breakpoint, the processor can be resumed by going to Processor->Pause/Resume.
 This instruction shouldn't be used in the final program, it's just a way of debugging your code by automatically pausing
 the processor at a point in the program without having to press the pause button in the app.
+
+If you're running on the Command Line then see
+[Common Mistakes](#common-mistakes) -> [Running on the command line](#running-on-the-command-line).
 
 ## DATA
 
