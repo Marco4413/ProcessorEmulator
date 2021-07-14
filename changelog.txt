@@ -1,4 +1,9 @@
 
+-- Version (v1.8.1-RELEASE)
+-- Changes from commit @648dab6
+
+Fixed Console's Contextual Menu not getting translated
+
 -- Version (v1.8.0-RELEASE)
 -- Changes from commit @12b1eb8
 
