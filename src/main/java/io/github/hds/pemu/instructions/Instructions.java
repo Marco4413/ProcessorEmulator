@@ -5,6 +5,7 @@ import io.github.hds.pemu.memory.*;
 import io.github.hds.pemu.memory.flags.IFlag;
 import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.processor.IProcessor;
+import io.github.hds.pemu.utils.IClearable;
 import io.github.hds.pemu.utils.MathUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,7 +75,7 @@ public final class Instructions {
     public static final Instruction OUTI = new Instruction("OUTI", 1) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
-            Console.POutput.print(p.getMemory().getValueAt(args[0]));
+            Console.ProgramOutput.print(p.getMemory().getValueAt(args[0]));
         }
     };
 
@@ -83,8 +84,9 @@ public final class Instructions {
         public void execute(@NotNull IProcessor p, int[] args) {
             IMemory memory = p.getMemory();
             char character = (char) memory.getValueAt(args[0]);
-            if (character == '\0') Console.POutput.clear();
-            else Console.POutput.print((char) memory.getValueAt(args[0]));
+            if (character == '\0' && Console.ProgramOutput instanceof IClearable)
+                ((IClearable) Console.ProgramOutput).clear();
+            else Console.ProgramOutput.print((char) memory.getValueAt(args[0]));
         }
     };
 

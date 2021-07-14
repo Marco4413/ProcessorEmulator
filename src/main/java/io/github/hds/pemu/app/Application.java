@@ -23,14 +23,21 @@ import java.util.function.Function;
 
 public final class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
+    public static final int NONE = 0;
+    public static final int CLOSE_ON_PROCESSOR_STOP = 1;
+    public static final int PREVENT_VISIBILITY_CHANGE = 2;
+
     public static final String APP_TITLE = "PEMU";
-    public static final String APP_VERSION = "1.7.1";
+    public static final String APP_VERSION = "1.8.0";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
     public static final int MENU_ITEM_ICON_SIZE = 20;
 
     private static Application INSTANCE;
+
+    private boolean closeOnProcessorStop = false;
+    private boolean allowVisibilityChange = true;
 
     protected final FileMenu FILE_MENU;
     protected final ProgramMenu PROGRAM_MENU;
@@ -90,12 +97,15 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         ABOUT_MENU = new AboutMenu(this);
         menuBar.add(ABOUT_MENU);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(Console.POutput), new JScrollPane(Console.Debug));
+        ConsoleComponent programComponent = Console.getProgramComponent();
+        ConsoleComponent debugComponent = Console.getDebugComponent();
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(programComponent), new JScrollPane(debugComponent));
         splitPane.setResizeWeight(0.5d);
         splitPane.resetToPreferredSizes();
         add(splitPane);
 
-        Console.POutput.addKeyListener(this);
+        programComponent.addKeyListener(this);
 
         ConfigManager.loadOrCreate();
     }
@@ -103,6 +113,11 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public static @NotNull Application getInstance() {
         if (INSTANCE == null) INSTANCE = new Application();
         return INSTANCE;
+    }
+
+    public void setFlags(int flags) {
+        closeOnProcessorStop  = (flags & CLOSE_ON_PROCESSOR_STOP  ) == CLOSE_ON_PROCESSOR_STOP  ;
+        allowVisibilityChange = (flags & PREVENT_VISIBILITY_CHANGE) != PREVENT_VISIBILITY_CHANGE;
     }
 
     @Override
@@ -162,6 +177,10 @@ public final class Application extends JFrame implements KeyListener, ITranslata
             currentProgram = program;
         else currentProgram = null;
         updateTitle();
+    }
+
+    public @Nullable File getCurrentProgram() {
+        return currentProgram;
     }
 
     public void setProcessorConfig(@NotNull ProcessorConfig config) {
@@ -286,28 +305,28 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         Console.Debug.println();
     }
 
-    public void runProcessor(ActionEvent e) {
-
+    public boolean runProcessor(ActionEvent e) {
         // Make sure that the last thread is dead
         if (currentProcessor != null && currentProcessor.isRunning()) {
             Console.Debug.println("Processor is already running!\n");
-            return;
+            return false;
         }
 
         // Clear Debug console and check if a program is specified
-        Console.Debug.clear();
+        if (Console.Debug instanceof IClearable) ((IClearable) Console.Debug).clear();
+
         if (currentProgram == null) {
             Console.Debug.println("No program specified!\n");
-            return;
+            return false;
         }
 
         // Create a new Processor with the specified values
         currentProcessor = createProcessor();
-        if (currentProcessor == null) return;
+        if (currentProcessor == null) return false;
 
         // Compile the selected program
         CompiledProgram compiledProgram = compileProgram(currentProcessor);
-        if (compiledProgram == null) return;
+        if (compiledProgram == null) return false;
 
         // Load compiled program into memory
         String loadError = null;
@@ -317,19 +336,21 @@ public final class Application extends JFrame implements KeyListener, ITranslata
             Console.Debug.println("Error while loading program into memory!");
             Console.Debug.printStackTrace(err, false);
             Console.Debug.println();
-            return;
+            return false;
         }
 
         if (loadError != null) {
             Console.Debug.println("Error while loading program!");
             Console.Debug.println("Processor Error: " + loadError + "\n");
-            return;
+            return false;
         }
 
         // Run the processor
         try {
             Console.Debug.println("Running Processor:\n" + currentProcessor.getInfo());
-            Console.POutput.clear();
+
+            if (Console.ProgramOutput instanceof IClearable)
+                ((IClearable) Console.ProgramOutput).clear();
 
             // We want to make sure that if the Processor fails, details about the error show on the Console
             Thread processorThread = new Thread(currentProcessor) {
@@ -343,13 +364,18 @@ public final class Application extends JFrame implements KeyListener, ITranslata
                         Console.Debug.printStackTrace(err, false);
                     }
                     Console.Debug.println("Processor stopped!\n");
+
+                    if (closeOnProcessorStop) Application.this.close(null);
                 }
             };
             processorThread.start();
+
+            return true;
         } catch (Exception err) {
             Console.Debug.println("Error while starting processor's thread!");
             Console.Debug.printStackTrace(err, false);
             Console.Debug.println();
+            return false;
         }
     }
 
@@ -387,7 +413,12 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         Console.Debug.println();
     }
 
-    protected void close(ActionEvent e) {
+    @Override
+    public void setVisible(boolean b) {
+        if (allowVisibilityChange) super.setVisible(b);
+    }
+
+    public void close(ActionEvent e) {
         System.exit(0);
     }
 }

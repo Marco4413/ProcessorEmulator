@@ -46,12 +46,14 @@
 "processorConfigPanel.memoryLabel._text" = "Memory Size (Words): "
 "processorConfigPanel.clockLabel._text"  = "Clock (Hz): "
 
-"aboutMenu._text"                 = "About"
-"aboutMenu._mnemonic"             = 'A'
-"aboutMenu.openWebpage._text"     = "Open Webpage"
-"aboutMenu.openWebpage._mnemonic" = 'O'
-"aboutMenu.openLinkErrorTitle"    = "Failed to open Webpage."
-"aboutMenu.openLinkErrorMsg"      = "Couldn't open link: {0}"
+"aboutMenu._text"                       = "About"
+"aboutMenu._mnemonic"                   = 'A'
+"aboutMenu.openWebpage._text"           = "Open Webpage"
+"aboutMenu.openWebpage._mnemonic"       = 'W'
+"aboutMenu.openDocumentation._text"     = "Open Documentation"
+"aboutMenu.openDocumentation._mnemonic" = 'D'
+"aboutMenu.openLinkErrorTitle"          = "Failed to open link."
+"aboutMenu.openLinkErrorMsg"            = "Couldn't open link: {0}"
 
 "memoryView._title"                        = "Memory View"
 "memoryView.colsLabel._text"               = "Words on each row: "

@@ -1,5 +1,26 @@
 
 -- Version (v1.8.0-RELEASE)
+-- Changes from commit @12b1eb8
+
+Changed a bunch of Command Line Arguments' names
+Added command line argument: "--command-line"
+ - Which is used to run the specified program on the command line instead of running the whole Application
+
+Fixed some translation issues
+Added button to open documentation in the About menu
+
+Made method Application#runProcessor return a boolean that indicates if the Processor successfully started
+Added methods to Application: setFlags, getCurrentProgram
+Added static fields to Application: NONE, CLOSE_ON_PROCESSOR_STOP, PREVENT_VISIBILITY_CHANGE
+Made method Application#close public
+
+Reworked Console class
+Moved inner classes from class Console to package pemu.app: ConsoleComponent, ConsoleContextualMenu
+Added static method ConsoleContextualMenu.getInstance
+
+Added interfaces: IClearable, IPrintable
+Added class PrintablePrintStream
+
 -- Changes from commit @75e55fd
 
 Now MemoryView shows all registers and flags of the current Processor, before it only displayed some
