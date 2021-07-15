@@ -21,7 +21,9 @@ public final class Main {
         // Define valid options
         parser.defineFlag("--help", "-h")
               .defineFlag("--run", "-r")
+              .defineFlag("--verify", "-v")
               .defineFlag("--command-line", "-cl")
+              .defineFlag("--skip-warning", "-sw")
               .defineRangedInt("--bits", "-b", ProcessorConfig.DEFAULT_BITS, ProcessorConfig.MIN_BITS, ProcessorConfig.MAX_BITS)
               .defineRangedInt("--memory", "-mem", ProcessorConfig.DEFAULT_MEMORY_SIZE, ProcessorConfig.MIN_MEMORY_SIZE, ProcessorConfig.MAX_MEMORY_SIZE)
               .defineRangedInt("--clock", "-c", ProcessorConfig.DEFAULT_CLOCK, ProcessorConfig.MIN_CLOCK, ProcessorConfig.MAX_CLOCK)
@@ -36,42 +38,51 @@ public final class Main {
         }
 
         boolean isCommandLine = parser.isSpecified("--command-line");
-        boolean autoRun = parser.isSpecified("--run");
+        boolean runOnStart = parser.isSpecified("--run");
+        boolean verifyOnStart = parser.isSpecified("--verify");
+
+        if (runOnStart && verifyOnStart) {
+            System.err.println("\"--run\" and \"--verify\" flags can't be both set");
+            return;
+        }
 
         // If the user wants the program to run as a console app
         if (isCommandLine) {
             // Auto run must be specified, because otherwise the program wouldn't run
-            if (!autoRun) {
-                System.err.println("\"--run\" flag must be specified with the \"--command-line\" flag");
+            if (!(runOnStart || verifyOnStart)) {
+                System.err.println("Either \"--run\" or \"--verify\" flag must be specified with the \"--command-line\" flag");
                 return;
             }
 
-            // Making sure that's what the user wants, because there are some compatibility issues with this choice
-            //  (Those are the issues that pushed me into making a Swing app)
-            System.out.println("Note that not all programs run properly on the console (See: https://github.com/hds536jhmk/ProcessorEmulator/blob/master/DOCUMENTATION.md#running-on-the-command-line)");
-            System.out.println("Are you sure you want to continue? (Y|N)");
+            if (!parser.isSpecified("--skip-warning")) {
+                // Making sure that's what the user wants, because there are some compatibility issues with this choice
+                //  (Those are the issues that pushed me into making a Swing app)
+                System.out.println("Note that not all programs run properly on the console (See: https://github.com/hds536jhmk/ProcessorEmulator/blob/master/DOCUMENTATION.md#running-on-the-command-line)");
+                System.out.println("Are you sure you want to continue? (Y|N)");
 
-            // Initializing System.in Scanner and user choice
-            Scanner userInput = new Scanner(System.in);
-            String userChoice;
+                // Initializing System.in Scanner and user choice
+                Scanner userInput = new Scanner(System.in);
+                String userChoice;
 
-            // This filters Yes and No
-            Pattern optionFilter = Pattern.compile("(Y(es)?)|(No?)", Pattern.CASE_INSENSITIVE);
+                // This filters Yes and No
+                Pattern optionFilter = Pattern.compile("(Y(es)?)|(No?)", Pattern.CASE_INSENSITIVE);
 
-            while (true) {
-                // Get the user's choice
-                userChoice = userInput.nextLine();
+                while (true) {
+                    // Get the user's choice
+                    userChoice = userInput.nextLine();
 
-                // If it falls within the choice filter, break
-                if (optionFilter.matcher(userChoice).find()) break;
+                    // If it falls within the choice filter, break
+                    if (optionFilter.matcher(userChoice).find()) break;
 
-                // If not then print the valid choices to the user
-                System.out.println("Invalid choice, valid choices are: (Yes, Y | No, N)");
+                    // If not then print the valid choices to the user
+                    System.out.println("Invalid choice, valid choices are: (Yes, Y | No, N)");
+                }
+
+                // If the choice starts with "n" then the user has chosen "No"
+                //  so we return from main else we initialize the Console's output
+                if (userChoice.toLowerCase().startsWith("n")) return;
             }
 
-            // If the choice starts with "n" then the user has chosen "No"
-            //  so we return from main else we initialize the Console's output
-            if (userChoice.toLowerCase().startsWith("n")) return;
             Console.usePrintStream(System.out);
         }
 
@@ -112,10 +123,15 @@ public final class Main {
                 | Application.PREVENT_VISIBILITY_CHANGE
         );
 
-        if (autoRun) {
+        boolean closeApplication = isCommandLine;
+        if (runOnStart) {
             boolean successfulRun = app.runProcessor(null);
-            if (isCommandLine && !successfulRun) app.close(null);
+            closeApplication = !successfulRun;
+        } else if (verifyOnStart) {
+            app.verifyProgram(null);
         }
+
+        if (closeApplication) app.close(null);
     }
 
 }

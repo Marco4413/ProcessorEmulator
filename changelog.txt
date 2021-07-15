@@ -1,4 +1,11 @@
 
+-- Version (v1.8.5-RELEASE)
+-- Changes from commit @4c33099
+
+Added command line arguments: "--verify", "--skip-warning"
+Added PEMULangUtil.py, a Python script which helps verifying programs from the command line
+Improved layout of Registers and Flags in MemoryView
+
 -- Version (v1.8.1-RELEASE)
 -- Changes from commit @648dab6
 

@@ -154,8 +154,19 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
         /* Register/Flag Table */
         StringBuilder rfTable = new StringBuilder("<html><table><tr>");
 
+        // The way used here to make rows of the specified width to show Registers and Flags
+        //  isn't the cleanest solution because there can be an unused row at the end, though
+        //  because it's got no elements it doesn't mess the size of the label
+        // TODO: FIX MEMORY VIEW REGISTERS AND FLAGS ROWS ISSUES
+
+        IRegister[] processorRegisters = processor.getRegisters();
+        IFlag[] processorFlags = processor.getFlags();
+
+        int tableElements = 0;
+        final int ELEMENTS_ON_ROW = (int) Math.sqrt(processorRegisters.length + processorFlags.length);
+
         // Appending all registers to the table
-        for (IRegister register : processor.getRegisters()) {
+        for (IRegister register : processorRegisters) {
             String shortName = register.getShortName();
             int value = register.getValue();
 
@@ -171,17 +182,21 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
                    .append("=")
                    .append(value)
                    .append("</td>");
+
+            if (++tableElements % ELEMENTS_ON_ROW == 0)
+                rfTable.append("</tr><tr>");
         }
 
-        rfTable.append("</tr><tr>");
-
         // Appending all flags to the table
-        for (IFlag flag : processor.getFlags()) {
+        for (IFlag flag : processorFlags) {
             rfTable.append("<td>")
                    .append(flag.getShortName())
                    .append("=")
                    .append(flag.getValue())
                    .append("</td>");
+
+            if (++tableElements % ELEMENTS_ON_ROW == 0)
+                rfTable.append("</tr><tr>");
         }
 
         rfTable.append("</tr></table></html>");
