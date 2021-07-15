@@ -34,6 +34,13 @@ An example of program that the processor can run can be found [@resources/exampl
 
 Can be found [@DOCUMENTATION.md](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/DOCUMENTATION.md)
 
+## Utilities
+
+There's a bundled Python script in the jar file that is useful if you want to verify your PEMU programs from the
+command line, it's called [PEMULangUtils.py](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/src/main/resources/PEMULangUtils.py).
+It doesn't require any dependencies, it just needs the standard Python library and [Python 3.8.X](https://www.python.org/downloads/),
+it should also work on newer versions, but it's not tested.
+
 ## Dependencies:
 
 There are actually no dependencies except for `JetBrains Annotations` that's used at compile time.

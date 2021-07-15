@@ -6,7 +6,9 @@
  - [Command Line Arguments](#command-line-arguments)
    * [--help](#--help)
    * [--run](#--run)
+   * [--verify](#--verify)
    * [--command-line](#--command-line)
+   * [--skip-warning](#--skip-warning)
    * [--bits](#--bits)
    * [--memory](#--memory)
    * [--clock](#--clock)
@@ -92,6 +94,16 @@ If specified, this flag will automatically run the specified program at the Appl
 
 It's more useful if used with the [--command-line](#--command-line) flag.
 
+## --verify
+
+Type: `Flag`
+
+Short: `-v`
+
+If specified, this flag will automatically verify the specified program at the Application's start.
+
+It's more useful if used with the [--command-line](#--command-line) flag.
+
 ## --command-line
 
 Type: `Flag`
@@ -103,9 +115,17 @@ If specified, this will run the Application on the command line.
 This is an experimental feature, because everything takes
 for granted that it's running on the full app.
 
-The [--run](#--run) flag must be specified when using this one.
+Either the [--run](#--run) or the [--verify](#--verify) flag must be specified when using this one.
 
 See Also [Common Mistakes](#common-mistakes) -> [Running on the command line](#running-on-the-command-line).
+
+## --skip-warning
+
+Type: `Flag`
+
+Short: `-sw`
+
+If specified, this flag will skip the warning message generated from the [--command-line](#--command-line) flag.
 
 ## --bits
 
@@ -926,7 +946,7 @@ equal_sign: #DW '='
 
 ## XOR
 
-`OR a b`
+`XOR a b`
 
 Calculates the Bitwise Xor on `a` and `b` and stores the result in `a`.
 Sets Zero flag accordingly (Carry flag doesn't change).

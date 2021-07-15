@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'io.github.hds'
-version '1.8.1-RELEASE'
+version '1.8.5-RELEASE'
 
 repositories {
     mavenCentral()
