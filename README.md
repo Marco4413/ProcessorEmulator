@@ -37,7 +37,7 @@ Can be found [@DOCUMENTATION.md](https://github.com/hds536jhmk/ProcessorEmulator
 ## Utilities
 
 There's a bundled Python script in the jar file that is useful if you want to verify your PEMU programs from the
-command line, it's called [PEMULangUtils.py](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/src/main/resources/PEMULangUtils.py).
+command line, it's called [PEMULangUtil.py](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/src/main/resources/PEMULangUtil.py).
 It doesn't require any dependencies, it just needs the standard Python library and [Python 3.8.X](https://www.python.org/downloads/),
 it should also work on newer versions, but it's not tested.
 
