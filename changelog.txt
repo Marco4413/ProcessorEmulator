@@ -1,4 +1,10 @@
 
+-- Version (v1.9.0-RELEASE)
+-- Changes from commit @6b3a847
+
+Added a way of allocating an array without specifying elements' value
+Now comments can be added mid-array to comment on a certain element
+
 -- Version (v1.8.6-RELEASE)
 -- Changes from commit @09fc55e
 

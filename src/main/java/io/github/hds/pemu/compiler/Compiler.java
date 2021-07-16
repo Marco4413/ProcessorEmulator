@@ -44,6 +44,8 @@ public class Compiler {
         public static final Token ESCAPE_CH = new Token('\\', true);
         public static final Token ARR_START = new Token('{');
         public static final Token ARR_END   = new Token('}');
+        public static final Token ARR_SIZE_START = new Token('[', true);
+        public static final Token ARR_SIZE_END   = new Token(']', true);
         public static final Token OFF_START = new Token('[', true);
         public static final Token OFF_END   = new Token(']', true);
         public static final Token SPACE     = new Token(' ', "\\s", false);
@@ -57,7 +59,9 @@ public class Compiler {
         // The class TokenGroup makes sure that no duplicate pattern is present,
         //  so it discards a Token if one that is equal is present, this should make Tokenizer a bit faster
         public static final TokenGroup ALL_TOKENS = new TokenGroup().addTokens(
-                COMMENT, CONSTANT, LABEL, COMPILER, STRING, CHARACTER, ESCAPE_CH, ARR_START, ARR_END, OFF_START, OFF_END, SPACE, NEWLINE, STR_CODEPOINT_TERMINATOR
+                COMMENT, CONSTANT, LABEL, COMPILER, STRING, CHARACTER, ESCAPE_CH,
+                ARR_START, ARR_END, ARR_SIZE_START, ARR_SIZE_END, OFF_START, OFF_END,
+                SPACE, NEWLINE, STR_CODEPOINT_TERMINATOR
         );
 
     }
@@ -88,7 +92,17 @@ public class Compiler {
         }
 
         protected SyntaxError(@NotNull String expected, @Nullable String got, int currentLine, int currentChar) {
-            super(String.format("Syntax Error (%d:%d): Expected %s, got '%s'.", currentLine, currentChar, expected, got));
+            this(expected, got, false, currentLine, currentChar);
+        }
+
+        protected SyntaxError(@NotNull String expected, @Nullable String got, boolean noCharEscape, int currentLine, int currentChar) {
+            super(
+                    String.format(
+                            "Syntax Error (%d:%d): Expected %s, got '%s'.",
+                            currentLine, currentChar, expected,
+                            noCharEscape ? got : StringUtils.SpecialCharacters.escapeAll(String.valueOf(got))
+                    )
+            );
         }
     }
 
@@ -164,7 +178,7 @@ public class Compiler {
                     cd.program.add(0);
                     return new ParseResult<>(PARSE_STATUS.SUCCESS, null, offset);
                 } else return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, null, offset);
-            } else throw new SyntaxError("Offset terminator ('" + Tokens.OFF_END.getPattern() + "')", offsetEnd, cd.tokenizer);
+            } else throw new SyntaxError("Offset terminator ('" + Tokens.OFF_END.getCharacter() + "')", offsetEnd, cd.tokenizer);
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
     }
 
@@ -411,6 +425,16 @@ public class Compiler {
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
     }
 
+    private static ParseResult<Void> parseComment(@NotNull CompilerData cd, boolean peekNext) {
+        String commentToken = peekNext ? cd.tokenizer.peekNext(Tokens.SPACE) : cd.tokenizer.getLast();
+        if (commentToken == null) return new ParseResult<>(PARSE_STATUS.FAIL);
+
+        if (Tokens.COMMENT.matches(commentToken)) {
+            cd.tokenizer.consumeNext(Tokens.NOT_NEWLINE);
+            return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED);
+        } else return new ParseResult<>(PARSE_STATUS.FAIL);
+    }
+
     private static ParseResult<Integer> parseValues(@NotNull CompilerData cd) {
         // Get the value to parse
         String valueToParse = cd.tokenizer.consumeNext(Tokens.SPACE);
@@ -465,9 +489,6 @@ public class Compiler {
                 for (int i = 0; i < instruction.getArgumentsCount();)
                     // We go to the next argument ONLY if something was added to the program
                     if (parseValues(cd).STATUS == PARSE_STATUS.SUCCESS) i++;
-
-            } else if (Tokens.COMMENT.matches(tokenToParse)) {
-                cd.tokenizer.consumeNext(Tokens.NOT_NEWLINE);
             } else if (Tokens.COMPILER.matches(tokenToParse)) {
                 // Parsing Compiler Instructions
                 String compilerInstr = cd.tokenizer.consumeNext(Tokens.SPACE);
@@ -487,18 +508,36 @@ public class Compiler {
                             // For each value in the array, check if the next value is the array closer character
                             String nextValue = cd.tokenizer.peekNext(Tokens.SPACE);
                             if (nextValue == null) {
-                                throw new SyntaxError("Array terminator ('" + Tokens.ARR_END.getPattern() + "')", cd.tokenizer.getLast(), cd.tokenizer);
+                                throw new SyntaxError("Array terminator ('" + Tokens.ARR_END.getCharacter() + "')", cd.tokenizer.getLast(), cd.tokenizer);
                             } else if (Tokens.ARR_END.matches(nextValue)) {
                                 cd.tokenizer.consumeNext(Tokens.SPACE);
                                 break;
                             }
-                            parseValues(cd);
+
+                            // If we fail to parse a comment then it must be a Value
+                            if (parseComment(cd, true).STATUS == PARSE_STATUS.FAIL) parseValues(cd);
                         }
-                    } else throw new SyntaxError("Array", arrayStart, cd.tokenizer);
+                    } else if (Tokens.ARR_SIZE_START.matches(arrayStart)) {
+                        cd.tokenizer.consumeNext(Tokens.SPACE);
+                        ParseResult<Integer> result = parseNumber(cd, false);
+                        if (result.STATUS == PARSE_STATUS.FAIL) result = parseConstant(cd, true, false);
+                        if (result.STATUS == PARSE_STATUS.FAIL)
+                            throw new SyntaxError("Number or Constant", cd.tokenizer.getLast(), cd.tokenizer);
+
+                        if (result.VALUE < 0)
+                            throw new SyntaxError("Valid Array Size (>= 0)", result.VALUE.toString(), cd.tokenizer);
+
+                        String arraySizeTerminator = cd.tokenizer.peekNext(Tokens.SPACE);
+                        if (Tokens.ARR_SIZE_END.matches(arraySizeTerminator))
+                            cd.tokenizer.consumeNext(Tokens.SPACE);
+                        else throw new SyntaxError("Array Size terminator ('" + Tokens.ARR_SIZE_END.getCharacter() + "')", arraySizeTerminator == null ? cd.tokenizer.getLast() : arraySizeTerminator, cd.tokenizer);
+
+                        for (int i = 0; i < result.VALUE; i++) cd.program.add(0);
+                    } else throw new SyntaxError("Array or Array Size", arrayStart, cd.tokenizer);
                 } else throw new SyntaxError("Compiler Instruction", compilerInstr, cd.tokenizer);
             } else {
-                // Parsing Labels and Constants
-                if (parseConstant(cd, false, true).STATUS == PARSE_STATUS.FAIL && parseLabel(cd, true, false).STATUS == PARSE_STATUS.FAIL)
+                // Parsing Comments, Labels and Constants
+                if (parseComment(cd, false).STATUS == PARSE_STATUS.FAIL && parseConstant(cd, false, true).STATUS == PARSE_STATUS.FAIL && parseLabel(cd, true, false).STATUS == PARSE_STATUS.FAIL)
                     throw new SyntaxError("Instruction, Constant or Label declaration", cd.tokenizer.getLast(), cd.tokenizer);
             }
         }
