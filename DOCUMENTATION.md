@@ -326,8 +326,8 @@ These instructions are useful to put values into memory where there's no process
 They are 3 and always have an `#` in front of them:
  - \#DW (Define Word): Can be followed by a [constant](#constants), a [label](#labels), a character (`'\''`) or a numeric value.
  - \#DS (Define String): Can only be followed by a string (`"\"This is a string\""` or `'"This is a string"'`).
- - \#DA (Define Array): Can only be followed by an array (`{ 3 2 newline: '\n' @VK_ENTER }`), said array can contain
-   constants, labels, characters, offsets or numbers.
+ - \#DA (Define Array): Can be followed by either an array (`{ 3 2 newline: '\n' @VK_ENTER }`) where said array can contain
+   constants, labels, characters, offsets or numbers, or an array size (`[10]`).
 
 ```Assembly
 ; This declares a label called "number" that points to
@@ -349,9 +349,17 @@ string: #DS "Hello World!\0"
 
 ; #DA adds all elements in the array to memory, constants can be used too
 ;  and labels can be declared pointing to a certain element
-array: #DA { 10, 3, 2, enter_key: @VK_ENTER }
+array: #DA {
+   10 3 2
+   ; Comments can also be used within arrays to comment your elements
+   enter_key: @VK_ENTER
+}
 ; This is useful to define multiple words without using multiple define
 ;  word instructions, Note that no string can be defined within an Array
+
+; If you just want to reserve Memory for an Array you can do
+prealloc_array: #DA [10]
+; Where 10 is the size of the Array
 ```
 
 ## Registers and Flags
