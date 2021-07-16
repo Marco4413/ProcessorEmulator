@@ -1,11 +1,25 @@
 
-JMP start
+; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
+; DESCRIPTION: A basic PEMU program that prints a string to the screen.
+; LICENSE: MIT
+; CREATED:      14-03-2021
+; LAST UPDATED: 16-07-2021
+
+; PROCESSOR REQUIREMENTS:
+; MIN BITS  : 8
+; MIN MEMORY: 64
+; MIN CLOCK : 1k
+
+CALL f_main
+HLT
+
+@NULL 0
 
 str: #DW [1] #DS "Hello World!\n\0"
 
 #DA {
     _temp: 0
-     null: 0
+     null: @NULL
 }
 
 f_print:
@@ -25,7 +39,7 @@ f_print:
 _print_end:
     RET
 
-start:
+f_main:
     PUSH str
     CALL f_print
-    HLT
+    RET
