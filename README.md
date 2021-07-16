@@ -28,7 +28,7 @@ There are four main ways to run this project:
 
 ## Examples:
 
-An example of program that the processor can run can be found [@resources/example.pemu](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/src/main/resources/example.pemu)
+PEMU Program Examples can be found [@examples/](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/examples)
 
 ## Documentation:
 

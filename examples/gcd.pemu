@@ -1,0 +1,253 @@
+
+; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
+; DESCRIPTION:
+;  A PEMU program that calculates the GCD between
+;  two numbers given by the user.
+; LICENSE: MIT
+; CREATED:      16-07-2021
+; LAST UPDATED: 16-07-2021
+
+; PROCESSOR REQUIREMENTS:
+; MIN BITS  : 8
+; MIN MEMORY: 256
+; MIN CLOCK : 1M
+
+; App Config ;
+@KEY_CONFIRM @VK_ENTER
+@KEY_DELETE  @VK_BACK_SPACE
+@DELAY_BETWEEN_INPUTS      500
+@DELAY_BETWEEN_KEY_PRESSES 150
+; ---------- ;
+
+; Calling the main function
+CALL f_main
+; Stopping the processor after main returned
+HLT
+
+; These constants are useful if used
+;  with the DATA Instruction
+@ZERO 0
+@NULL @ZERO
+
+#DA {
+    ; This variable is used by all functions
+    ;  to store temporary data
+    _temp: 'O'
+    ; A variable that holds the zero/null value
+    zero: null: @NULL
+    ; The first and last valid digits on the ASCII table
+    first_digit: '0'
+     last_digit: '9'
+    ; ten is actually 10, who would've thought!
+    ten: 10
+    ; The value of an undefined key press
+    VK_UNDEFINED: @VK_UNDEFINED
+
+    ; Adding user settings to memory
+    key_confirm: @KEY_CONFIRM
+    key_delete:  @KEY_DELETE
+    delay_between_inputs: @DELAY_BETWEEN_INPUTS
+    delay_between_key_presses: @DELAY_BETWEEN_KEY_PRESSES
+}
+
+; The message to be shown after GCD was calculated
+result_message: #DW [1] #DS "GCD = " #DW @NULL
+; The message to be shown if an operand of GCD is 0
+invalid_gcd:    #DW [1] #DS "Can't calculate GCD of 0" #DW @NULL
+
+; The way I usually handle functions is by defining
+;  all arguments and local variables at the top using
+;  the following naming convention "_<FUNC_NAME>_<SNAKE_CASE_VAR_NAME>"
+; All functions' names begin with "f"
+; And arguments are put on the stack before calling them
+
+#DA {
+    _gcd_a: 'H'
+    _gcd_b: ','
+}
+f_gcd:
+    ; Using the _temp variable to hold
+    ;  the return address
+    POP _temp
+    ; Getting all arguments
+    POP _gcd_a
+    POP _gcd_b
+
+    ; Actual body of the function
+    ; Make sure that the two operands aren't equal to 0
+    CMP _gcd_a zero
+    JE _gcd_invalid_operand
+    CMP _gcd_b zero
+    JNE _gcd_loop
+
+_gcd_invalid_operand:
+    ; If an operand is 0 set the
+    ;  result to 0 and jump to the end
+    DATA _gcd_a @ZERO
+    JMP _gcd_end
+
+    ; Calculation Loop
+    _gcd_loop:
+        CMP _gcd_b null
+        JE _gcd_end
+
+        MOD _gcd_a _gcd_b
+        SWP _gcd_b _gcd_a
+    JMP _gcd_loop
+
+_gcd_end:
+    ; Pushing result and return address to the Stack
+    PUSH _gcd_a
+    PUSH _temp
+    RET
+
+; Function used to get a number from the user
+#DA {
+    _get_number_result: 'C'
+    _get_number_key:    'A'
+    _get_number_char:   'N'
+    _get_number_int:    'I'
+}
+f_get_number:
+    ; Setting the result to 0
+    DATA _get_number_result @ZERO
+
+    ; Displaying the current number
+    JMP _get_number_loop_display
+    ; Loop to get other digits
+    _get_number_loop:
+        ; Sleep for a bit to add delay between key presses
+        PUSH delay_between_key_presses
+        CALL f_sleep
+
+        ; Getting everything first so that
+        ;  they can't change while checking
+        GETK _get_number_key
+        GETC _get_number_char
+        GETI _get_number_int
+
+        ; If the key is undefined then no key is pressed
+        CMP _get_number_key VK_UNDEFINED
+        JE _get_number_loop
+
+        ; If the number was confirmed then go to the end
+        CMP _get_number_key key_confirm
+        JE _get_number_end
+
+        ; If we're not deleting a digit then check if it's a valid one
+        CMP _get_number_key key_delete
+        JNE _get_number_loop_valid_digit
+
+        ; Otherwise remove one and display the number
+        DIV _get_number_result ten
+        JMP _get_number_loop_display
+
+    _get_number_loop_valid_digit:
+        ; Check if the char is a valid digit
+        CMP _get_number_char first_digit
+        JB _get_number_loop
+
+        CMP _get_number_char last_digit
+        JA _get_number_loop
+
+    _get_number_loop_add_digit:
+        ; If it's actually a valid digit then add it
+        MUL _get_number_result ten
+        ADD _get_number_result _get_number_int
+
+    _get_number_loop_display:
+        ; Clear the Console and print the current number
+        OUTC null
+        OUTI _get_number_result
+    JMP _get_number_loop
+
+_get_number_end:
+    ; Adding the return value on the stack
+    POP _temp
+    PUSH _get_number_result
+    PUSH _temp
+    RET
+
+; Function that locks the processor for
+;  the specified amount of time
+#DA {
+    _sleep_time:       'D'
+    _sleep_start_time: 'O'
+}
+f_sleep:
+    ; Getting the sleep time
+    POP _temp
+    POP _sleep_time
+    PUSH _temp
+
+    ; Getting the starting time
+    TMS _sleep_start_time
+    _sleep_loop:
+        ; Repeat until (current_time - start_time) isn't
+        ;  greater or equal to the time to wait
+        TMS _temp
+        SUB _temp _sleep_start_time
+    CMP _temp _sleep_time
+    JB _sleep_loop
+
+    RET
+
+; Function that prints the specified string
+f_print:
+    POP _temp
+    POP _print_str_ptr
+    PUSH _temp
+
+    _print_loop:
+        CMP _print_str_ptr: 'T' null
+        JE _print_end
+
+        MOV _print_char _print_str_ptr
+        OUTC _print_char: 'H'
+        INC _print_str_ptr
+    JMP _print_loop
+
+_print_end:
+    RET
+
+; Main Function
+#DA {
+    A:   'I'
+    B:   'S'
+    RES: '?'
+}
+f_main:
+    ; Get A
+    CALL f_get_number
+    POP A
+
+    ; Sleep to wait some time between inputs
+    PUSH delay_between_inputs
+    CALL f_sleep
+
+    ; Get B
+    CALL f_get_number
+    POP B
+
+    ; Calculate the GCD between A and B
+    PUSH A
+    PUSH B
+    CALL f_gcd
+    POP RES
+
+    ; If GCD isn't valid tell it to the user
+    CMP RES zero
+    JNE _main_show_result
+    OUTC null
+    PUSH invalid_gcd
+    CALL f_print
+    JMP _main_end
+
+_main_show_result:
+    ; Clear the Console and print the result
+    OUTC null
+    PUSH result_message
+    CALL f_print
+    OUTI RES
+_main_end:
+    RET
