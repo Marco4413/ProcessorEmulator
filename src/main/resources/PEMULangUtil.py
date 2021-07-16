@@ -69,8 +69,8 @@ def getUsage() -> str:
 def printUsage():
     print(getUsage())
 
-REQUIRED_ARGUMENTS = 4
-VERSION = "v1.0.0"
+REQUIRED_ARGUMENTS = 3
+VERSION = "v1.0.1"
 SUPPORTED_PEMU_VERSION = "v1.8.5+"
 
 def main():
@@ -79,7 +79,9 @@ def main():
     print("This program will verify your PEMU code on the command line and format errors and output!")
     print()
 
-    argCount = len(argv)
+    # Subtracting 1 because the first element is the script's path
+    #  and it's not an actual argument
+    argCount = len(argv) - 1
     if argCount < REQUIRED_ARGUMENTS:
         printUsage()
         return
@@ -88,7 +90,9 @@ def main():
         printUsage()
         return
 
+    # variable "_" holds the script's path
     [_, applicationPath, programPath, bits] = argv
+
     try:
         int(bits)
     except:
@@ -115,7 +119,7 @@ def main():
 
     parsedError = parseError(output)
     print(
-        (parsedError is None and output or str(parsedError)).strip(" \t\n")
+        str(parsedError is None and output or parsedError).strip(" \t\n")
     )
 
 

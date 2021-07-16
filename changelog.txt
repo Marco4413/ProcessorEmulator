@@ -1,4 +1,11 @@
 
+-- Version (v1.8.6-RELEASE)
+-- Changes from commit @09fc55e
+
+Now JA and JNBE Instructions should work as intended
+Added a new line character on BRK Instruction's Debug Log
+Made Application check if the current program is still valid before Compiling
+
 -- Version (v1.8.5-RELEASE)
 -- Changes from commit @4c33099
 
