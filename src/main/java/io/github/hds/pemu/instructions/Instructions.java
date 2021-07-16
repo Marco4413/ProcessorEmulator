@@ -28,7 +28,7 @@ public final class Instructions {
         public void execute(@NotNull IProcessor p, int[] args) {
             if (!p.isPaused()) {
                 p.pause();
-                Console.Debug.println("Processor encountered a breakpoint.");
+                Console.Debug.println("Processor encountered a breakpoint.\n");
             }
         }
     };
@@ -342,7 +342,7 @@ public final class Instructions {
             IFlag CF = p.getFlag("CF");
             if (ZF == null) throw new NullPointerException("Zero Flag isn't present on the Processor.");
             if (CF == null) throw new NullPointerException("Carry Flag isn't present on the Processor.");
-            if (!ZF.getValue() || CF.getValue()) JMP.execute(p, args);
+            if (!(ZF.getValue() || CF.getValue())) JMP.execute(p, args);
         }
     };
 

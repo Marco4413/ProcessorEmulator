@@ -603,7 +603,7 @@ null: #DW 0
 
 Gets the currently pressed key and sets `dst` to its [keycode](https://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html)
 (Constants can be used to add keys to memory. e.g. `@VK_ENTER`).
-If no key is pressed, it's set to **0**.
+If no key is pressed, it's set to the constant `@VK_UNDEFINED`.
 
 **Example:**
 

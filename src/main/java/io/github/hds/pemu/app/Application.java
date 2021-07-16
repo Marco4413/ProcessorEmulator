@@ -28,7 +28,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public static final int PREVENT_VISIBILITY_CHANGE = 2;
 
     public static final String APP_TITLE = "PEMU";
-    public static final String APP_VERSION = "1.8.5";
+    public static final String APP_VERSION = "1.8.6";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
@@ -320,6 +320,16 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
         if (currentProgram == null) {
             Console.Debug.println("No program specified!\n");
+            return false;
+        }
+
+        if (!currentProgram.exists()) {
+            Console.Debug.println("The specified program doesn't exist!\n");
+            return false;
+        }
+
+        if (!currentProgram.canRead()) {
+            Console.Debug.println("The specified program can't be read!\n");
             return false;
         }
 
