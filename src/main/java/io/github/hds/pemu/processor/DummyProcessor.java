@@ -39,7 +39,7 @@ public final class DummyProcessor implements IDummyProcessor {
         FLAG_HOLDER = new FlagHolder<>(flags);
 
         MEMORY = new DummyMemory(Word.getClosestWord(config.getBits()));
-        CLOCK = new Clock(config.getClock());
+        CLOCK = new Clock(config.getClockFrequency());
         INSTRUCTIONSET = config.getInstructionSet();
     }
 

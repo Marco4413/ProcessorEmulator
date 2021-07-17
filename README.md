@@ -47,15 +47,16 @@ There are actually no dependencies except for `JetBrains Annotations` that's use
 
 ## Screenshots:
 
-The Main Window that contains the Debugging console (the one on the bottom), and the Processor console (where the
-processor can print to on the top):
+The Main Window that contains the Debugging Console (the one on the bottom), and the Processor Console (where the
+processor can print to on the top) and other info/settings:
 
 ![](./preview_main_window.png)
 
-The Processor Config Panel:
+The Processor Config Panel where you can change your Processor's settings
+(Clock can be changed while the Processor's running):
 
 ![](./preview_processor_config.png)
 
-The Memory View window, where the Processor memory is conveniently shown as a table of width specified by the user:
+The Memory View window where the Processor's Memory is shown to the user, this has also some visual settings:
 
 ![](./preview_memory_view.png)

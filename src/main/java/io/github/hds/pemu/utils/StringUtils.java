@@ -8,6 +8,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -96,10 +97,10 @@ public final class StringUtils {
         return 0;
     }
 
-    public static @NotNull String format(@Nullable String str, @NotNull String... formats) {
+    public static @NotNull String format(@Nullable String str, @NotNull Object... formats) {
         if (str == null) return "";
         for (int i = 0; i < formats.length; i++) {
-            str = str.replaceAll("\\{" + i + "}", Matcher.quoteReplacement(formats[i]));
+            str = str.replaceAll("\\{" + i + "}", Matcher.quoteReplacement(formats[i].toString()));
         }
         return str;
     }
@@ -139,21 +140,26 @@ public final class StringUtils {
         return path + "." + extensions[0];
     }
 
-    private static final String[] ENG_NOTATION_PREFIXES = new String[] { "", "k", "M", "G", "T", "P", "E", "Z", "Y" };
+    private static final DecimalFormat ENG_FORMAT = new DecimalFormat("##0E00");
+    private static final String[] ENG_NOTATION_PREFIXES = new String[] {
+            "E-24", "E-21", "E-18", "E-15", "E-12", "E-09", "E-06", "E-03", "E00", "E03", "E06", "E09", "E12", "E15", "E18", "E21", "E24",
+            "y"   , "z"   , "a"   , "f"   , "p"   , "n"   , "u"   , "m"   , ""   , "k"  , "M"  , "G"  , "T"  , "P"  , "E"  , "Z"  , "Y"
+    };
 
-    public static @NotNull String getEngNotationInt(int number) {
-        return getEngNotationLong(number);
+    public static @NotNull String getEngNotation(@NotNull Number number) {
+        return getEngNotation(number, "");
     }
 
-    public static @NotNull String getEngNotationLong(long number) {
-        String numberAsString = String.valueOf(number);
-        int zeroCount = 0;
-        for (int i = numberAsString.length() - 1; i >= 0; i--) {
-            if (numberAsString.charAt(i) == '0') zeroCount++;
-            else break;
+    public static @NotNull String getEngNotation(@NotNull Number number, @NotNull String measureUnit) {
+        String engineeringNumber = ENG_FORMAT.format(number);
+        int halfPrefixesLength = ENG_NOTATION_PREFIXES.length / 2;
+
+        for (int i = 0; i < halfPrefixesLength; i++) {
+            if (engineeringNumber.contains(ENG_NOTATION_PREFIXES[i])) {
+                return engineeringNumber.replace(ENG_NOTATION_PREFIXES[i], ENG_NOTATION_PREFIXES[i + halfPrefixesLength]) + measureUnit;
+            }
         }
 
-        int suffixIndex = Math.min(zeroCount / 3, ENG_NOTATION_PREFIXES.length - 1);
-        return (number / (long) Math.pow(10, suffixIndex * 3)) + ENG_NOTATION_PREFIXES[suffixIndex];
+        return engineeringNumber + measureUnit;
     }
 }

@@ -43,7 +43,7 @@ public final class ProcessorConfigPanel extends JPanel implements ITranslatable 
 
         CLOCK_LABEL = new JLabel("Clock (Hz): ");
         add(CLOCK_LABEL);
-        SpinnerNumberModel clockModel = new SpinnerNumberModel(ProcessorConfig.DEFAULT_CLOCK, ProcessorConfig.MIN_CLOCK, ProcessorConfig.MAX_CLOCK, 1);
+        SpinnerNumberModel clockModel = new SpinnerNumberModel(ProcessorConfig.DEFAULT_FREQUENCY, ProcessorConfig.MIN_FREQUENCY, ProcessorConfig.MAX_FREQUENCY, 1);
         CLOCK_SPINNER = new JSpinner(clockModel);
         add(CLOCK_SPINNER);
     }
@@ -51,7 +51,7 @@ public final class ProcessorConfigPanel extends JPanel implements ITranslatable 
     public void setConfig(@NotNull ProcessorConfig config) {
         BITS_SPINNER.setValue(config.getBits());
         MEMORY_SPINNER.setValue(config.getMemorySize());
-        CLOCK_SPINNER.setValue(config.getClock());
+        CLOCK_SPINNER.setValue(config.getClockFrequency());
     }
 
     public @NotNull ProcessorConfig getConfig() {

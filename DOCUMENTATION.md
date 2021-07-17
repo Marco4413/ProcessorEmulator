@@ -10,8 +10,8 @@
    * [--command-line](#--command-line)
    * [--skip-warning](#--skip-warning)
    * [--bits](#--bits)
-   * [--memory](#--memory)
-   * [--clock](#--clock)
+   * [--memory-size](#--memory-size)
+   * [--clock-frequency](#--clock-frequency)
    * [--program](#--program)
  - [Common Mistakes](#common-mistakes)
    * [Running on the command line](#running-on-the-command-line)
@@ -135,19 +135,19 @@ Short: `-b`
 
 If specified, the following argument will be treated as an Integer and will be used as the Processor's Word Size.
 
-## --memory
+## --memory-size
 
 Type: `Integer`
 
-Short: `-mem`
+Short: `-ms`
 
 If specified, the following argument will be treated as an Integer and will be used as the Processor's Memory Size.
 
-## --clock
+## --clock-frequency
 
 Type: `Integer`
 
-Short: `-c`
+Short: `-cf`
 
 If specified, the following argument will be treated as an Integer and will be used as the Processor's Clock.
 

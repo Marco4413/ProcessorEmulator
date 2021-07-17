@@ -1,5 +1,32 @@
 
 -- Version (v1.9.0-RELEASE)
+-- Changes from commit @b3a30f5
+
+Added simulation performance at the bottom of the Application
+Fixed closing using the Quit button not saving config
+Renamed some config keys
+
+Renamed command line argument "--memory" to "--memory-size"
+Renamed command line argument "--clock" to "--clock-frequency"
+Fixed command line flag "--run" closing the app even when not on the command line
+
+Added icon to Processor Config Panel
+
+Removed methods from class CompiledProgram: getCompileTimeNanos, getCompileTimeMicros, getCompileTimeMillis
+Added method CompiledProgram#getCompileTime
+
+Added methods to Clock class: getInterval, getDeltaTime
+
+Renamed method Clock#getClock to getFrequency
+Renamed method Clock#setClock to setFrequency
+Renamed method ProcessorConfig#getClock to getClockFrequency
+Renamed method ProcessorConfig#setClock to setClockFrequency
+Renamed all static fields in Clock and ProcessorConfig referring to Clock Rate to include Frequency in the name instead of Clock
+
+Now method StringUtils.format accepts an Object vararg as formats and it will use their toString method to convert them
+Removed static methods from StringUtils: getEngNotationInt, getEngNotationLong
+Added method StringUtils.getEngNotation
+
 -- Changes from commit @6b3a847
 
 Added a way of allocating an array without specifying elements' value

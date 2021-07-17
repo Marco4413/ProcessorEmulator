@@ -56,6 +56,8 @@ public class Compiler {
         // And shouldn't be added to the Tokenizer, it's just used to ignore Comments until new line
         public static final Token NOT_NEWLINE = new Token('\0', "^[^\\n]", false);
 
+        // public static final Token NOT_COMMENT = new Token('\0', "^[^;]", false);
+
         // The class TokenGroup makes sure that no duplicate pattern is present,
         //  so it discards a Token if one that is equal is present, this should make Tokenizer a bit faster
         public static final TokenGroup ALL_TOKENS = new TokenGroup().addTokens(
@@ -430,6 +432,23 @@ public class Compiler {
         if (commentToken == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
         if (Tokens.COMMENT.matches(commentToken)) {
+            // TODO: Decide if Multi-Line comments are a good idea, since they "don't exist" in Assembly
+            //  The implementation is actually already done, so it's just a matter of removing comments
+
+            /*
+            if (peekNext) cd.tokenizer.consumeNext(Tokens.SPACE);
+            boolean isMultiLine = Tokens.COMMENT.matches(cd.tokenizer.peekNext());
+            if (isMultiLine) {
+                while (true) {
+                    String commentEnd = cd.tokenizer.consumeNext(Tokens.NOT_COMMENT);
+                    if (
+                            commentEnd == null ||
+                            ( Tokens.COMMENT.matches(commentEnd) && Tokens.COMMENT.matches(cd.tokenizer.consumeNext()) )
+                    ) break;
+                }
+            } else
+            */
+
             cd.tokenizer.consumeNext(Tokens.NOT_NEWLINE);
             return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED);
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
