@@ -107,7 +107,7 @@ public final class ProcessorMenu extends JMenu implements ITranslatable {
 
     public void configureProcessor(ActionEvent e) {
         CONFIG_PANEL.setConfig(app.processorConfig);
-        int result = JOptionPane.showConfirmDialog(this, CONFIG_PANEL, localeConfigPanelTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        int result = JOptionPane.showConfirmDialog(this, CONFIG_PANEL, localeConfigPanelTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, ICON_CONFIGURE);
         if (result == JOptionPane.OK_OPTION)
             app.setProcessorConfig(CONFIG_PANEL.getConfig());
     }

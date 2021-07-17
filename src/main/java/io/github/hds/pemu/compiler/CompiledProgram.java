@@ -47,15 +47,7 @@ public final class CompiledProgram {
         return COMPILE_TIME != NO_COMPILE_TIME;
     }
 
-    public long getCompileTimeNanos() {
-        return COMPILE_TIME;
-    }
-
-    public double getCompileTimeMicros() {
-        return COMPILE_TIME / 1_000.0d;
-    }
-
-    public double getCompileTimeMillis() {
-        return COMPILE_TIME / 1_000_000.0d;
+    public double getCompileTime() {
+        return COMPILE_TIME / 1_000_000_000d;
     }
 }

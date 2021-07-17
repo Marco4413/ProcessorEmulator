@@ -8,6 +8,7 @@ import io.github.hds.pemu.config.IConfigurable;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
+import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.IDummyProcessor;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.processor.ProcessorConfig;
@@ -16,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -28,11 +30,13 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public static final int PREVENT_VISIBILITY_CHANGE = 2;
 
     public static final String APP_TITLE = "PEMU";
-    public static final String APP_VERSION = "1.8.6";
+    public static final String APP_VERSION = "1.9.0";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
     public static final int MENU_ITEM_ICON_SIZE = 20;
+
+    public static final int PERFORMANCE_UPDATE_INTERVAL = 1000;
 
     private static Application INSTANCE;
 
@@ -43,6 +47,9 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     protected final ProgramMenu PROGRAM_MENU;
     protected final ProcessorMenu PROCESSOR_MENU;
     protected final AboutMenu ABOUT_MENU;
+
+    protected final JLabel PERFORMANCE_LABEL;
+    protected final Timer UPDATE_TIMER;
 
     protected @Nullable Function<ProcessorConfig, IDummyProcessor> dummyProcessorProducer = null;
 
@@ -55,6 +62,8 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     private @NotNull String localeNoProgramSelected = "";
     private @NotNull String localeProgramSelected = "";
+    private @NotNull String localePerformanceLabel = "";
+    private @NotNull String localeNoProcessorRunning = "";
 
     private Application() throws HeadlessException {
         super();
@@ -63,16 +72,18 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         setIconImage(IconUtils.importIcon("/assets/icon.png", FRAME_ICON_SIZE).getImage());
 
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                ConfigManager.saveConfig();
+                close(null);
             }
         });
 
         ConfigManager.addConfigListener(this);
         TranslationManager.addTranslationListener(this);
+
+        setLayout(new BorderLayout());
 
         // Making instances of these to allow them to get their translation
         GFileDialog.getInstance();
@@ -106,9 +117,17 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(programComponent), new JScrollPane(debugComponent));
         splitPane.setResizeWeight(0.5d);
         splitPane.resetToPreferredSizes();
-        add(splitPane);
+        add(splitPane, BorderLayout.CENTER);
+
+        PERFORMANCE_LABEL = new JLabel();
+        PERFORMANCE_LABEL.setBorder(new EmptyBorder(2, 10, 2, 10));
+        PERFORMANCE_LABEL.setHorizontalAlignment(SwingConstants.RIGHT);
+        add(PERFORMANCE_LABEL, BorderLayout.PAGE_END);
 
         programComponent.addKeyListener(this);
+
+        UPDATE_TIMER = new Timer(PERFORMANCE_UPDATE_INTERVAL, this::updateFrame);
+        UPDATE_TIMER.start();
 
         ConfigManager.loadOrCreate();
     }
@@ -116,6 +135,25 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public static @NotNull Application getInstance() {
         if (INSTANCE == null) INSTANCE = new Application();
         return INSTANCE;
+    }
+
+    private void updateFrame(ActionEvent actionEvent) {
+        if (!isVisible() || currentProcessor == null || currentProcessor.isPaused() || !currentProcessor.isRunning()) {
+            PERFORMANCE_LABEL.setText(localeNoProcessorRunning);
+            return;
+        }
+
+        Clock clock = currentProcessor.getClock();
+        double interval  = clock.getInterval();
+        double deltaTime = clock.getDeltaTime();
+        PERFORMANCE_LABEL.setText(
+                StringUtils.format(
+                        localePerformanceLabel,
+                        StringUtils.getEngNotation(interval, "s"),
+                        StringUtils.getEngNotation(deltaTime, "s"),
+                        StringUtils.getEngNotation(deltaTime - interval, "s")
+                )
+        );
     }
 
     public void setFlags(int flags) {
@@ -127,6 +165,9 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public void updateTranslations(@NotNull Translation translation) {
         localeNoProgramSelected = translation.getOrDefault("application.noProgramSelected");
         localeProgramSelected = translation.getOrDefault("application.programSelected");
+
+        localePerformanceLabel = translation.getOrDefault("application.performanceLabel");
+        localeNoProcessorRunning = translation.getOrDefault("application.noProcessorRunning");
         updateTitle();
     }
 
@@ -140,31 +181,36 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         } else {
             // We let the app crash if config couldn't be loaded successfully
             processorConfig.setBits(e.config.get(Integer.class, "processorConfig.bits"));
-            processorConfig.setMemorySize(e.config.get(Integer.class, "processorConfig.memSize"));
-            processorConfig.setClock(e.config.get(Integer.class, "processorConfig.clock"));
+            processorConfig.setMemorySize(e.config.get(Integer.class, "processorConfig.memorySize"));
+            processorConfig.setClockFrequency(e.config.get(Integer.class, "processorConfig.clockFrequency"));
         }
     }
 
     @Override
     public void saveConfig(@NotNull ConfigEvent e) {
         e.config.put("processorConfig.bits", processorConfig.getBits());
-        e.config.put("processorConfig.memSize", processorConfig.getMemorySize());
-        e.config.put("processorConfig.clock", processorConfig.getClock());
+        e.config.put("processorConfig.memorySize", processorConfig.getMemorySize());
+        e.config.put("processorConfig.clockFrequency", processorConfig.getClockFrequency());
     }
 
     @Override
     public void setDefaults(@NotNull ConfigEvent e) {
         e.config.put("version", APP_VERSION);
         e.config.put("processorConfig.bits", ProcessorConfig.DEFAULT_BITS);
-        e.config.put("processorConfig.memSize", ProcessorConfig.DEFAULT_MEMORY_SIZE);
-        e.config.put("processorConfig.clock", ProcessorConfig.DEFAULT_CLOCK);
+        e.config.put("processorConfig.memorySize", ProcessorConfig.DEFAULT_MEMORY_SIZE);
+        e.config.put("processorConfig.clockFrequency", ProcessorConfig.DEFAULT_FREQUENCY);
     }
 
     public void updateTitle() {
-        if (currentProgram == null)
-            setTitle(APP_TITLE + " " + APP_VERSION + " " + localeNoProgramSelected);
-        else
-            setTitle(APP_TITLE + " " + APP_VERSION + " " + StringUtils.format(localeProgramSelected, currentProgram.getAbsolutePath()));
+        setTitle(
+                StringUtils.format(
+                        "{0} {1} {2}",
+                        APP_TITLE, APP_VERSION,
+                        currentProgram == null ?
+                                localeNoProgramSelected :
+                                StringUtils.format(localeProgramSelected, currentProgram.getAbsolutePath())
+                )
+        );
     }
 
     public void setProducer(@NotNull Function<ProcessorConfig, IProcessor> producer) {
@@ -188,7 +234,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     public void setProcessorConfig(@NotNull ProcessorConfig config) {
         processorConfig = config;
-        if (currentProcessor != null) currentProcessor.getClock().setClock(processorConfig.getClock());
+        if (currentProcessor != null) currentProcessor.getClock().setFrequency(processorConfig.getClockFrequency());
     }
 
     public @NotNull ProcessorConfig getProcessorConfig() {
@@ -266,6 +312,10 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
         if (currentProgram == null) {
             Console.Debug.println("No program specified!");
+        } else if (!currentProgram.exists()) {
+            Console.Debug.println("The specified program doesn't exist!");
+        } else if (!currentProgram.canRead()) {
+            Console.Debug.println("The specified program can't be read!");
         } else {
             try {
                 compiledProgram = Compiler.compileFile(currentProgram, processorInstance);
@@ -276,7 +326,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
                         )
                 );
                 Console.Debug.println(
-                        String.format("Compilation took %.2fms", compiledProgram.getCompileTimeMillis())
+                        "Compilation took " + StringUtils.getEngNotation(compiledProgram.getCompileTime(), "s")
                 );
             } catch (Exception err) {
                 Console.Debug.println("Compilation error (for file @'" + currentProgram.getAbsolutePath() + "'):");
@@ -317,21 +367,6 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
         // Clear Debug console and check if a program is specified
         if (Console.Debug instanceof IClearable) ((IClearable) Console.Debug).clear();
-
-        if (currentProgram == null) {
-            Console.Debug.println("No program specified!\n");
-            return false;
-        }
-
-        if (!currentProgram.exists()) {
-            Console.Debug.println("The specified program doesn't exist!\n");
-            return false;
-        }
-
-        if (!currentProgram.canRead()) {
-            Console.Debug.println("The specified program can't be read!\n");
-            return false;
-        }
 
         // Create a new Processor with the specified values
         currentProcessor = createProcessor();
@@ -432,6 +467,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     }
 
     public void close(ActionEvent e) {
+        ConfigManager.saveConfig();
         System.exit(0);
     }
 }

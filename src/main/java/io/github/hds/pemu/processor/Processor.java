@@ -45,7 +45,7 @@ public final class Processor implements IProcessor {
                 config.getMemorySize(),
                 Word.getClosestWord(config.getBits())
         );
-        CLOCK = new Clock(config.getClock());
+        CLOCK = new Clock(config.getClockFrequency());
 
         INSTRUCTIONSET = config.getInstructionSet();
         HISTORY = new HashMap<>();
@@ -132,7 +132,7 @@ public final class Processor implements IProcessor {
 
     @Override
     public @NotNull String getInfo() {
-        return "\tClock:\t" + StringUtils.getEngNotationInt(CLOCK.getClock()) + "Hz\n" +
+        return "\tClock:\t" + StringUtils.getEngNotation(CLOCK.getFrequency(), "Hz") + "\n" +
                "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.getWord().TOTAL_BYTES + " Bytes\n" +
                "\tInstructions:\t" + INSTRUCTIONSET.getSize() + "\n";
     }

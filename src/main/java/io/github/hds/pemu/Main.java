@@ -25,8 +25,8 @@ public final class Main {
               .defineFlag("--command-line", "-cl")
               .defineFlag("--skip-warning", "-sw")
               .defineRangedInt("--bits", "-b", ProcessorConfig.DEFAULT_BITS, ProcessorConfig.MIN_BITS, ProcessorConfig.MAX_BITS)
-              .defineRangedInt("--memory", "-mem", ProcessorConfig.DEFAULT_MEMORY_SIZE, ProcessorConfig.MIN_MEMORY_SIZE, ProcessorConfig.MAX_MEMORY_SIZE)
-              .defineRangedInt("--clock", "-c", ProcessorConfig.DEFAULT_CLOCK, ProcessorConfig.MIN_CLOCK, ProcessorConfig.MAX_CLOCK)
+              .defineRangedInt("--memory-size", "-ms", ProcessorConfig.DEFAULT_MEMORY_SIZE, ProcessorConfig.MIN_MEMORY_SIZE, ProcessorConfig.MAX_MEMORY_SIZE)
+              .defineRangedInt("--clock-frequency", "-cf", ProcessorConfig.DEFAULT_FREQUENCY, ProcessorConfig.MIN_FREQUENCY, ProcessorConfig.MAX_FREQUENCY)
               .defineStr("--program", "-p", "");
         // Parse Arguments
         parser.parse(args);
@@ -99,10 +99,10 @@ public final class Main {
         ProcessorConfig processorConfig = app.getProcessorConfig();
         if (parser.isSpecified("--bits"))
             processorConfig.setBits((int) parser.getOption("--bits").getValue());
-        if (parser.isSpecified("--memory"))
-            processorConfig.setMemorySize((int) parser.getOption("--memory").getValue());
-        if (parser.isSpecified("--clock"))
-            processorConfig.setClock((int) parser.getOption("--clock").getValue());
+        if (parser.isSpecified("--memory-size"))
+            processorConfig.setMemorySize((int) parser.getOption("--memory-size").getValue());
+        if (parser.isSpecified("--clock-frequency"))
+            processorConfig.setClockFrequency((int) parser.getOption("--clock-frequency").getValue());
 
         // Setting up app instance and showing it
         app.setProducer(Processor::new);
@@ -126,7 +126,7 @@ public final class Main {
         boolean closeApplication = isCommandLine;
         if (runOnStart) {
             boolean successfulRun = app.runProcessor(null);
-            closeApplication = !successfulRun;
+            closeApplication = closeApplication && !successfulRun;
         } else if (verifyOnStart) {
             app.verifyProgram(null);
         }

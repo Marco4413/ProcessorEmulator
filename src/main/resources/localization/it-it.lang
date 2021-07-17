@@ -2,8 +2,10 @@
 "_shortName" = "it-it"
 "_longName"  = "Italiano - Italia"
 
-"application.noProgramSelected" = "(Nessun Programma Selezionato)"
-"application.programSelected"   = "({0})"
+"application.noProgramSelected"  = "(Nessun Programma Selezionato)"
+"application.programSelected"    = "({0})"
+"application.performanceLabel"   = "Delta Ideale: {0}  |  Delta Corrente: {1}  |  Lag Simulazione {2}"
+"application.noProcessorRunning" = "Nessun Processore è in esecuzione."
 
 "fileMenu._text"                    = "File"
 "fileMenu._mnemonic"                = 'F'

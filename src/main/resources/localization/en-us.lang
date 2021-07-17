@@ -2,8 +2,10 @@
 "_shortName" = "en-us"
 "_longName"  = "English - US"
 
-"application.noProgramSelected" = "(No Program Selected)"
-"application.programSelected"   = "({0})"
+"application.noProgramSelected"  = "(No Program Selected)"
+"application.programSelected"    = "({0})"
+"application.performanceLabel"   = "Ideal Delta: {0}  |  Current Delta: {1}  |  Simulation Lag: {2}"
+"application.noProcessorRunning" = "No Processor is currently running."
 
 "fileMenu._text"                    = "File"
 "fileMenu._mnemonic"                = 'F'
