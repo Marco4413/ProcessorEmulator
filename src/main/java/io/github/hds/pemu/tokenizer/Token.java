@@ -9,7 +9,6 @@ public final class Token {
 
     private final char CHARACTER;
     private final @NotNull String PATTERN;
-    private final boolean IS_QUOTED;
 
     public Token(char character) {
         this(character, false);
@@ -21,12 +20,10 @@ public final class Token {
 
     public Token(char character, @NotNull String pattern, boolean quotePattern) {
         CHARACTER = character;
-        PATTERN = pattern;
-        IS_QUOTED = quotePattern;
-    }
-
-    public boolean isQuoted() {
-        return IS_QUOTED;
+        // Compiling the pattern so that we're sure it's valid
+        PATTERN = Pattern.compile(
+                quotePattern ? Pattern.quote(pattern) : pattern
+        ).pattern();
     }
 
     public char getCharacter() {
@@ -34,16 +31,12 @@ public final class Token {
     }
 
     public @NotNull String getPattern() {
-        return getPattern(IS_QUOTED);
-    }
-
-    public @NotNull String getPattern(boolean quoted) {
-        return quoted ? Pattern.quote(PATTERN) : PATTERN;
+        return PATTERN;
     }
 
     public boolean matches(@Nullable String str) {
         if (str == null) return false;
-        return str.matches("[" + getPattern() + "]+");
+        return str.matches(PATTERN);
     }
 
 }

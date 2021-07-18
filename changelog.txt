@@ -1,4 +1,10 @@
 
+-- Version (v1.10.0-RELEASE)
+-- Changes from commit @e980b99
+
+Reworked Tokenizer and Token classes (again)
+Now Compiler can tell the difference between an Horizontal and Vertical Space
+
 -- Version (v1.9.0-RELEASE)
 -- Changes from commit @b3a30f5
 

@@ -4,92 +4,94 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class Tokenizer {
 
-    private String[] tokens;
-    private int nextToken = 0;
+    private final String[] TOKENS;
+    private int nextTokenIndex = 0;
     private int consumedCharacters = 0;
     private int consumedLineChars = 0;
     private int consumedLines = 0;
 
-    public Tokenizer() {
-        tokens = new String[0];
-    }
+    public Tokenizer(@NotNull String str, @NotNull Token... tokens) {
+        if (tokens.length == 0) {
+            TOKENS = new String[0];
+            return;
+        }
 
-    public Tokenizer(@NotNull String str, boolean keepTokens, @NotNull Token... tokens) {
         StringBuilder ruleBuilder = new StringBuilder();
-        for (Token token : tokens)
-            ruleBuilder.append(token.getPattern());
+        for (int i = 0; i < tokens.length - 1; i++)
+            ruleBuilder.append("(").append(tokens[i].getPattern()).append(")|");
+        ruleBuilder.append("(").append(tokens[tokens.length - 1].getPattern()).append(")");
 
-        String rule = ruleBuilder.toString();
-        String regex = keepTokens ?
-                "((?<=[" + rule + "])|(?=[" + rule + "]))" :
-                "[" + rule + "]";
-        this.tokens = str.split(regex);
+        Pattern pattern = Pattern.compile(ruleBuilder.toString());
+        TOKENS = splitString(str, pattern);
     }
 
-    public Tokenizer(@NotNull String str, boolean keepTokens, @NotNull TokenGroup tokenGroup) {
-        this(str, keepTokens, tokenGroup.getGroup());
+    public Tokenizer(@NotNull String str, @NotNull TokenGroup tokenGroup) {
+        this(str, tokenGroup.getGroup());
     }
 
-    public void removeDuplicates() {
-        ArrayList<String> newTokens = new ArrayList<>();
-        int removed = 0;
+    private static @NotNull String[] splitString(@NotNull String str, @NotNull Pattern pattern) {
+        ArrayList<String> tokens = new ArrayList<>();
 
-        String lastToken = "";
-        for (int i = 0; i < tokens.length; i++) {
-            String token = tokens[i];
-            if (!lastToken.equals(token)) newTokens.add(token);
-            else if (i <= nextToken) removed++;
-            lastToken = token;
+        Matcher patternMatcher = pattern.matcher(str);
+        int lastIndex = 0;
+        while (patternMatcher.find()) {
+            int matchStart = patternMatcher.start();
+            int matchEnd   = patternMatcher.end();
+
+            if (lastIndex < matchStart)
+                tokens.add(str.substring(lastIndex, matchStart));
+
+            tokens.add(
+                    str.substring(matchStart, matchEnd)
+            );
+
+            lastIndex = matchEnd;
         }
 
-        nextToken -= removed;
-        if (nextToken < 0) nextToken = 0;
+        if (lastIndex < str.length())
+            tokens.add(str.substring(lastIndex));
 
-        tokens = newTokens.toArray(new String[0]);
+        return tokens.toArray(new String[0]);
     }
 
-    public void removeEmpties() {
-        ArrayList<String> newTokens = new ArrayList<>();
-        int removed = 0;
-
-        for (int i = 0; i < tokens.length; i++) {
-            String token = tokens[i];
-            if (!token.equals("")) newTokens.add(token);
-            else if (i <= nextToken) removed++;
-        }
-
-        nextToken -= removed;
-        if (nextToken < 0) nextToken = 0;
-
-        tokens = newTokens.toArray(new String[0]);
+    private boolean isValidIndex(int index) {
+        return index >= 0 && index < TOKENS.length;
     }
 
     public boolean hasNext() {
-        return nextToken < tokens.length;
+        return isValidIndex(nextTokenIndex);
     }
 
     public @Nullable String getLast() {
-        return nextToken - 1 >= 0 ? tokens[nextToken - 1] : null;
+        int lastIndex = nextTokenIndex - 1;
+        return isValidIndex(lastIndex) ? TOKENS[lastIndex] : null;
     }
 
     public @Nullable String peekNext() {
-        return hasNext() ? tokens[nextToken] : null;
+        return hasNext() ? TOKENS[nextTokenIndex] : null;
     }
 
-    public @Nullable String peekNext(Token... ignoredTokens) {
+    public @Nullable String peekNext(Token... blacklist) {
+        return peekNext(false, blacklist);
+    }
+
+    public @Nullable String peekNext(boolean whitelist, Token... filter) {
         int offset = 0;
-        while (offset + nextToken < tokens.length) {
-            String token = tokens[offset++ + nextToken];
+        while (offset + nextTokenIndex < TOKENS.length) {
+            String token = TOKENS[offset++ + nextTokenIndex];
             if (token == null) return null;
 
             boolean isValid = true;
-            for (Token ignored : ignoredTokens) {
+            for (Token filtered : filter) {
                 if (!isValid) break;
-
-                isValid = !ignored.matches(token);
+                if (whitelist)
+                    isValid = filtered.matches(token);
+                else isValid = !filtered.matches(token);
             }
             if (isValid) return token;
         }
@@ -98,7 +100,7 @@ public final class Tokenizer {
 
     public @Nullable String consumeNext() {
         if (hasNext()) {
-            String nextToken = tokens[this.nextToken];
+            String nextToken = TOKENS[this.nextTokenIndex];
             consumedCharacters += nextToken.length();
 
             // This shouldn't impact performance too much
@@ -118,21 +120,26 @@ public final class Tokenizer {
                 consumedLineChars += nextToken.length();
             else consumedLineChars = nextToken.length() - lastNewline;
 
-            return tokens[this.nextToken++];
+            return TOKENS[this.nextTokenIndex++];
         }
         return null;
     }
 
-    public @Nullable String consumeNext(Token... ignoredTokens) {
+    public @Nullable String consumeNext(Token... blacklist) {
+        return consumeNext(false, blacklist);
+    }
+
+    public @Nullable String consumeNext(boolean whitelist, Token... filter) {
         while (hasNext()) {
             String token = consumeNext();
             if (token == null) return null;
 
             boolean isValid = true;
-            for (Token ignored : ignoredTokens) {
+            for (Token filtered : filter) {
                 if (!isValid) break;
-
-                isValid = !ignored.matches(token);
+                if (whitelist)
+                    isValid = filtered.matches(token);
+                else isValid = !filtered.matches(token);
             }
             if (isValid) return token;
         }
