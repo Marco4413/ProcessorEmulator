@@ -1,6 +1,7 @@
 package io.github.hds.pemu.tokenizer.keyvalue;
 
 import io.github.hds.pemu.tokenizer.Token;
+import io.github.hds.pemu.tokenizer.TokenGroup;
 import io.github.hds.pemu.tokenizer.Tokenizer;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +17,10 @@ public final class KeyValueParser {
     private static final Token ASSIGN      = new Token('=');
     private static final Token WHITESPACE  = new Token(' ', "\\s", false);
     private static final Token COMMENT     = new Token('#');
+
+    private static final TokenGroup ALL_TOKENS = new TokenGroup().addTokens(
+            STRING, CHARACTER, ESCAPE_CHAR, ASSIGN, WHITESPACE, COMMENT
+    );
 
     private static @Nullable String parseString(@NotNull Tokenizer tokenizer) {
         String terminator = tokenizer.peekNext(WHITESPACE);
@@ -81,8 +86,7 @@ public final class KeyValueParser {
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
 
-            Tokenizer tokenizer = new Tokenizer(line, true, STRING, CHARACTER, ESCAPE_CHAR, ASSIGN, WHITESPACE, COMMENT);
-            tokenizer.removeEmpties();
+            Tokenizer tokenizer = new Tokenizer(line, ALL_TOKENS);
 
             if (COMMENT.matches(tokenizer.peekNext(WHITESPACE))) continue;
 

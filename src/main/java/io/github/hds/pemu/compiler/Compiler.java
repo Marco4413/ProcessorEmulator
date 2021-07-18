@@ -39,24 +39,22 @@ public class Compiler {
         public static final Token CONSTANT  = new Token('@');
         public static final Token LABEL     = new Token(':');
         public static final Token COMPILER  = new Token('#');
-        public static final Token STRING    = new Token('"', "\"'", false);
+        public static final Token STRING    = new Token('"', "[\"']", false);
         public static final Token CHARACTER = new Token('\'');
         public static final Token ESCAPE_CH = new Token('\\', true);
-        public static final Token ARR_START = new Token('{');
-        public static final Token ARR_END   = new Token('}');
+        public static final Token ARR_START = new Token('{', true);
+        public static final Token ARR_END   = new Token('}', true);
         public static final Token ARR_SIZE_START = new Token('[', true);
         public static final Token ARR_SIZE_END   = new Token(']', true);
         public static final Token OFF_START = new Token('[', true);
         public static final Token OFF_END   = new Token(']', true);
-        public static final Token SPACE     = new Token(' ', "\\s", false);
-        public static final Token NEWLINE   = new Token('\n', "\\n\\r?", false);
+        public static final Token SPACE     = new Token(' ', "\\h+", false);
+        public static final Token NEWLINE   = new Token('\n', "\\v+", false);
         public static final Token STR_CODEPOINT_TERMINATOR = new Token(';');
 
-        // This matches all characters except for the new line one
-        // And shouldn't be added to the Tokenizer, it's just used to ignore Comments until new line
-        public static final Token NOT_NEWLINE = new Token('\0', "^[^\\n]", false);
-
-        // public static final Token NOT_COMMENT = new Token('\0', "^[^;]", false);
+        // This Token isn't part of the Tokenizer so that Vertical and Horizontal Spaces are separated
+        // This is useful when you want to ignore/accept all types of Spaces
+        public static final Token WHITESPACE = new Token(' ', "\\s+", false);
 
         // The class TokenGroup makes sure that no duplicate pattern is present,
         //  so it discards a Token if one that is equal is present, this should make Tokenizer a bit faster
@@ -164,8 +162,8 @@ public class Compiler {
         if (offsetStart == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
         if (Tokens.OFF_START.matches(offsetStart)) {
-            if (peekNext) cd.tokenizer.consumeNext(Tokens.SPACE);
-            String offsetToParse = cd.tokenizer.consumeNext(Tokens.SPACE);
+            if (peekNext) cd.tokenizer.consumeNext(Tokens.WHITESPACE);
+            String offsetToParse = cd.tokenizer.consumeNext(Tokens.WHITESPACE);
 
             ParseResult<Integer> lastResult = parseNumber(cd, false);
             if (lastResult.STATUS == PARSE_STATUS.FAIL) lastResult = parseConstant(cd, true, false);
@@ -173,7 +171,7 @@ public class Compiler {
 
             int offset = lastResult.VALUE;
 
-            String offsetEnd = cd.tokenizer.consumeNext(Tokens.SPACE);
+            String offsetEnd = cd.tokenizer.consumeNext(Tokens.WHITESPACE);
             if (Tokens.OFF_END.matches(offsetEnd)) {
                 if (addToProgram) {
                     cd.offsets.put(cd.program.size(), offset);
@@ -189,14 +187,14 @@ public class Compiler {
         if (labelName == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
         boolean isBeingDeclared = Tokens.LABEL.matches(
-                cd.tokenizer.peekNext(Tokens.SPACE)
+                cd.tokenizer.peekNext(Tokens.WHITESPACE)
         );
 
         if (isBeingDeclared) {
             if (!canDeclare) throw new TypeError("Label Declaration is not allowed here", cd.tokenizer);
 
             // If a label is being declared consume the declaration token
-            cd.tokenizer.consumeNext(Tokens.SPACE);
+            cd.tokenizer.consumeNext(Tokens.WHITESPACE);
             if (cd.labels.containsKey(labelName)) {
                 // If a label was already created check if it has a pointer
                 OffsetLabel label = cd.labels.get(labelName);
@@ -232,7 +230,7 @@ public class Compiler {
         if (constantPrefix == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
         if (Tokens.CONSTANT.matches(constantPrefix)) {
-            String constantName = cd.tokenizer.consumeNext(Tokens.SPACE);
+            String constantName = cd.tokenizer.consumeNext(Tokens.WHITESPACE);
             if (isGetting) {
                 if (constantName == null) throw new SyntaxError("Constant's name", "null", cd.tokenizer);
                 else if (cd.constants.containsKey(constantName)) {
@@ -241,7 +239,7 @@ public class Compiler {
                     return new ParseResult<>(addToProgram ? PARSE_STATUS.SUCCESS : PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, constantName, cd.constants.get(constantName));
                 } else throw new ReferenceError("Constant", constantName, cd.tokenizer);
             } else {
-                String constantValue = cd.tokenizer.consumeNext(Tokens.SPACE);
+                String constantValue = cd.tokenizer.consumeNext(Tokens.WHITESPACE);
                 if (constantName == null) throw new SyntaxError("Constant's name", "null", cd.tokenizer);
                 else if (constantValue == null) throw new SyntaxError("Number, Character or Constant", "null", cd.tokenizer);
 
@@ -428,35 +426,18 @@ public class Compiler {
     }
 
     private static ParseResult<Void> parseComment(@NotNull CompilerData cd, boolean peekNext) {
-        String commentToken = peekNext ? cd.tokenizer.peekNext(Tokens.SPACE) : cd.tokenizer.getLast();
+        String commentToken = peekNext ? cd.tokenizer.peekNext(Tokens.WHITESPACE) : cd.tokenizer.getLast();
         if (commentToken == null) return new ParseResult<>(PARSE_STATUS.FAIL);
 
         if (Tokens.COMMENT.matches(commentToken)) {
-            // TODO: Decide if Multi-Line comments are a good idea, since they "don't exist" in Assembly
-            //  The implementation is actually already done, so it's just a matter of removing comments
-
-            /*
-            if (peekNext) cd.tokenizer.consumeNext(Tokens.SPACE);
-            boolean isMultiLine = Tokens.COMMENT.matches(cd.tokenizer.peekNext());
-            if (isMultiLine) {
-                while (true) {
-                    String commentEnd = cd.tokenizer.consumeNext(Tokens.NOT_COMMENT);
-                    if (
-                            commentEnd == null ||
-                            ( Tokens.COMMENT.matches(commentEnd) && Tokens.COMMENT.matches(cd.tokenizer.consumeNext()) )
-                    ) break;
-                }
-            } else
-            */
-
-            cd.tokenizer.consumeNext(Tokens.NOT_NEWLINE);
+            cd.tokenizer.consumeNext(true, Tokens.NEWLINE);
             return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED);
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
     }
 
     private static ParseResult<Integer> parseValues(@NotNull CompilerData cd) {
         // Get the value to parse
-        String valueToParse = cd.tokenizer.consumeNext(Tokens.SPACE);
+        String valueToParse = cd.tokenizer.consumeNext(Tokens.WHITESPACE);
         // Throw if there's no value, because there MUST be one if this function is called
         if (valueToParse == null) throw new SyntaxError("Number, Char, Offset, Constant or Label", "null", cd.tokenizer);
 
@@ -491,12 +472,11 @@ public class Compiler {
         //  would be much longer to write and may clutter lines
         CompilerData cd = new CompilerData(
                 processor,
-                new Tokenizer(fileContents, true, Tokens.ALL_TOKENS)
+                new Tokenizer(fileContents, Tokens.ALL_TOKENS)
         );
-        cd.tokenizer.removeEmpties();
 
         while (cd.tokenizer.hasNext()) {
-            String tokenToParse = cd.tokenizer.consumeNext(Tokens.SPACE);
+            String tokenToParse = cd.tokenizer.consumeNext(Tokens.WHITESPACE);
             if (tokenToParse == null) break;
 
             int instructionCode = instructionSet.getKeyCode(tokenToParse);
@@ -510,26 +490,26 @@ public class Compiler {
                     if (parseValues(cd).STATUS == PARSE_STATUS.SUCCESS) i++;
             } else if (Tokens.COMPILER.matches(tokenToParse)) {
                 // Parsing Compiler Instructions
-                String compilerInstr = cd.tokenizer.consumeNext(Tokens.SPACE);
-                if (compilerInstr == null)
+                String compilerInstruction = cd.tokenizer.consumeNext();
+                if (compilerInstruction == null)
                     throw new SyntaxError("Compiler Instruction", "null", cd.tokenizer);
-                else if (compilerInstr.equals(CI_DEFINE_WORD)) {
+                else if (compilerInstruction.equals(CI_DEFINE_WORD)) {
                     parseValues(cd);
-                } else if (compilerInstr.equals(CI_DEFINE_STRING)) {
-                    cd.tokenizer.consumeNext(Tokens.SPACE);
+                } else if (compilerInstruction.equals(CI_DEFINE_STRING)) {
+                    cd.tokenizer.consumeNext(Tokens.WHITESPACE);
                     if (parseString(cd, true).STATUS == PARSE_STATUS.FAIL)
                         throw new SyntaxError("String", cd.tokenizer.getLast(), cd.tokenizer);
-                } else if (compilerInstr.equals(CI_DEFINE_ARRAY)) {
+                } else if (compilerInstruction.equals(CI_DEFINE_ARRAY)) {
                     // Be sure that there's the character that starts the array
-                    String arrayStart = cd.tokenizer.consumeNext(Tokens.SPACE);
+                    String arrayStart = cd.tokenizer.consumeNext(Tokens.WHITESPACE);
                     if (Tokens.ARR_START.matches(arrayStart)) {
                         while (true) {
                             // For each value in the array, check if the next value is the array closer character
-                            String nextValue = cd.tokenizer.peekNext(Tokens.SPACE);
+                            String nextValue = cd.tokenizer.peekNext(Tokens.WHITESPACE);
                             if (nextValue == null) {
                                 throw new SyntaxError("Array terminator ('" + Tokens.ARR_END.getCharacter() + "')", cd.tokenizer.getLast(), cd.tokenizer);
                             } else if (Tokens.ARR_END.matches(nextValue)) {
-                                cd.tokenizer.consumeNext(Tokens.SPACE);
+                                cd.tokenizer.consumeNext(Tokens.WHITESPACE);
                                 break;
                             }
 
@@ -537,7 +517,7 @@ public class Compiler {
                             if (parseComment(cd, true).STATUS == PARSE_STATUS.FAIL) parseValues(cd);
                         }
                     } else if (Tokens.ARR_SIZE_START.matches(arrayStart)) {
-                        cd.tokenizer.consumeNext(Tokens.SPACE);
+                        cd.tokenizer.consumeNext(Tokens.WHITESPACE);
                         ParseResult<Integer> result = parseNumber(cd, false);
                         if (result.STATUS == PARSE_STATUS.FAIL) result = parseConstant(cd, true, false);
                         if (result.STATUS == PARSE_STATUS.FAIL)
@@ -546,14 +526,14 @@ public class Compiler {
                         if (result.VALUE < 0)
                             throw new SyntaxError("Valid Array Size (>= 0)", result.VALUE.toString(), cd.tokenizer);
 
-                        String arraySizeTerminator = cd.tokenizer.peekNext(Tokens.SPACE);
+                        String arraySizeTerminator = cd.tokenizer.peekNext(Tokens.WHITESPACE);
                         if (Tokens.ARR_SIZE_END.matches(arraySizeTerminator))
-                            cd.tokenizer.consumeNext(Tokens.SPACE);
+                            cd.tokenizer.consumeNext(Tokens.WHITESPACE);
                         else throw new SyntaxError("Array Size terminator ('" + Tokens.ARR_SIZE_END.getCharacter() + "')", arraySizeTerminator == null ? cd.tokenizer.getLast() : arraySizeTerminator, cd.tokenizer);
 
                         for (int i = 0; i < result.VALUE; i++) cd.program.add(0);
                     } else throw new SyntaxError("Array or Array Size", arrayStart, cd.tokenizer);
-                } else throw new SyntaxError("Compiler Instruction", compilerInstr, cd.tokenizer);
+                } else throw new SyntaxError("Compiler Instruction", compilerInstruction, cd.tokenizer);
             } else {
                 // Parsing Comments, Labels and Constants
                 if (parseComment(cd, false).STATUS == PARSE_STATUS.FAIL && parseConstant(cd, false, true).STATUS == PARSE_STATUS.FAIL && parseLabel(cd, true, false).STATUS == PARSE_STATUS.FAIL)
@@ -579,27 +559,32 @@ public class Compiler {
         return new CompiledProgram(processor, cd.labels, cd.registers, cd.offsets, primitiveIntProgram, System.nanoTime() - compilationStartTimestamp);
     }
 
+    private static final char[] RANDOM_STRING_CHARACTERS;
+    static {
+        // Not allowing uppercase characters because Strings may be
+        //  the same as Instruction names which should always be uppercase
+        RANDOM_STRING_CHARACTERS = new char['z' - 'a' + 1];
+        for (int i = 0; i < RANDOM_STRING_CHARACTERS.length; i++) {
+            RANDOM_STRING_CHARACTERS[i] = (char) ('a' + i);
+        }
+    }
+
     /**
      * Function that generates a pseudo-random String using the specified seed
      * @param seed The seed to generate the String from
      * @return A pseudo-randomly generated String based on the specified seed
      */
     private static @NotNull String generateRandomString(int seed) {
-        // Not allowing uppercase characters because Strings may be
-        //  the same as Instruction names which should always be uppercase
-        final char[] VALID_CHARS = new char[] {
-                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-                'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
-        };
-
+        // The fun thing about this whole function...
+        // Is that it's basically a Decimal to whatever base converter
+        //  but the output String is reversed
         StringBuilder str = new StringBuilder();
-        int num = seed;
 
         do {
-            int remainder = num % VALID_CHARS.length;
-            str.append(VALID_CHARS[remainder]);
-            num /= VALID_CHARS.length;
-        } while (num != 0);
+            int remainder = seed % RANDOM_STRING_CHARACTERS.length;
+            str.append(RANDOM_STRING_CHARACTERS[remainder]);
+            seed /= RANDOM_STRING_CHARACTERS.length;
+        } while (seed != 0);
 
         return str.toString();
     }
@@ -651,9 +636,9 @@ public class Compiler {
         StringBuilder obfProgram = new StringBuilder();
         obfProgram.append(Tokens.COMPILER.getCharacter())
                   .append(CI_DEFINE_ARRAY)
-                  .append(Tokens.SPACE.getCharacter())
+                  .append(Tokens.WHITESPACE.getCharacter())
                   .append(Tokens.ARR_START.getCharacter())
-                  .append(Tokens.SPACE.getCharacter());
+                  .append(Tokens.WHITESPACE.getCharacter());
 
         // Holds all registers used in the program
         RegisterData programRegisters = compiledProgram.getRegisters();
@@ -672,7 +657,7 @@ public class Compiler {
                     // Add the label declaration to the program
                     obfProgram.append(labelName)
                               .append(Tokens.LABEL.getCharacter())
-                              .append(Tokens.SPACE.getCharacter());
+                              .append(Tokens.WHITESPACE.getCharacter());
                 }
             }
 
@@ -694,8 +679,8 @@ public class Compiler {
             }
 
             // Add a space character if there's none at the end
-            if (obfProgram.charAt(obfProgram.length() - 1) != Tokens.SPACE.getCharacter())
-                obfProgram.append(Tokens.SPACE.getCharacter());
+            if (obfProgram.charAt(obfProgram.length() - 1) != Tokens.WHITESPACE.getCharacter())
+                obfProgram.append(Tokens.WHITESPACE.getCharacter());
         }
 
         obfProgram.append(Tokens.ARR_END.getCharacter());
