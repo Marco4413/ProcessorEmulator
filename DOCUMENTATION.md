@@ -225,15 +225,18 @@ lock the emulator if the program has an uncapped loop that writes to the console
 Constants can be declared as follows:
 
 ```Assembly
-@constVariable 10
+@const_variable 10
 ```
 
 Constants are values, they don't point to anything in memory, so they are rarely used as arguments for instructions (see [DATA](#data)).
-Though they are useful in one case, since they don't change the memory where they are declared, you can use them to put
-config options at the top of your program and add them later to memory:
+
+Though they are still useful if used to specify User Settings at the top of the source file or within Libraries as
+"Library Settings".
 
 ```Assembly
-; Since this doesn't change memory it doesn't execute any instruction
+; Since this doesn't change memory it can be put at the top of
+;  the program's source (And no random instruction will be executed)
+;  to let the user find it and change it more easily
 @time_till_stop 10
 
 JMP start
@@ -245,6 +248,17 @@ HLT
 key: #DW @time_till_stop
 ```
 
+```Assembly
+HLT
+
+; The library file to be able to compile must still specify
+;  the constant before using it
+#INCLUDE "mylib.pemulib"
+
+; But it can be changed/used by others
+@MY_LIB_SETTING @VK_ENTER
+```
+
 Values that can be assigned to constants are: Previously Declared Constants, Characters or Numbers
 
 ```Assembly
@@ -253,11 +267,11 @@ Values that can be assigned to constants are: Previously Declared Constants, Cha
 @n_delay 500
 ```
 
-Constants are parsed as they come up, so if you redeclare one, values where said constant is used depend on its
-last declared value.
+A Constant's value is the last one that was assigned to it.
+
 There are some constants that are already declared, such as virtual keys (or VK), the emulator uses reflection to get
-all VKs from the [KeyEvent](https://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html) class that then get
-used as a base template for constants. So if you want to declare a variable that stores the value of a virtual key, you
+all VKs from the [KeyEvent](https://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html) class that then are
+used as a base template for constants. So if you want to declare a variable that stores the value of a virtual key you
 can go to the above linked class's docs and search if there's the field (starting with `VK_`) that you want to use:
 
 ```Assembly
@@ -362,6 +376,14 @@ array: #DA {
 ; If you just want to reserve Memory for an Array you can do
 prealloc_array: #DA [10]
 ; Where 10 is the size of the Array
+
+; By convention all library files have the extension ".pemulib"
+; The path is relative to the file that's including the library
+#INCLUDE "stdlib/print.pemulib"
+; Note that INCLUDE instructions should only be added after the main function call/jump
+;  because they add the library where the instruction was specified so random instructions
+;  may be executed otherwise, that's why an HLT instruction should be added at the top of your library code
+; Also if the same file is INCLUDED twice, then the second INCLUDE will be ignored
 ```
 
 ## Registers and Flags

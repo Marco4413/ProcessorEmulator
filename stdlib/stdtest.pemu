@@ -1,0 +1,37 @@
+
+; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
+; DESCRIPTION:
+;  A PEMU program that makes sure that all standard
+;  libraries compile and work as intended.
+; LICENSE: MIT
+; CREATED:      19-07-2021
+; LAST UPDATED: 19-07-2021
+
+; PROCESSOR REQUIREMENTS:
+; MIN BITS  : 16
+; MIN MEMORY: 256
+; MIN CLOCK : 10k
+
+CALL f_main
+
+#INCLUDE "all.pemulib"
+string: #DW [1] #DS "\nSample String" #DW @STDLIB_NULL
+waiting: #DW [1] #DS "Waiting 2 seconds..." #DW @STDLIB_NULL
+wait_time: #DW 2000
+input_label: #DW [1] #DS "Sample Input: " #DW @STDLIB_NULL
+input_number: #DW 0
+
+f_main:
+    PUSH waiting
+    CALL f_print
+
+    PUSH wait_time
+    CALL f_sleep
+
+    PUSH input_label
+    CALL f_get_number
+    POP input_number
+
+    PUSH string
+    CALL f_print
+    RET

@@ -1,0 +1,100 @@
+
+; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
+; DESCRIPTION: A PEMU Library that adds the f_get_number function.
+; LICENSE: MIT
+; CREATED:      19-07-2021
+; LAST UPDATED: 19-07-2021
+
+#INCLUDE "../base.pemulib"
+#INCLUDE "../sleep.pemulib"
+#INCLUDE "keys.pemulib"
+#INCLUDE "print.pemulib"
+
+; A constant holding the number 10
+@STDLIB_TEN 10
+
+#DA {
+    ; The number 10
+    stdlib_ten: @STDLIB_TEN
+    ; The first and last valid digits on the ASCII table
+    stdlib_first_digit: '0'
+    stdlib_last_digit:  '9'
+}
+
+; Function that gets a number from the user
+#DA {
+    _get_number_label:  0
+    _get_number_result: 0
+    _get_number_key:    0
+    _get_number_char:   0
+    _get_number_int:    0
+}
+f_get_number:
+    POP stdlib_temp
+    POP _get_number_label
+    PUSH stdlib_temp
+
+    ; Setting the result to 0
+    DATA _get_number_result @STDLIB_ZERO
+
+    ; Displaying the current number
+    JMP _get_number_loop_display
+    ; Loop to get other digits
+    _get_number_loop:
+        ; Sleep for a bit to add delay between key presses
+        PUSH stdlib_delay_between_key_presses
+        CALL f_sleep
+
+        ; Getting everything first so that
+        ;  they can't change while checking
+        GETK _get_number_key
+        GETC _get_number_char
+        GETI _get_number_int
+
+        ; If the key is undefined then no key is pressed
+        CMP _get_number_key stdlib_vk_undefined
+        JE _get_number_loop
+
+        ; If the number was confirmed then go to the end
+        CMP _get_number_key stdlib_key_confirm
+        JE _get_number_end
+
+        ; If we're not deleting a digit then check if it's a valid one
+        CMP _get_number_key stdlib_key_delete
+        JNE _get_number_loop_valid_digit
+
+        ; Otherwise remove one and display the number
+        DIV _get_number_result stdlib_ten
+        JMP _get_number_loop_display
+
+    _get_number_loop_valid_digit:
+        ; Check if the char is a valid digit
+        CMP _get_number_char stdlib_first_digit
+        JB _get_number_loop
+
+        CMP _get_number_char stdlib_last_digit
+        JA _get_number_loop
+
+    _get_number_loop_add_digit:
+        ; If it's actually a valid digit then add it
+        MUL _get_number_result stdlib_ten
+        ADD _get_number_result _get_number_int
+
+    _get_number_loop_display:
+        ; Clear the Console and print the current number
+        OUTC stdlib_null
+        ; If an input label was specified then print it
+        CMP _get_number_label stdlib_null
+        JE _get_number_loop_display_number
+        PUSH _get_number_label
+        CALL f_print
+    _get_number_loop_display_number:
+        OUTI _get_number_result
+    JMP _get_number_loop
+
+_get_number_end:
+    ; Adding the return value on the stack
+    POP stdlib_temp
+    PUSH _get_number_result
+    PUSH stdlib_temp
+    RET

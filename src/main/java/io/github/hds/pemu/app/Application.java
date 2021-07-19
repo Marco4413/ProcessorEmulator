@@ -30,7 +30,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public static final int PREVENT_VISIBILITY_CHANGE = 2;
 
     public static final String APP_TITLE = "PEMU";
-    public static final String APP_VERSION = "1.9.0";
+    public static final String APP_VERSION = "1.10.0";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;

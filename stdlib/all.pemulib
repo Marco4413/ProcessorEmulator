@@ -1,0 +1,12 @@
+
+; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
+; DESCRIPTION: A PEMU Library that includes all standard libraries.
+; LICENSE: MIT
+; CREATED:      19-07-2021
+; LAST UPDATED: 19-07-2021
+
+#INCLUDE "base.pemulib"
+#INCLUDE "sleep.pemulib"
+#INCLUDE "io/get_number.pemulib"
+#INCLUDE "io/keys.pemulib"
+#INCLUDE "io/print.pemulib"

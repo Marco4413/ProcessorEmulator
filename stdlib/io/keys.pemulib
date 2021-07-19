@@ -1,0 +1,27 @@
+
+; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
+; DESCRIPTION:
+;  A PEMU Library that adds common key labels
+;  for the standard libraries to use.
+; LICENSE: MIT
+; CREATED:      19-07-2021
+; LAST UPDATED: 19-07-2021
+
+#INCLUDE "../base.pemulib"
+
+; These can be changed by programs which include this library
+;  to better customize the overall experience with other
+;   functions that use keys
+@STDLIB_KEY_CONFIRM @VK_ENTER
+@STDLIB_KEY_DELETE  @VK_BACK_SPACE
+@STDLIB_DELAY_BETWEEN_KEY_PRESSES 150 ; These are milliseconds
+
+#DA {
+    ; The value of an undefined key press
+    stdlib_vk_undefined: @VK_UNDEFINED
+    ; Standard keys to delete and confirm
+    stdlib_key_confirm: @STDLIB_KEY_CONFIRM
+    stdlib_key_delete:  @STDLIB_KEY_DELETE
+    ; The time that should be waited between key presses
+    stdlib_delay_between_key_presses: @STDLIB_DELAY_BETWEEN_KEY_PRESSES
+}

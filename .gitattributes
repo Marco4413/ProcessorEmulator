@@ -1,2 +1,4 @@
-# PEMU Language Files
+# PEMU Program Files
 *.pemu text eol=lf linguist-language=Assembly
+# PEMU Library Files
+*.pemulib text eol=lf linguist-language=Assembly

@@ -72,7 +72,7 @@ def printUsage():
 
 REQUIRED_ARGUMENTS = 3
 VERSION = "v1.1.0"
-SUPPORTED_PEMU_VERSION = "v1.9.1+"
+SUPPORTED_PEMU_VERSION = "v1.10.0+"
 
 def main():
     print("Welcome to PEMU's Language Utility™ {}".format(VERSION))
