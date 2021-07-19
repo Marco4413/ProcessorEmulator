@@ -1,5 +1,9 @@
 
 -- Version (v1.10.0-RELEASE)
+-- Changes from commit @cb43857
+
+Added PEMU Lib files to Open File Dialog
+
 -- Changes from commit @bd31675
 
 Added INCLUDE Compiler Instruction

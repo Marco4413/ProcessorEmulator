@@ -67,6 +67,7 @@
 
 "gFileDialog.textFileDesc"        = "Text files"
 "gFileDialog.PEMUFileDesc"        = "PEMU programs"
+"gFileDialog.PEMULibFileDesc"     = "PEMU libraries"
 "gFileDialog.openDialogTitle"     = "Open"
 "gFileDialog.saveDialogTitle"     = "Save As"
 "gFileDialog.overwritePanelTitle" = "Confirm {0}"
