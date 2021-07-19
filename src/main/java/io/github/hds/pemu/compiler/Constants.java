@@ -20,8 +20,12 @@ public final class Constants {
         }
     }
 
-    public static @NotNull HashMap<String, Integer> getDefaultConstants() {
-        return new HashMap<>(CONSTANTS);
+    public static @NotNull HashMap<String, Constant> getDefaultConstants() {
+        HashMap<String, Constant> defaultConstants = new HashMap<>();
+        CONSTANTS.forEach(
+                (name, value) -> defaultConstants.put(name, new Constant(name, value))
+        );
+        return defaultConstants;
     }
 
 }

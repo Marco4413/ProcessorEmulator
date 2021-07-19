@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * is pretty sketchy, though I've never done something
  * like this so it was to be expected
  */
-public class Compiler {
+public final class Compiler {
 
     protected static final String CI_DEFINE_WORD   = "DW";
     protected static final String CI_DEFINE_STRING = "DS";
@@ -72,7 +72,7 @@ public class Compiler {
         public final @NotNull IProcessor processor;
         public final @NotNull ArrayList<Integer> program;
         public final @NotNull LabelData<OffsetLabel> labels;
-        public final @NotNull HashMap<String, Integer> constants;
+        public final @NotNull HashMap<String, Constant> constants;
         public final @NotNull RegisterData registers;
         public final @NotNull OffsetsData offsets;
 
@@ -122,10 +122,10 @@ public class Compiler {
     }
 
     public static class ReferenceError extends CompilerError {
-        protected ReferenceError(@Nullable File file, @NotNull String type, @NotNull String name, @Nullable Tokenizer tokenizer) {
+        protected ReferenceError(@Nullable File file, @NotNull String type, @NotNull String name, @NotNull String description, @Nullable Tokenizer tokenizer) {
             super(
                     file, "Reference",
-                    String.format("%s '%s' was not declared", type, name),
+                    String.format("%s '%s' %s", type, name, description),
                     tokenizer
             );
         }
@@ -244,25 +244,48 @@ public class Compiler {
 
         if (Tokens.CONSTANT.matches(constantPrefix)) {
             String constantName = tokenizer.consumeNext(Tokens.WHITESPACE);
+            if (constantName == null) throw new SyntaxError(file, "Constant's name", "null", tokenizer);
             if (isGetting) {
-                if (constantName == null) throw new SyntaxError(file, "Constant's name", "null", tokenizer);
-                else if (cd.constants.containsKey(constantName)) {
-                    // If the constant was defined save its value
-                    if (addToProgram) cd.program.add(cd.constants.get(constantName));
-                    return new ParseResult<>(addToProgram ? PARSE_STATUS.SUCCESS : PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, constantName, cd.constants.get(constantName));
-                } else throw new ReferenceError(file, "Constant", constantName, tokenizer);
+                if (cd.constants.containsKey(constantName)) {
+                    Constant constant = cd.constants.get(constantName);
+
+                    if (addToProgram) {
+                        constant.addInstance(cd.program.size());
+                        cd.program.add(0);
+                        return new ParseResult<>(PARSE_STATUS.SUCCESS, constantName, 0);
+                    }
+
+                    return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, constantName, 0);
+                } else throw new ReferenceError(file, "Constant", constantName, "was not declared", tokenizer);
             } else {
                 String constantValue = tokenizer.consumeNext(Tokens.WHITESPACE);
-                if (constantName == null) throw new SyntaxError(file, "Constant's name", "null", tokenizer);
-                else if (constantValue == null) throw new SyntaxError(file, "Number, Character or Constant", "null", tokenizer);
+                if (constantValue == null) throw new SyntaxError(file, "Number, Character or Constant", "null", tokenizer);
 
+                boolean isReference = false;
                 ParseResult<Integer> result = parseNumber(tokenizer, file, cd, false);
+
                 if (result.STATUS == PARSE_STATUS.FAIL) result = parseCharacter(tokenizer, file, cd, false);
-                if (result.STATUS == PARSE_STATUS.FAIL) result = parseConstant(tokenizer, file, cd, true, false);
+
+                if (result.STATUS == PARSE_STATUS.FAIL) {
+                    result = parseConstant(tokenizer, file, cd, true, false);
+                    isReference = true;
+                }
+
                 if (result.STATUS == PARSE_STATUS.FAIL)
                     throw new SyntaxError(file, "Number, Character or Constant", constantValue, tokenizer);
 
-                cd.constants.put(constantName, result.VALUE);
+                Constant constant;
+                if (cd.constants.containsKey(constantName))
+                    constant = cd.constants.get(constantName);
+                else {
+                    constant = new Constant(constantName, result.VALUE);
+                    cd.constants.put(constantName, constant);
+                }
+
+                if (isReference)
+                    constant.setReference(cd.constants.get(result.NAME));
+                else constant.setValue(result.VALUE);
+
                 return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, constantName, result.VALUE);
             }
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
@@ -479,11 +502,29 @@ public class Compiler {
         CompilerData cd = new CompilerData(processor);
         internalCompileFile(file, new HashSet<>(), cd);
 
-        // Processing Offsets and Labels
+        // Processing Constants, Offsets and Labels
+        cd.constants.forEach((name, constant) -> {
+            ArrayList<String> constantReferences = null;
+            try {
+                constantReferences = new ArrayList<>();
+                for (Integer instance : constant.getInstances())
+                    cd.program.set(instance, constant.getValue(constantReferences));
+            } catch (Exception err) {
+                assert constantReferences != null;
+                assert constantReferences.size() > 0;
+
+                String constantCharacter = String.valueOf(Tokens.CONSTANT.getCharacter());
+                String referencePath = constantCharacter + String.join(Tokens.WHITESPACE.getCharacter() + constantCharacter, constantReferences);
+                throw new ReferenceError(
+                        null, "Constant", referencePath, "is Circular Reference", null
+                );
+            }
+        });
+
         cd.offsets.forEach((index, offset) -> cd.program.set(index, index + offset + cd.processor.getProgramAddress()));
 
         cd.labels.forEach((name, label) -> {
-            if (label.getPointer() == OffsetLabel.NULL_PTR) throw new ReferenceError(null, "Label", name, null);
+            if (label.getPointer() == OffsetLabel.NULL_PTR) throw new ReferenceError(null, "Label", name, "was not declared", null);
             Integer[] instances = label.getInstances();
             for (Integer instance : instances)
                 cd.program.set(instance, label.getPointerForInstance(instance) + cd.processor.getProgramAddress());

@@ -1,0 +1,26 @@
+
+; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
+; DESCRIPTION: A PEMU Library that adds the f_print function.
+; LICENSE: MIT
+; CREATED:      19-07-2021
+; LAST UPDATED: 19-07-2021
+
+#INCLUDE "../base.pemulib"
+
+; Function that prints the specified string
+f_print:
+    POP stdlib_temp
+    POP _print_str_ptr
+    PUSH stdlib_temp
+
+    _print_loop:
+        CMP _print_str_ptr: 0 stdlib_null
+        JE _print_end
+
+        MOV _print_char _print_str_ptr
+        OUTC _print_char: 0
+        INC _print_str_ptr
+    JMP _print_loop
+
+_print_end:
+    RET

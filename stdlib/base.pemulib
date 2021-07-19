@@ -1,0 +1,25 @@
+
+; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
+; DESCRIPTION:
+;  A PEMU Library that adds common generic labels
+;  for the standard libraries to use.
+; LICENSE: MIT
+; CREATED:      19-07-2021
+; LAST UPDATED: 19-07-2021
+
+
+; Since this is the base file and should always be included first
+;  it's got an HLT instruction to prevent from executing library code
+HLT
+
+; The NULL and ZERO values
+@STDLIB_NULL 0
+@STDLIB_ZERO @STDLIB_NULL
+
+#DA {
+    ; The standard library's temp variable
+    ; It can be used by all programs including this file to store temporary data
+    ; It's value is not guaranteed to be the same between CALLs
+    stdlib_temp: 0
+    stdlib_zero: stdlib_null: @STDLIB_NULL
+}

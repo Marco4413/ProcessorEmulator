@@ -1,5 +1,15 @@
 
 -- Version (v1.10.0-RELEASE)
+-- Changes from commit @43059b2
+
+Added Standard PEMU Library
+
+Changed the way Constants are handled by the Compiler, now they're value is the last one that was set to them
+Added Constant Circular Reference Error
+
+Added class Constant
+Changed the return type of Constants.getDefaultConstants
+
 -- Changes from commit @cb43857
 
 Added PEMU Lib files to Open File Dialog
