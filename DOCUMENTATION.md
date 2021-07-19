@@ -323,11 +323,13 @@ These instructions are useful to put values into memory where there's no process
 #DW 10
 ```
 
-They are 3 and always have an `#` in front of them:
+They are 4 and always have an `#` in front of them:
  - \#DW (Define Word): Can be followed by a [constant](#constants), a [label](#labels), a character (`'\''`) or a numeric value.
  - \#DS (Define String): Can only be followed by a string (`"\"This is a string\""` or `'"This is a string"'`).
  - \#DA (Define Array): Can be followed by either an array (`{ 3 2 newline: '\n' @VK_ENTER }`) where said array can contain
    constants, labels, characters, offsets or numbers, or an array size (`[10]`).
+ - \#INCLUDE: Can only be followed by a String and said String must point to a File using a Path relative to the File
+   where the instruction is found.
 
 ```Assembly
 ; This declares a label called "number" that points to

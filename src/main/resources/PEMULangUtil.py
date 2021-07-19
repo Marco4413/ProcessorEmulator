@@ -43,23 +43,24 @@ from dataclasses import dataclass
 
 @dataclass
 class PEMUCompileError:
+    fileName: str
     errorName: str
     errorDescription: str
     line: str
     character: str
 
     def __str__(self) -> str:
-        return "PEMU Compilation Error ->\nName: \t{}\nDesc: \t{}\nLine: \t{}\nChar: \t{}\n".format(
-            self.errorName, self.errorDescription, self.line, self.character
+        return "PEMU Compilation Error ->\nFile: \t{}\nName: \t{}\nDesc: \t{}\nLine: \t{}\nChar: \t{}\n".format(
+            self.fileName, self.errorName, self.errorDescription, self.line, self.character
         )
 
 def parseError(err: str) -> PEMUCompileError:
     errorLines = err.split("\n")
     for line in errorLines:
-        match = re.match(r"(.+ Error) \((.+):(.+)\): (.+)", line, re.DOTALL)
+        match = re.match(r"'(.+)': (.+ Error) \((.+):(.+)\): (.+)", line, re.DOTALL)
         if match:
             return PEMUCompileError(
-                *match.group(1, 4, 2, 3)
+                *match.group(1, 2, 5, 3, 4)
             )
     return None
 
@@ -70,8 +71,8 @@ def printUsage():
     print(getUsage())
 
 REQUIRED_ARGUMENTS = 3
-VERSION = "v1.0.1"
-SUPPORTED_PEMU_VERSION = "v1.8.5+"
+VERSION = "v1.1.0"
+SUPPORTED_PEMU_VERSION = "v1.9.1+"
 
 def main():
     print("Welcome to PEMU's Language Utility™ {}".format(VERSION))
