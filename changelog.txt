@@ -1,4 +1,9 @@
 
+-- Version (v1.11.0-RELEASE)
+-- Changes from commit @e443882
+
+Fixed Characters and Strings accepting actual new line characters, multi-line strings is no more
+
 -- Version (v1.10.0-RELEASE)
 -- Changes from commit @43059b2
 
