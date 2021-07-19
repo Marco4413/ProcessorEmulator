@@ -343,6 +343,8 @@ public final class Compiler {
                 String currentToken = tokenizer.consumeNext();
                 if (currentToken == null)
                     throw new SyntaxError(file, "String terminator ('" + stringTerminator + "')", String.valueOf(stringBuilder.charAt(stringBuilder.length() - 1)), tokenizer);
+                else if (Tokens.NEWLINE.matches(currentToken))
+                    throw new SyntaxError(file, "String character", "New Line", tokenizer);
                 else if (isEscapingCharacter) {
                     char escapedCharacter = currentToken.charAt(0);
                     // If the character that is being escaped is a digit
@@ -413,7 +415,9 @@ public final class Compiler {
             char character;
 
             String nextToken = tokenizer.consumeNext();
-            if (nextToken == null || charTerminator.equals(nextToken) || nextToken.length() > 1)
+            if (Tokens.NEWLINE.matches(nextToken))
+                throw new SyntaxError(file, "Character", "New Line", tokenizer);
+            else if (nextToken == null || charTerminator.equals(nextToken) || nextToken.length() > 1)
                 throw new SyntaxError(file, "Character", nextToken, tokenizer);
             else if (Tokens.ESCAPE_CH.matches(nextToken)) {
                 String escapedValue = tokenizer.consumeNext();
