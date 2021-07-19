@@ -20,6 +20,7 @@ public final class GFileDialog extends JFileChooser implements ITranslatable {
 
     private static @NotNull String localeTextFileDesc = "";
     private static @NotNull String localePEMUFileDesc = "";
+    private static @NotNull String localePEMULibFileDesc = "";
 
     private @NotNull String localeOpenDialogTitle = "";
     private @NotNull String localeSaveDialogTitle = "";
@@ -52,10 +53,15 @@ public final class GFileDialog extends JFileChooser implements ITranslatable {
         return new FileNameExtensionFilter(localePEMUFileDesc, "pemu");
     }
 
+    public static @NotNull FileNameExtensionFilter getPEMULibFileFilter() {
+        return new FileNameExtensionFilter(localePEMULibFileDesc, "pemulib");
+    }
+
     @Override
     public void updateTranslations(@NotNull Translation translation) {
-        localeTextFileDesc = translation.getOrDefault("gFileDialog.textFileDesc");
-        localePEMUFileDesc = translation.getOrDefault("gFileDialog.PEMUFileDesc");
+        localeTextFileDesc    = translation.getOrDefault("gFileDialog.textFileDesc"   );
+        localePEMUFileDesc    = translation.getOrDefault("gFileDialog.PEMUFileDesc"   );
+        localePEMULibFileDesc = translation.getOrDefault("gFileDialog.PEMULibFileDesc");
 
         localeOpenDialogTitle = translation.getOrDefault("gFileDialog.openDialogTitle");
         localeSaveDialogTitle = translation.getOrDefault("gFileDialog.saveDialogTitle");
@@ -66,9 +72,11 @@ public final class GFileDialog extends JFileChooser implements ITranslatable {
         localeCantWritePanelMsg = translation.getOrDefault("gFileDialog.cantWritePanelMsg");
     }
 
-    public int showOpenDialog(Component parent, FileNameExtensionFilter filter) throws HeadlessException {
+    public int showOpenDialog(Component parent, FileNameExtensionFilter filter, FileNameExtensionFilter... choosableFilters) throws HeadlessException {
         resetChoosableFileFilters();
         setFileFilter(filter);
+        for (FileNameExtensionFilter choosableFilter : choosableFilters)
+            addChoosableFileFilter(choosableFilter);
         return showOpenDialog(parent);
     }
 
@@ -78,10 +86,11 @@ public final class GFileDialog extends JFileChooser implements ITranslatable {
         return super.showOpenDialog(parent);
     }
 
-    public int showSaveDialog(Component parent, FileNameExtensionFilter filter) throws HeadlessException {
+    public int showSaveDialog(Component parent, FileNameExtensionFilter filter, FileNameExtensionFilter... choosableFilters) throws HeadlessException {
         resetChoosableFileFilters();
         setFileFilter(filter);
-
+        for (FileNameExtensionFilter choosableFilter : choosableFilters)
+            addChoosableFileFilter(choosableFilter);
         return showSaveDialog(parent);
     }
 
