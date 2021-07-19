@@ -1,5 +1,11 @@
 
 -- Version (v1.10.0-RELEASE)
+-- Changes from commit @bd31675
+
+Added INCLUDE Compiler Instruction
+ - Because of that, half of the Compiler's code was reworked
+Changed Compiler's Error Syntax to include the file that generated the Error
+
 -- Changes from commit @e980b99
 
 Reworked Tokenizer and Token classes (again)
