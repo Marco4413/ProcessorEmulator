@@ -267,7 +267,10 @@ Values that can be assigned to constants are: Previously Declared Constants, Cha
 @n_delay 500
 ```
 
-A Constant's value is the last one that was assigned to it.
+A Constant's value is the very last one that was assigned to it.
+
+Though if used as an array's length or offset their value will be the one that was assigned before said array/offset
+creation.
 
 There are some constants that are already declared, such as virtual keys (or VK), the emulator uses reflection to get
 all VKs from the [KeyEvent](https://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html) class that then are
