@@ -255,7 +255,7 @@ public final class Compiler {
                         return new ParseResult<>(PARSE_STATUS.SUCCESS, constantName, 0);
                     }
 
-                    return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, constantName, 0);
+                    return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, constantName, getConstantValue(constant, tokenizer, file));
                 } else throw new ReferenceError(file, "Constant", constantName, "was not declared", tokenizer);
             } else {
                 String constantValue = tokenizer.consumeNext(Tokens.WHITESPACE);
@@ -493,6 +493,23 @@ public final class Compiler {
         return lastResult;
     }
 
+    public static int getConstantValue(@NotNull Constant constant, @Nullable Tokenizer tokenizer, @Nullable File file) {
+        ArrayList<String> constantReferences = new ArrayList<>();
+        int value;
+        try {
+            value = constant.getValue(constantReferences);
+        } catch (Exception err) {
+            assert constantReferences.size() > 0;
+
+            String constantCharacter = String.valueOf(Tokens.CONSTANT.getCharacter());
+            String referencePath = constantCharacter + String.join(Tokens.WHITESPACE.getCharacter() + constantCharacter, constantReferences);
+            throw new ReferenceError(
+                    file, "Constant", referencePath, "is Circular Reference", tokenizer
+            );
+        }
+        return value;
+    }
+
     public static @NotNull CompiledProgram compileFile(@NotNull File file, @NotNull IProcessor processor) {
         long compilationStartTimestamp = System.nanoTime();
 
@@ -508,21 +525,9 @@ public final class Compiler {
 
         // Processing Constants, Offsets and Labels
         cd.constants.forEach((name, constant) -> {
-            ArrayList<String> constantReferences = null;
-            try {
-                constantReferences = new ArrayList<>();
-                for (Integer instance : constant.getInstances())
-                    cd.program.set(instance, constant.getValue(constantReferences));
-            } catch (Exception err) {
-                assert constantReferences != null;
-                assert constantReferences.size() > 0;
-
-                String constantCharacter = String.valueOf(Tokens.CONSTANT.getCharacter());
-                String referencePath = constantCharacter + String.join(Tokens.WHITESPACE.getCharacter() + constantCharacter, constantReferences);
-                throw new ReferenceError(
-                        null, "Constant", referencePath, "is Circular Reference", null
-                );
-            }
+            int constantValue = getConstantValue(constant, null, null);
+            for (Integer instance : constant.getInstances())
+                cd.program.set(instance, constantValue);
         });
 
         cd.offsets.forEach((index, offset) -> cd.program.set(index, index + offset + cd.processor.getProgramAddress()));

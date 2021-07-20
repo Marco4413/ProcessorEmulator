@@ -1,5 +1,11 @@
 
 -- Version (v1.11.0-RELEASE)
+
+-- Version (v1.10.2-RELEASE)
+-- Changes from commit @08c72ef
+
+Made arrays and offsets created using constants use the constant's last assigned value at the moment of their creation
+
 -- Changes from commit @e443882
 
 Fixed Characters and Strings accepting actual new line characters, multi-line strings is no more
