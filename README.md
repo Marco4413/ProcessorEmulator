@@ -46,11 +46,16 @@ Can be found [@DOCUMENTATION.md](https://github.com/hds536jhmk/ProcessorEmulator
 
 ### vscode-pemu-language
 
-There's a VSCode Extension which currently adds Icons (Still waiting for VSCode to support extending other themes),
-Syntax Highlighting and other utilities to be used with the PEMU Programming Language:
+There's a VSCode Extension which currently adds Code Check (Through the "Verify PEMU Code" Command), Code Snippets,
+Syntax Highlighting (For PEMU Docs too!), Icons (Still waiting for VSCode to support extending other themes) and other
+utilities to be used with the PEMU Programming Language:
 
  - https://marketplace.visualstudio.com/items?itemName=hds.pemu-language-extensions
  - https://github.com/hds536jhmk/vscode-pemu-language
+
+![](https://raw.githubusercontent.com/hds536jhmk/vscode-pemu-language/master/pemu-language-extension.verify-code.gif)
+
+![](https://raw.githubusercontent.com/hds536jhmk/vscode-pemu-language/master/pemu-language-extension.snippets.gif)
 
 ### PEMULangUtil.py
 
