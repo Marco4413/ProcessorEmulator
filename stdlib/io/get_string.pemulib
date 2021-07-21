@@ -1,16 +1,24 @@
 
-; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
-; DESCRIPTION: A PEMU Library that adds the f_get_string function.
-; LICENSE: MIT
-; CREATED:      20-07-2021
-; LAST UPDATED: 20-07-2021
+;;
+ ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Description: A PEMU Library that adds the f_get_string function
+ ; @License: MIT
+ ; @Created-At   : 20-07-2021
+ ; @Last-Modified: 21-07-2021
 
 #INCLUDE "../base.pemulib"
 #INCLUDE "../timings/sleep.pemulib"
 #INCLUDE "keys.pemulib"
 #INCLUDE "print.pemulib"
 
-; Function that gets a number from the user
+;;
+ ; @Function
+ ; @Name: get_string
+ ; @Description: Gets a string from the user
+ ; @Arguments:
+ ; @label { String_Pointer }: The String to show before the user's input
+ ; @ptr { Pointer }: The Pointer to the buffer holding the new String
+ ; @max_length { Number }: The Length of the buffer holding the String or the max length of the String
 #DA {
     _get_string_max_length: 0
     _get_string_length: 0
@@ -67,7 +75,6 @@ f_get_string:
         INC _get_string_length
 
     _get_string_loop_display:
-        ; Clear the Console and print the current number
         OUTC stdlib_null
         ; If an input label was specified then print it
         CMP _get_string_label: 0 stdlib_null
@@ -80,5 +87,4 @@ f_get_string:
     JMP _get_string_loop
 
 _get_string_end:
-    ; Adding the return value on the stack
     RET

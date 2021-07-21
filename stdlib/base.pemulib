@@ -1,21 +1,29 @@
 
-; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
-; DESCRIPTION:
-;  A PEMU Library that adds common generic labels
-;  for the standard libraries to use.
-; LICENSE: MIT
-; CREATED:      19-07-2021
-; LAST UPDATED: 20-07-2021
-
+;;
+ ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Description: A PEMU Library that adds common generic labels for the standard libraries to use.
+ ; @License: MIT
+ ; @Created-At   : 19-07-2021
+ ; @Last-Modified: 21-07-2021
 
 ; Since this is the base file and should always be included first
 ;  it's got an HLT instruction to prevent from executing library code
+;  and this also makes sure that it's the only HLT instruction used to do so
+;  in the whole stdlib
 HLT
 
-; The NULL and ZERO values
+;;
+ ; @Constant { Number&Character }
+ ; @Name: NULL
+ ; @Description: The number 0 or null character
 @STDLIB_NULL 0
+;;
+ ; @Constant { Number }
+ ; @Name: ZERO
+ ; @Description: The number 0
 @STDLIB_ZERO @STDLIB_NULL
 
+; These are all the possible XMOV options
 @STDLIB_XMOV_SRC_TO_DST         0b000
 @STDLIB_XMOV_REF_SRC_TO_DST     0b010
 @STDLIB_XMOV_SRC_TO_REF_DST     0b001
@@ -27,9 +35,19 @@ HLT
 @STDLIB_XMOV_SWAP_REF_SRC_TO_REF_DST 0b111
 
 #DA {
-    ; The standard library's temp variable
-    ; It can be used by all programs including this file to store temporary data
-    ; It's value is not guaranteed to be the same between CALLs
+    ;;
+     ; @Label { Any }
+     ; @Name: temp
+     ; @Description: The standard library's temp register, its value can change between CALLs
     stdlib_temp: 0
-    stdlib_zero: stdlib_null: @STDLIB_NULL
+    ;;
+     ; @Label { Number }
+     ; @Name: zero
+     ; @Description: The number 0
+    stdlib_zero:
+    ;;
+     ; @Label { Number&Character }
+     ; @Name: null
+     ; @Description: The number 0 or null character
+    stdlib_null: @STDLIB_NULL
 }

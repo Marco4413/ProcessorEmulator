@@ -1,27 +1,47 @@
 
-; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
-; DESCRIPTION: A PEMU Library that adds the f_get_number function.
-; LICENSE: MIT
-; CREATED:      19-07-2021
-; LAST UPDATED: 20-07-2021
+;;
+ ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Description: A PEMU Library that adds the f_get_number function.
+ ; @License: MIT
+ ; @Created-At   : 19-07-2021
+ ; @Last-Modified: 21-07-2021
 
 #INCLUDE "../base.pemulib"
 #INCLUDE "../timings/sleep.pemulib"
 #INCLUDE "keys.pemulib"
 #INCLUDE "print.pemulib"
 
-; A constant holding the number 10
+;;
+ ; @Constant { Number }
+ ; @Name: TEN
+ ; @Description: It's the number 10
 @STDLIB_TEN 10
 
 #DA {
-    ; The number 10
+    ;;
+     ; @Label { Number }
+     ; @Name: ten
+     ; @Description: The number 10
     stdlib_ten: @STDLIB_TEN
-    ; The first and last valid digits on the ASCII table
+    ;;
+     ; @Label { Character }
+     ; @Name: first_digit
+     ; @Description: The first valid digit on the ASCII table ( '0' )
     stdlib_first_digit: '0'
+    ;;
+     ; @Label { Character }
+     ; @Name: last_digit
+     ; @Description: The last valid digit on the ASCII table ( '9' )
     stdlib_last_digit:  '9'
 }
 
-; Function that gets a number from the user
+;;
+ ; @Function
+ ; @Name: get_number
+ ; @Description: Gets a number from the user
+ ; @Arguments:
+ ; @label { String_Pointer }: The String to show before the user's input
+ ; @Returns { Number }: The number specified by the user
 #DA {
     _get_number_result: 0
     _get_number_key:    0
