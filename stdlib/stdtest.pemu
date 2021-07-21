@@ -1,6 +1,8 @@
 
 ;;
+ ; @File
  ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Name: stdtest.pemu
  ; @Description: A PEMU program that makes sure that all standard libraries compile and work as intended.
  ; @License: MIT
  ; @Created-At   : 19-07-2021
@@ -32,11 +34,15 @@ input_string: #DA { [2] @INPUT_STRING_LENGTH } #DA [@INPUT_STRING_LENGTH] #DW @S
 animated_string_interval: #DW 500
 animated_string_frames: #DW 10
 animated_string:
-    @ANIMATED_STRING_LENGTH 10
-    #DA { [2] animated_string_length: @ANIMATED_STRING_LENGTH }
-    #DS "Loading..."
+    #DA { [2] animated_string_length: 0 }
+    #DS "Loading..." #DW @STDLIB_NULL
 
 f_main:
+    ; Testing String Length Function
+    PUSH animated_string
+    CALL f_strlen
+    POP animated_string_length
+
     ; Testing Sleep Function
     PUSH waiting
     CALL f_print

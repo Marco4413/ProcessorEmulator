@@ -1,6 +1,8 @@
 
 ;;
+ ; @File
  ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Name: get_string.pemulib
  ; @Description: A PEMU Library that adds the f_get_string function
  ; @License: MIT
  ; @Created-At   : 20-07-2021
@@ -15,9 +17,9 @@
  ; @Function
  ; @Name: get_string
  ; @Description: Gets a string from the user
- ; @Arguments:
- ; @label { String_Pointer }: The String to show before the user's input
- ; @ptr { Pointer }: The Pointer to the buffer holding the new String
+ ; @Arguments
+ ; @label { Pointer_String }: The String to show before the user's input
+ ; @ptr { Pointer_Any }: The Pointer to the buffer holding the new String
  ; @max_length { Number }: The Length of the buffer holding the String or the max length of the String
 #DA {
     _get_string_max_length: 0
