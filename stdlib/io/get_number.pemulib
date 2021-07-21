@@ -3,10 +3,10 @@
 ; DESCRIPTION: A PEMU Library that adds the f_get_number function.
 ; LICENSE: MIT
 ; CREATED:      19-07-2021
-; LAST UPDATED: 19-07-2021
+; LAST UPDATED: 20-07-2021
 
 #INCLUDE "../base.pemulib"
-#INCLUDE "../sleep.pemulib"
+#INCLUDE "../timings/sleep.pemulib"
 #INCLUDE "keys.pemulib"
 #INCLUDE "print.pemulib"
 
@@ -23,7 +23,6 @@
 
 ; Function that gets a number from the user
 #DA {
-    _get_number_label:  0
     _get_number_result: 0
     _get_number_key:    0
     _get_number_char:   0
@@ -84,7 +83,7 @@ f_get_number:
         ; Clear the Console and print the current number
         OUTC stdlib_null
         ; If an input label was specified then print it
-        CMP _get_number_label stdlib_null
+        CMP _get_number_label: 0 stdlib_null
         JE _get_number_loop_display_number
         PUSH _get_number_label
         CALL f_print

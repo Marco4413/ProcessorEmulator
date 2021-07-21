@@ -1,0 +1,30 @@
+
+; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
+; DESCRIPTION: A PEMU Library that adds the f_printl function.
+; LICENSE: MIT
+; CREATED:      20-07-2021
+; LAST UPDATED: 21-07-2021
+
+#INCLUDE "../base.pemulib"
+
+#DA {
+    _printl_str_ptr_end: 0
+}
+f_printl:
+    POP stdlib_temp
+    POP _printl_str_ptr_end
+    POP _printl_str_ptr
+    PUSH stdlib_temp
+
+    ADD _printl_str_ptr_end _printl_str_ptr
+
+    _printl_loop:
+        CMP _printl_str_ptr _printl_str_ptr_end
+        JAE _printl_end
+
+        OUTC _printl_str_ptr: 0
+        INC _printl_str_ptr
+    JMP _printl_loop
+
+_printl_end:
+    RET

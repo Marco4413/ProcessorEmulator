@@ -3,10 +3,14 @@
 ; DESCRIPTION: A PEMU Library that includes all standard libraries.
 ; LICENSE: MIT
 ; CREATED:      19-07-2021
-; LAST UPDATED: 19-07-2021
+; LAST UPDATED: 20-07-2021
 
 #INCLUDE "base.pemulib"
-#INCLUDE "sleep.pemulib"
+#INCLUDE "io/characters.pemulib"
 #INCLUDE "io/get_number.pemulib"
+#INCLUDE "io/get_string.pemulib"
 #INCLUDE "io/keys.pemulib"
 #INCLUDE "io/print.pemulib"
+#INCLUDE "io/printl.pemulib"
+#INCLUDE "timings/sleep.pemulib"
+#INCLUDE "timings/timer.pemulib"
