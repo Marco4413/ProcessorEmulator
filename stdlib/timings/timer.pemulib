@@ -1,6 +1,8 @@
 
 ;;
+ ; @File
  ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Name: timer.pemulib
  ; @Description: A PEMU Library that adds the f_timer function
  ; @License: MIT
  ; @Created-At   : 20-07-2021
@@ -12,8 +14,8 @@
  ; @Function
  ; @Name: timer
  ; @Description: Calls the specified function for the specified amount of time with the specified interval
- ; @Arguments:
- ; @call_ptr { PointerFunction }: The function to call, can't require arguments
+ ; @Arguments
+ ; @call_ptr { Pointer_Function }: The function to call, can't require arguments
  ; @interval { Number }: The interval in milliseconds between calls
  ; @times { Number }: The total calls to make
 #DA {

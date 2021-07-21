@@ -1,6 +1,8 @@
 
 ;;
+ ; @File
  ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Name: get_number.pemulib
  ; @Description: A PEMU Library that adds the f_get_number function.
  ; @License: MIT
  ; @Created-At   : 19-07-2021
@@ -39,8 +41,8 @@
  ; @Function
  ; @Name: get_number
  ; @Description: Gets a number from the user
- ; @Arguments:
- ; @label { String_Pointer }: The String to show before the user's input
+ ; @Arguments
+ ; @label { Pointer_String }: The String to show before the user's input
  ; @Returns { Number }: The number specified by the user
 #DA {
     _get_number_result: 0

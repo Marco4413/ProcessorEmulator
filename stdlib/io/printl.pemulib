@@ -1,6 +1,8 @@
 
 ;;
+ ; @File
  ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Name: printl.pemulib
  ; @Description: A PEMU Library that adds the f_printl function.
  ; @License: MIT
  ; @Created-At   : 20-07-2021
@@ -12,7 +14,7 @@
  ; @Function
  ; @Name: printl
  ; @Description: Prints the specified String which has the specified length
- ; @Arguments:
+ ; @Arguments
  ; @str_ptr { Pointer_String }: The pointer to the String to print
  ; @str_length { Number }: The length of the String to print
 #DA {

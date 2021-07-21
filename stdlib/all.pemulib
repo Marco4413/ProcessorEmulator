@@ -1,12 +1,15 @@
 
 ;;
+ ; @File
  ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Name: all.pemulib
  ; @Description: A PEMU Library that includes all standard libraries.
  ; @License: MIT
  ; @Created-At   : 19-07-2021
  ; @Last-Modified: 21-07-2021
 
 #INCLUDE "base.pemulib"
+#INCLUDE "strlen.pemulib"
 #INCLUDE "io/characters.pemulib"
 #INCLUDE "io/get_number.pemulib"
 #INCLUDE "io/get_string.pemulib"
