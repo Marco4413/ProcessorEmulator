@@ -1,16 +1,16 @@
 
-; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
-; DESCRIPTION:
-;  A PEMU program that calculates the GCD between
-;  two numbers given by the user.
-; LICENSE: MIT
-; CREATED:      16-07-2021
-; LAST UPDATED: 16-07-2021
+;;
+ ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Description: A PEMU program that calculates the GCD between two numbers given by the user.
+ ; @License: MIT
+ ; @Created-At   : 16-07-2021
+ ; @Last-Modified: 21-07-2021
 
-; PROCESSOR REQUIREMENTS:
-; MIN BITS  : 8
-; MIN MEMORY: 256
-; MIN CLOCK : 1M
+;;
+ ; @Processor-Requirements
+ ; @Min-Bits  : 8
+ ; @Min-Memory: 256
+ ; @Min-Clock : 1M
 
 ; App Config ;
 @KEY_CONFIRM @VK_ENTER

@@ -1,14 +1,16 @@
 
-; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
-; DESCRIPTION: A basic PEMU program that prints a string to the screen.
-; LICENSE: MIT
-; CREATED:      14-03-2021
-; LAST UPDATED: 16-07-2021
+;;
+ ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Description: A basic PEMU program that prints a null-terminated string to the screen.
+ ; @License: MIT
+ ; @Created-At   : 14-03-2021
+ ; @Last-Modified: 21-07-2021
 
-; PROCESSOR REQUIREMENTS:
-; MIN BITS  : 8
-; MIN MEMORY: 64
-; MIN CLOCK : 1k
+;;
+ ; @Processor-Requirements
+ ; @Min-Bits  : 8
+ ; @Min-Memory: 64
+ ; @Min-Clock : 1k
 
 CALL f_main
 HLT
