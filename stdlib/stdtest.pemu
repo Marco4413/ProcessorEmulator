@@ -1,16 +1,16 @@
 
-; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
-; DESCRIPTION:
-;  A PEMU program that makes sure that all standard
-;  libraries compile and work as intended.
-; LICENSE: MIT
-; CREATED:      19-07-2021
-; LAST UPDATED: 20-07-2021
+;;
+ ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Description: A PEMU program that makes sure that all standard libraries compile and work as intended.
+ ; @License: MIT
+ ; @Created-At   : 19-07-2021
+ ; @Last-Modified: 21-07-2021
 
-; PROCESSOR REQUIREMENTS:
-; MIN BITS  : 16
-; MIN MEMORY: 512
-; MIN CLOCK : 1M
+;;
+ ; @Processor-Requirements
+ ; @Min-Bits  : 16
+ ; @Min-Memory: 512
+ ; @Min-Clock : 1M
 
 CALL f_main
 

@@ -1,13 +1,19 @@
 
-; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
-; DESCRIPTION: A PEMU Library that adds the f_print function.
-; LICENSE: MIT
-; CREATED:      19-07-2021
-; LAST UPDATED: 19-07-2021
+;;
+ ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Description: A PEMU Library that adds the f_print function.
+ ; @License: MIT
+ ; @Created-At   : 19-07-2021
+ ; @Last-Modified: 21-07-2021
 
 #INCLUDE "../base.pemulib"
 
-; Function that prints the specified string
+;;
+ ; @Function
+ ; @Name: print
+ ; @Description: Prints the specified null-terminated String
+ ; @Arguments:
+ ; @str_ptr { Pointer_String }: The pointer to the null-terminated String to print
 f_print:
     POP stdlib_temp
     POP _print_str_ptr

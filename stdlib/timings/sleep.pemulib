@@ -1,13 +1,19 @@
 
-; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
-; DESCRIPTION: A PEMU Library that adds the f_sleep function.
-; LICENSE: MIT
-; CREATED:      19-07-2021
-; LAST UPDATED: 20-07-2021
+;;
+ ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Description: A PEMU Library that adds the f_sleep function.
+ ; @License: MIT
+ ; @Created-At   : 19-07-2021
+ ; @Last-Modified: 21-07-2021
 
 #INCLUDE "../base.pemulib"
 
-; Function that makes the processor sleep for the specified time
+;;
+ ; @Function
+ ; @Name: sleep
+ ; @Description: Function that locks the processor for the specified amount of milliseconds
+ ; @Arguments:
+ ; @time { Number }: The number of milliseconds to lock the Processor for
 #DA {
     _sleep_time: 0
     _sleep_start_time: 0
