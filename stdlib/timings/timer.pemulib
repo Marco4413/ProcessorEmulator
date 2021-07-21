@@ -1,0 +1,35 @@
+
+; AUTHOR: [hds536jhmk](https://github.com/hds536jhmk)
+; DESCRIPTION: A PEMU Library that adds the f_timer function.
+; LICENSE: MIT
+; CREATED:      20-07-2021
+; LAST UPDATED: 20-07-2021
+
+#INCLUDE "../base.pemulib"
+
+; Function that CALLS the specified function for the specified amount
+;  of times with the specified interval
+#DA {
+    _timer_interval: 0
+    _timer_times: 0
+    _timer_loop_start_time: 0
+}
+f_timer:
+    POP stdlib_temp
+    POP _timer_times
+    POP _timer_interval
+    POP _timer_call_ptr
+    PUSH stdlib_temp
+
+    _timer_loop:
+        TMS _timer_loop_start_time
+        _timer_wait_loop:
+            TMS stdlib_temp
+            SUB stdlib_temp _timer_loop_start_time
+        CMP stdlib_temp _timer_interval
+        JB _timer_wait_loop
+
+        CALL _timer_call_ptr: 0
+    LOOP _timer_loop _timer_times
+
+    RET

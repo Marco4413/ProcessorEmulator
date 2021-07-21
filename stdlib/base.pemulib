@@ -5,7 +5,7 @@
 ;  for the standard libraries to use.
 ; LICENSE: MIT
 ; CREATED:      19-07-2021
-; LAST UPDATED: 19-07-2021
+; LAST UPDATED: 20-07-2021
 
 
 ; Since this is the base file and should always be included first
@@ -15,6 +15,16 @@ HLT
 ; The NULL and ZERO values
 @STDLIB_NULL 0
 @STDLIB_ZERO @STDLIB_NULL
+
+@STDLIB_XMOV_SRC_TO_DST         0b000
+@STDLIB_XMOV_REF_SRC_TO_DST     0b010
+@STDLIB_XMOV_SRC_TO_REF_DST     0b001
+@STDLIB_XMOV_REF_SRC_TO_REF_DST 0b011
+
+@STDLIB_XMOV_SWAP_SRC_TO_DST         0b100
+@STDLIB_XMOV_SWAP_REF_SRC_TO_DST     0b110
+@STDLIB_XMOV_SWAP_SRC_TO_REF_DST     0b101
+@STDLIB_XMOV_SWAP_REF_SRC_TO_REF_DST 0b111
 
 #DA {
     ; The standard library's temp variable

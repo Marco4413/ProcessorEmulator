@@ -5,33 +5,90 @@
 ;  libraries compile and work as intended.
 ; LICENSE: MIT
 ; CREATED:      19-07-2021
-; LAST UPDATED: 19-07-2021
+; LAST UPDATED: 20-07-2021
 
 ; PROCESSOR REQUIREMENTS:
 ; MIN BITS  : 16
-; MIN MEMORY: 256
-; MIN CLOCK : 10k
+; MIN MEMORY: 512
+; MIN CLOCK : 1M
 
 CALL f_main
 
 #INCLUDE "all.pemulib"
-string: #DW [1] #DS "\nSample String" #DW @STDLIB_NULL
+
+; This is shown when testing the sleep function
 waiting: #DW [1] #DS "Waiting 2 seconds..." #DW @STDLIB_NULL
 wait_time: #DW 2000
-input_label: #DW [1] #DS "Sample Input: " #DW @STDLIB_NULL
+
+; These are used to test the input functions
+input_number_label: #DW [1] #DS "Number Input: " #DW @STDLIB_NULL
 input_number: #DW 0
 
+@INPUT_STRING_LENGTH 32
+input_string_label: #DW [1] #DS "String Input: " #DW @STDLIB_NULL
+input_string: #DA { [2] @INPUT_STRING_LENGTH } #DA [@INPUT_STRING_LENGTH] #DW @STDLIB_NULL
+
+; This is a string which is going to be animated
+animated_string_interval: #DW 500
+animated_string_frames: #DW 10
+animated_string:
+    @ANIMATED_STRING_LENGTH 10
+    #DA { [2] animated_string_length: @ANIMATED_STRING_LENGTH }
+    #DS "Loading..."
+
 f_main:
+    ; Testing Sleep Function
     PUSH waiting
     CALL f_print
-
     PUSH wait_time
     CALL f_sleep
 
-    PUSH input_label
+    ; Testing Number Input Function
+    PUSH input_number_label
     CALL f_get_number
     POP input_number
 
-    PUSH string
+    ; Testing String Input Function
+    PUSH input_string_label ; Label
+    PUSH input_string       ; Buffer Pointer
+    PUSH input_string[1]    ; Buffer Size
+    CALL f_get_string
+
+    ; Testing Timer Function
+    PUSH f_animate_string_ptr
+    PUSH animated_string_interval
+    PUSH animated_string_frames
+    CALL f_timer
+
+    ; Testing Output of Input Functions
+    OUTC stdlib_null
+    PUSH input_string
     CALL f_print
+
+    OUTC stdlib_newline
+    OUTI input_number
+    RET
+
+
+_animate_string_anim_chars: #DW 4   ; This is actually the number of characters to delete + 1
+_animate_string_frame:      #DW 0   ; The current animation frame
+f_animate_string_ptr:       #DW [1] ; The pointer to this function
+f_animate_string:
+    ; Calculating the length of animated_string
+    MOV stdlib_temp _animate_string_frame
+    MOD stdlib_temp _animate_string_anim_chars
+
+    ADD stdlib_temp animated_string_length
+    INC stdlib_temp
+    
+    SUB stdlib_temp _animate_string_anim_chars
+
+    ; Printing animated_string
+    OUTC stdlib_null
+    PUSH animated_string
+    PUSH stdlib_temp
+    CALL f_printl
+
+    ; Adding this frame to the total count
+    INC _animate_string_frame
     RET
