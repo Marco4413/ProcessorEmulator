@@ -282,9 +282,18 @@ public final class Compiler {
                     cd.constants.put(constantName, constant);
                 }
 
-                if (isReference)
+                if (isReference) {
                     constant.setReference(cd.constants.get(result.NAME));
-                else constant.setValue(result.VALUE);
+
+                    ArrayList<String> references = new ArrayList<>();
+                    if (constant.isCircularReference(references)) {
+                        throw new ReferenceError(
+                                file, "Constant",
+                                Constant.formatReferences(String.valueOf(Tokens.CONSTANT.getCharacter()), references),
+                                "is Circular Reference", tokenizer
+                        );
+                    }
+                } else constant.setValue(result.VALUE);
 
                 return new ParseResult<>(PARSE_STATUS.SUCCESS_PROGRAM_NOT_CHANGED, constantName, result.VALUE);
             }
@@ -499,12 +508,10 @@ public final class Compiler {
         try {
             value = constant.getValue(constantReferences);
         } catch (Exception err) {
-            assert constantReferences.size() > 0;
-
-            String constantCharacter = String.valueOf(Tokens.CONSTANT.getCharacter());
-            String referencePath = constantCharacter + String.join(Tokens.WHITESPACE.getCharacter() + constantCharacter, constantReferences);
             throw new ReferenceError(
-                    file, "Constant", referencePath, "is Circular Reference", tokenizer
+                    file, "Constant",
+                    Constant.formatReferences(String.valueOf(Tokens.CONSTANT.getCharacter()), constantReferences),
+                    "is Circular Reference", tokenizer
             );
         }
         return value;
