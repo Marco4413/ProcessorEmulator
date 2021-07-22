@@ -22,7 +22,12 @@ public final class Constant {
         INSTANCES = new ArrayList<>();
     }
 
-    public boolean isReference() {
+    public static @NotNull String formatReferences(@NotNull String prefix, @NotNull ArrayList<String> references) {
+        if (references.size() == 0) return "";
+        return prefix + String.join(Compiler.Tokens.WHITESPACE.getCharacter() + prefix, references);
+    }
+
+    public boolean hasReference() {
         return reference != null;
     }
 
@@ -35,6 +40,19 @@ public final class Constant {
         return this;
     }
 
+    public boolean isCircularReference(@Nullable ArrayList<String> references) {
+        Constant currentReference = this;
+        if (references != null) references.add(currentReference.getName());
+
+        do {
+            currentReference = currentReference.getReference();
+            if (currentReference == null) return false;
+            if (references != null) references.add(currentReference.getName());
+        } while (currentReference != this);
+
+        return true;
+    }
+
     public @NotNull Constant setValue(int value) {
         this.value = value;
         return setReference(null);
@@ -45,18 +63,21 @@ public final class Constant {
     }
 
     public int getValue() {
-        return getValue(null, null);
+        return getValue(null);
     }
 
-    public int getValue(@NotNull ArrayList<String> references) {
-        return getValue(null, references);
-    }
+    public int getValue(@Nullable ArrayList<String> references) {
+        Constant currentReference = this;
+        if (references != null) references.add(currentReference.getName());
 
-    private int getValue(@Nullable Constant initialConstant, @Nullable ArrayList<String> references) {
-        if (references != null) references.add(NAME);
-        if (initialConstant == this)
-            throw new IllegalArgumentException("Circular Constant Reference");
-        return isReference() ? reference.getValue(initialConstant == null ? this : initialConstant, references) : value;
+        do {
+            if (!currentReference.hasReference()) return currentReference.value;
+            currentReference = currentReference.getReference();
+            assert currentReference != null; // It should never be null
+            if (references != null) references.add(currentReference.getName());
+        } while (currentReference != this);
+
+        throw new IllegalStateException("Circular Constant Reference");
     }
 
     public @NotNull Constant addInstance(int address) {
