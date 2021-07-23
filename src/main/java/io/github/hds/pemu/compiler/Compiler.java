@@ -129,6 +129,14 @@ public final class Compiler {
                     tokenizer
             );
         }
+
+        protected ReferenceError(@Nullable File file, @NotNull String type, @NotNull String name, @NotNull String description, int errorLine, int errorChar) {
+            super(
+                    file, "Reference",
+                    String.format("%s '%s' %s", type, name, description),
+                    errorLine, errorChar
+            );
+        }
     }
 
     public static class TypeError extends CompilerError {
@@ -211,11 +219,10 @@ public final class Compiler {
             if (cd.labels.containsKey(labelName)) {
                 // If a label was already created check if it has a pointer
                 OffsetLabel label = cd.labels.get(labelName);
-                if (label.getPointer() == OffsetLabel.NULL_PTR)
-                    label.setPointer(cd.program.size());
-                else
+                if (label.hasPointer())
                     // If the label has a valid pointer then it was already declared!
                     throw new TypeError(file, "Label '" + labelName + "' was already declared", tokenizer);
+                else label.setPointer(cd.program.size());
             } else
                 // If no label was created then create it
                 cd.labels.put(labelName, new OffsetLabel().setPointer(cd.program.size()));
@@ -225,14 +232,16 @@ public final class Compiler {
             ParseResult<Integer> offsetResult = parseOffset(tokenizer, file, cd, true, null, false);
             if (offsetResult.STATUS != PARSE_STATUS.FAIL) offset = offsetResult.VALUE;
 
+            OffsetLabel label;
             if (cd.labels.containsKey(labelName)) {
-                OffsetLabel label = cd.labels.get(labelName);
-                label.addInstance(cd.program.size(), offset);
+                label = cd.labels.get(labelName);
             } else {
-                OffsetLabel label = new OffsetLabel();
-                label.addInstance(cd.program.size(), offset);
+                label = new OffsetLabel();
                 cd.labels.put(labelName, label);
             }
+
+            label.addInstance(cd.program.size(), offset);
+            label.setLastInstance(file, tokenizer.getConsumedLines() + 1, tokenizer.getConsumedLineCharacters());
             cd.program.add(0);
             return new ParseResult<>(PARSE_STATUS.SUCCESS, labelName, cd.program.size());
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
@@ -540,7 +549,11 @@ public final class Compiler {
         cd.offsets.forEach((index, offset) -> cd.program.set(index, index + offset + cd.processor.getProgramAddress()));
 
         cd.labels.forEach((name, label) -> {
-            if (label.getPointer() == OffsetLabel.NULL_PTR) throw new ReferenceError(null, "Label", name, "was not declared", null);
+            if (!label.hasPointer())
+                throw new ReferenceError(
+                        label.getLastInstanceFile(), "Label", name, "was not declared",
+                        label.getLastInstanceLine(), label.getLastInstanceChar()
+                );
             Integer[] instances = label.getInstances();
             for (Integer instance : instances)
                 cd.program.set(instance, label.getPointerForInstance(instance) + cd.processor.getProgramAddress());
