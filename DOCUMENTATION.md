@@ -7,6 +7,7 @@
    * [--help](#--help)
    * [--run](#--run)
    * [--verify](#--verify)
+   * [--obfuscate](#--obfuscate)
    * [--command-line](#--command-line)
    * [--skip-warning](#--skip-warning)
    * [--bits](#--bits)
@@ -101,6 +102,16 @@ Type: `Flag`
 Short: `-v`
 
 If specified, this flag will automatically verify the specified program at the Application's start.
+
+It's more useful if used with the [--command-line](#--command-line) flag.
+
+## --obfuscate
+
+Type: `Flag`
+
+Short: `-o`
+
+If specified, this flag will automatically obfuscate the specified program at the Application's start.
 
 It's more useful if used with the [--command-line](#--command-line) flag.
 
