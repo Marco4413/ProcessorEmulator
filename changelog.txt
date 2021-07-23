@@ -1,5 +1,12 @@
 
 -- Version (v1.11.0-RELEASE)
+-- Changes from commit @9ca6094
+
+Now all Reference Errors thrown by Labels should know where that Label was last used at
+
+Added methods to interface ILabel:
+ hasPointer, setLastInstance, removeLastInstance, getLastInstanceFile, getLastInstanceLine, getLastInstanceChar
+
 -- Changes from commit @a2c936e
 
 Added command line argument: "--obfuscate"

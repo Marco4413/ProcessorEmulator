@@ -1,10 +1,13 @@
 package io.github.hds.pemu.compiler.labels;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.File;
 
 public interface ILabel {
 
-    public static int NULL_PTR = -1;
+    public static final int NULL_PTR = -1;
 
     /**
      * Sets this Label's pointer to the one specified
@@ -18,6 +21,51 @@ public interface ILabel {
      * @return The memory address that this label points to
      */
     int getPointer();
+
+    /**
+     * Returns if this label's pointer isn't equal to NULL_PTR
+     * @return If this label's pointer isn't equal to NULL_PTR
+     */
+    default boolean hasPointer() {
+        return getPointer() != NULL_PTR;
+    }
+
+    /**
+     * Sets the position of where this label's last instance was used
+     * This is used by the Compiler to know where the last instance of a
+     * label was used at, to give better errors if needed.
+     * @param file The file where the label was parsed in
+     * @param line The line at which the label was parsed at
+     * @param character The character at which the label was parsed at
+     * @return A reference to this
+     */
+    @NotNull ILabel setLastInstance(@Nullable File file, int line, int character);
+
+    /**
+     * Removes the saved location of the last label's instance
+     * @return A reference to this
+     */
+    default @NotNull ILabel removeLastInstance() {
+        return setLastInstance(null, -1, -1);
+    }
+
+    /**
+     * Returns the last file where this label was instantiated or null if unknown
+     * @return The last file where this label was instantiated or null if unknown
+     */
+    @Nullable File getLastInstanceFile();
+
+    /**
+     * Returns the line at which this label was last instantiated or -1 if unknown
+     * @return The line at which this label was last instantiated or -1 if unknown
+     */
+    int getLastInstanceLine();
+
+    /**
+     * Returns the line's character at which this label was last instantiated or -1 if unknown
+     * @return The line's character at which this label was last instantiated or -1 if unknown
+     */
+    int getLastInstanceChar();
 
     /**
      * Adds an instance of this label (An address where this label is used in)
