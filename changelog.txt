@@ -1,5 +1,9 @@
 
 -- Version (v1.11.0-RELEASE)
+-- Changes from commit @a2c936e
+
+Added command line argument: "--obfuscate"
+
 -- Changes from commit @573e58e
 
 Now Constants' Circular References Errors always know the file and pos of the error (Might slow down Compile Times)

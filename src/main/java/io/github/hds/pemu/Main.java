@@ -22,6 +22,7 @@ public final class Main {
         parser.defineFlag("--help", "-h")
               .defineFlag("--run", "-r")
               .defineFlag("--verify", "-v")
+              .defineFlag("--obfuscate", "-o")
               .defineFlag("--command-line", "-cl")
               .defineFlag("--skip-warning", "-sw")
               .defineRangedInt("--bits", "-b", ProcessorConfig.DEFAULT_BITS, ProcessorConfig.MIN_BITS, ProcessorConfig.MAX_BITS)
@@ -40,17 +41,22 @@ public final class Main {
         boolean isCommandLine = parser.isSpecified("--command-line");
         boolean runOnStart = parser.isSpecified("--run");
         boolean verifyOnStart = parser.isSpecified("--verify");
+        boolean obfuscateOnStart = parser.isSpecified("--obfuscate");
 
-        if (runOnStart && verifyOnStart) {
-            System.err.println("\"--run\" and \"--verify\" flags can't be both set");
+        int onStartFlagCount = 0;
+        for (boolean f : new boolean[] { runOnStart, verifyOnStart, obfuscateOnStart })
+            if (f) onStartFlagCount++;
+
+        if (onStartFlagCount > 1) {
+            System.err.println("Only one of \"--run\", \"--verify\" and \"--obfuscate\" flags can be set at once");
             return;
         }
 
         // If the user wants the program to run as a console app
         if (isCommandLine) {
             // Auto run must be specified, because otherwise the program wouldn't run
-            if (!(runOnStart || verifyOnStart)) {
-                System.err.println("Either \"--run\" or \"--verify\" flag must be specified with the \"--command-line\" flag");
+            if (onStartFlagCount == 0) {
+                System.err.println("Either \"--run\", \"--verify\" or \"--obfuscate\" flag must be specified with the \"--command-line\" flag");
                 return;
             }
 
@@ -129,6 +135,8 @@ public final class Main {
             closeApplication = closeApplication && !successfulRun;
         } else if (verifyOnStart) {
             app.verifyProgram(null);
+        } else if (obfuscateOnStart) {
+            app.obfuscateProgram(null);
         }
 
         if (closeApplication) app.close(null);
