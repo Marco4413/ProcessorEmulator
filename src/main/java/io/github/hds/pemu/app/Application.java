@@ -26,8 +26,9 @@ import java.util.function.Function;
 public final class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
     public static final int NONE = 0;
-    public static final int CLOSE_ON_PROCESSOR_STOP = 1;
-    public static final int PREVENT_VISIBILITY_CHANGE = 2;
+    public static final int CLOSE_ON_PROCESSOR_STOP   = 1;
+    public static final int PREVENT_VISIBILITY_CHANGE = 1 << 1;
+    public static final int DISABLE_CONFIG_AUTO_SAVE  = 1 << 2;
 
     public static final String APP_TITLE = "PEMU";
     public static final String APP_VERSION = "1.11.0";
@@ -42,6 +43,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     private boolean closeOnProcessorStop = false;
     private boolean allowVisibilityChange = true;
+    private boolean disableConfigAutoSave = false;
 
     protected final FileMenu FILE_MENU;
     protected final ProgramMenu PROGRAM_MENU;
@@ -159,6 +161,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public void setFlags(int flags) {
         closeOnProcessorStop  = (flags & CLOSE_ON_PROCESSOR_STOP  ) == CLOSE_ON_PROCESSOR_STOP  ;
         allowVisibilityChange = (flags & PREVENT_VISIBILITY_CHANGE) != PREVENT_VISIBILITY_CHANGE;
+        disableConfigAutoSave = (flags & DISABLE_CONFIG_AUTO_SAVE ) == DISABLE_CONFIG_AUTO_SAVE ;
     }
 
     @Override
@@ -467,7 +470,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     }
 
     public void close(ActionEvent e) {
-        ConfigManager.saveConfig();
+        if (!disableConfigAutoSave) ConfigManager.saveConfig();
         System.exit(0);
     }
 }

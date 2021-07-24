@@ -10,6 +10,7 @@
    * [--obfuscate](#--obfuscate)
    * [--command-line](#--command-line)
    * [--skip-warning](#--skip-warning)
+   * [--no-config-auto-save](#--no-config-auto-save)
    * [--bits](#--bits)
    * [--memory-size](#--memory-size)
    * [--clock-frequency](#--clock-frequency)
@@ -137,6 +138,16 @@ Type: `Flag`
 Short: `-sw`
 
 If specified, this flag will skip the warning message generated from the [--command-line](#--command-line) flag.
+
+## --no-config-auto-save
+
+Type: `Flag`
+
+Short: `-ncas`
+
+If specified, this flag will prevent PEMU from saving its config automatically.
+
+It's more useful if used with the [--verify](#--verify) or [--obfuscate](#--obfuscate) flag.
 
 ## --bits
 
