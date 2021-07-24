@@ -25,6 +25,7 @@ public final class Main {
               .defineFlag("--obfuscate", "-o")
               .defineFlag("--command-line", "-cl")
               .defineFlag("--skip-warning", "-sw")
+              .defineFlag("--no-config-auto-save", "-ncas")
               .defineRangedInt("--bits", "-b", ProcessorConfig.DEFAULT_BITS, ProcessorConfig.MIN_BITS, ProcessorConfig.MAX_BITS)
               .defineRangedInt("--memory-size", "-ms", ProcessorConfig.DEFAULT_MEMORY_SIZE, ProcessorConfig.MIN_MEMORY_SIZE, ProcessorConfig.MAX_MEMORY_SIZE)
               .defineRangedInt("--clock-frequency", "-cf", ProcessorConfig.DEFAULT_FREQUENCY, ProcessorConfig.MIN_FREQUENCY, ProcessorConfig.MAX_FREQUENCY)
@@ -127,6 +128,7 @@ public final class Main {
         app.setFlags(
                   (isCommandLine ? Application.CLOSE_ON_PROCESSOR_STOP : Application.NONE)
                 | Application.PREVENT_VISIBILITY_CHANGE
+                | (parser.isSpecified("--no-config-auto-save") ? Application.DISABLE_CONFIG_AUTO_SAVE : Application.NONE)
         );
 
         boolean closeApplication = isCommandLine;
