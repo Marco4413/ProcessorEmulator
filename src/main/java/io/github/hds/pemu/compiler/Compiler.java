@@ -241,7 +241,9 @@ public final class Compiler {
             }
 
             label.addInstance(cd.program.size(), offset);
-            label.setLastInstance(file, tokenizer.getConsumedLines() + 1, tokenizer.getConsumedLineCharacters());
+            // Only set instance location if it's the first one
+            if (label.getInstancesCount() == 1)
+                label.setInstanceLocation(file, tokenizer.getConsumedLines() + 1, tokenizer.getConsumedLineCharacters());
             cd.program.add(0);
             return new ParseResult<>(PARSE_STATUS.SUCCESS, labelName, cd.program.size());
         } else return new ParseResult<>(PARSE_STATUS.FAIL);
@@ -551,8 +553,8 @@ public final class Compiler {
         cd.labels.forEach((name, label) -> {
             if (!label.hasPointer())
                 throw new ReferenceError(
-                        label.getLastInstanceFile(), "Label", name, "was not declared",
-                        label.getLastInstanceLine(), label.getLastInstanceChar()
+                        label.getInstanceFile(), "Label", name, "was not declared",
+                        label.getInstanceLine(), label.getInstanceChar()
                 );
             Integer[] instances = label.getInstances();
             for (Integer instance : instances)
@@ -738,6 +740,8 @@ public final class Compiler {
                             basicLabelName = generateRandomString(labelsCount.getAndIncrement());
                             parsedOffsets.put(offset, basicLabelName);
 
+                            // Not moving debugging info (like Label Instance Location) because the given
+                            //  data should have already compiled successfully once
                             basicLabel = new BasicLabel().setPointer(label.getPointer() + offset);
                             obfLabels.put(basicLabelName, basicLabel);
                         }
