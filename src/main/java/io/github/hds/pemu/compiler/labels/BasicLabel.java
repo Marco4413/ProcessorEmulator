@@ -14,9 +14,9 @@ public class BasicLabel implements ILabel {
     protected int pointer = ILabel.NULL_PTR;
     protected final HashMap<Integer, Integer> INSTANCES = new HashMap<>();
 
-    protected File lastInstanceFile = null;
-    protected int lastInstanceLine = -1;
-    protected int lastInstanceChar = -1;
+    protected File instanceFile = null;
+    protected int instanceLine = -1;
+    protected int instanceChar = -1;
 
     public BasicLabel() { }
 
@@ -37,34 +37,31 @@ public class BasicLabel implements ILabel {
     }
 
     @Override
-    public @NotNull ILabel setLastInstance(@NotNull File file, int line, int character) {
-        lastInstanceFile = file;
-        lastInstanceLine = line;
-        lastInstanceChar = character;
+    public @NotNull BasicLabel setInstanceLocation(@Nullable File file, int line, int character) {
+        instanceFile = file;
+        instanceLine = line;
+        instanceChar = character;
         return this;
     }
 
     @Override
-    public @NotNull ILabel removeLastInstance() {
-        lastInstanceFile = null;
-        lastInstanceLine = -1;
-        lastInstanceChar = -1;
-        return this;
+    public @NotNull BasicLabel removeInstanceLocation() {
+        return setInstanceLocation(null, -1, -1);
     }
 
     @Override
-    public @Nullable File getLastInstanceFile() {
-        return lastInstanceFile;
+    public @Nullable File getInstanceFile() {
+        return instanceFile;
     }
 
     @Override
-    public int getLastInstanceLine() {
-        return lastInstanceLine;
+    public int getInstanceLine() {
+        return instanceLine;
     }
 
     @Override
-    public int getLastInstanceChar() {
-        return lastInstanceChar;
+    public int getInstanceChar() {
+        return instanceChar;
     }
 
     @Override
@@ -76,6 +73,11 @@ public class BasicLabel implements ILabel {
     @Override
     public @NotNull Integer[] getInstances() {
         return this.INSTANCES.keySet().toArray(new Integer[0]);
+    }
+
+    @Override
+    public int getInstancesCount() {
+        return this.INSTANCES.size();
     }
 
     @Override

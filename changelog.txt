@@ -1,5 +1,10 @@
 
 -- Version (v1.11.0-RELEASE)
+-- Changes from commit @36df4bb
+
+Changed all Reference Errors thrown by Labels to include the position of the first Label's usage
+Renamed all methods in interface ILabel with "Last" in their name to not include it
+
 -- Changes from commit @9ca6094
 
 Now all Reference Errors thrown by Labels should know where that Label was last used at

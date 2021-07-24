@@ -1,6 +1,9 @@
 package io.github.hds.pemu.compiler.labels;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.File;
 
 /**
  * An OffsetLabel extends BasicLabel to add
@@ -13,6 +16,18 @@ public class OffsetLabel extends BasicLabel {
     @Override
     public @NotNull OffsetLabel setPointer(int pointer) {
         this.pointer = pointer;
+        return this;
+    }
+
+    @Override
+    public @NotNull OffsetLabel setInstanceLocation(@Nullable File file, int line, int character) {
+        super.setInstanceLocation(file, line, character);
+        return this;
+    }
+
+    @Override
+    public @NotNull OffsetLabel removeInstanceLocation() {
+        super.removeInstanceLocation();
         return this;
     }
 

@@ -31,41 +31,41 @@ public interface ILabel {
     }
 
     /**
-     * Sets the position of where this label's last instance was used
-     * This is used by the Compiler to know where the last instance of a
+     * Sets the position of where one of this label's instances was parsed at
+     * This is used by the Compiler to know where one instance of this
      * label was used at, to give better errors if needed.
      * @param file The file where the label was parsed in
      * @param line The line at which the label was parsed at
      * @param character The character at which the label was parsed at
      * @return A reference to this
      */
-    @NotNull ILabel setLastInstance(@Nullable File file, int line, int character);
+    @NotNull ILabel setInstanceLocation(@Nullable File file, int line, int character);
 
     /**
-     * Removes the saved location of the last label's instance
+     * Removes the saved location of the a label's instance
      * @return A reference to this
      */
-    default @NotNull ILabel removeLastInstance() {
-        return setLastInstance(null, -1, -1);
+    default @NotNull ILabel removeInstanceLocation() {
+        return setInstanceLocation(null, -1, -1);
     }
 
     /**
-     * Returns the last file where this label was instantiated or null if unknown
-     * @return The last file where this label was instantiated or null if unknown
+     * Returns the file where this label was instantiated or null if unknown
+     * @return The file where this label was instantiated or null if unknown
      */
-    @Nullable File getLastInstanceFile();
+    @Nullable File getInstanceFile();
 
     /**
-     * Returns the line at which this label was last instantiated or -1 if unknown
-     * @return The line at which this label was last instantiated or -1 if unknown
+     * Returns the line at which this label was instantiated or -1 if unknown
+     * @return The line at which this label was instantiated or -1 if unknown
      */
-    int getLastInstanceLine();
+    int getInstanceLine();
 
     /**
-     * Returns the line's character at which this label was last instantiated or -1 if unknown
-     * @return The line's character at which this label was last instantiated or -1 if unknown
+     * Returns the line's character at which this label was instantiated or -1 if unknown
+     * @return The line's character at which this label was instantiated or -1 if unknown
      */
-    int getLastInstanceChar();
+    int getInstanceChar();
 
     /**
      * Adds an instance of this label (An address where this label is used in)
@@ -79,6 +79,12 @@ public interface ILabel {
      * @return All instances of this label (No element should be equal to null)
      */
     @NotNull Integer[] getInstances();
+
+    /**
+     * Returns the amount of instances this label has
+     * @return The amount of instances this label has
+     */
+    int getInstancesCount();
 
     /**
      * Returns whether or not this Label has an instance at the specified address
