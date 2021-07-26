@@ -71,8 +71,8 @@ def printUsage():
     print(getUsage())
 
 REQUIRED_ARGUMENTS = 3
-VERSION = "v1.1.0"
-SUPPORTED_PEMU_VERSION = "v1.10.0+"
+VERSION = "v1.1.1"
+SUPPORTED_PEMU_VERSION = "v1.12.0+"
 
 def main():
     print("Welcome to PEMU's Language Utility™ {}".format(VERSION))
@@ -104,7 +104,7 @@ def main():
     process = None
     try:
         process = Popen(
-            [JAVA_PATH, "-jar", applicationPath, "-cl", "-sw", "-v", "-p", programPath, "-b", bits],
+            [JAVA_PATH, "-jar", applicationPath, "-ncas", "-cl", "-sw", "-v", "-p", programPath, "-b", bits],
             stdout=PIPE, encoding="UTF-8", text=True
         )
     except:

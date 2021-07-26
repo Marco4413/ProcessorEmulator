@@ -5,6 +5,7 @@
 
  - [Command Line Arguments](#command-line-arguments)
    * [--help](#--help)
+   * [--version](#--version)
    * [--run](#--run)
    * [--verify](#--verify)
    * [--obfuscate](#--obfuscate)
@@ -85,6 +86,14 @@ Type: `Flag`
 Short: `-h`
 
 If specified, this flag will show you all the valid command line options, their type and their range if they have one.
+
+## --version
+
+Type: `Flag`
+
+Short: `-ver`
+
+If specified, this flag will print PEMU's version to the console.
 
 ## --run
 
