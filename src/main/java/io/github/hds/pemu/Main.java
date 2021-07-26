@@ -6,6 +6,7 @@ import io.github.hds.pemu.processor.Processor;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.arguments.ArgumentsParser;
 import io.github.hds.pemu.processor.ProcessorConfig;
+import io.github.hds.pemu.utils.StringUtils;
 
 import javax.swing.*;
 import java.io.File;
@@ -20,6 +21,7 @@ public final class Main {
         ArgumentsParser parser = new ArgumentsParser();
         // Define valid options
         parser.defineFlag("--help", "-h")
+              .defineFlag("--version", "-ver")
               .defineFlag("--run", "-r")
               .defineFlag("--verify", "-v")
               .defineFlag("--obfuscate", "-o")
@@ -34,8 +36,11 @@ public final class Main {
         parser.parse(args);
 
         // If help flag was specified, print help and return
-        if (parser.isSpecified("--help")) {
-            System.out.println("PEMU [options]:\n" + parser.getUsage());
+        boolean printHelp = parser.isSpecified("--help");
+        boolean printVersion = parser.isSpecified("--version");
+        if (printHelp || printVersion) {
+            if (printVersion) System.out.println(StringUtils.format("{0} version \"{1}\"", Application.APP_TITLE, Application.APP_VERSION));
+            if (printHelp) System.out.println("PEMU [options]:\n" + parser.getUsage());
             return;
         }
 

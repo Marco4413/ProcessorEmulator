@@ -1,5 +1,9 @@
 
 -- Version (v1.12.0-RELEASE)
+-- Changes from commit @bfa9631
+
+Added command line argument: "--version"
+
 -- Changes from commit @d3d7288
 
 Added command line argument: "--no-config-auto-save"
