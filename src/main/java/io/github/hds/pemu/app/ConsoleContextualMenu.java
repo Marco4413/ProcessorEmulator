@@ -70,7 +70,7 @@ public final class ConsoleContextualMenu extends JPopupMenu implements ITranslat
     public void saveConsole(ActionEvent e) {
         if (!(getInvoker() instanceof ConsoleComponent)) return;
         GFileDialog gFileDialog = GFileDialog.getInstance();
-        if (gFileDialog.showSaveDialog(this, GFileDialog.getTextFileFilter()) == JFileChooser.APPROVE_OPTION) {
+        if (gFileDialog.showSaveDialog(this, null, GFileDialog.getTextFileFilter()) == JFileChooser.APPROVE_OPTION) {
             File file = gFileDialog.getSelectedFile();
             try {
                 PrintWriter writer = new PrintWriter(file, "UTF-8");

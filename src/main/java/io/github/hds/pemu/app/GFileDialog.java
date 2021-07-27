@@ -5,6 +5,7 @@ import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -30,12 +31,14 @@ public final class GFileDialog extends JFileChooser implements ITranslatable {
     private @NotNull String localeFileIsLocked = "";
     private @NotNull String localeCantWritePanelMsg = "";
 
+    private File openDialogDirectory = new File("./");
+    private File saveDialogDirectory = new File("./");
+
     private GFileDialog() {
         super();
 
         TranslationManager.addTranslationListener(this);
 
-        setCurrentDirectory(new File("./"));
         setMultiSelectionEnabled(false);
         setFileSelectionMode(JFileChooser.FILES_ONLY);
     }
@@ -72,36 +75,64 @@ public final class GFileDialog extends JFileChooser implements ITranslatable {
         localeCantWritePanelMsg = translation.getOrDefault("gFileDialog.cantWritePanelMsg");
     }
 
-    public int showOpenDialog(Component parent, FileNameExtensionFilter filter, FileNameExtensionFilter... choosableFilters) throws HeadlessException {
-        resetChoosableFileFilters();
-        setFileFilter(filter);
-        for (FileNameExtensionFilter choosableFilter : choosableFilters)
-            addChoosableFileFilter(choosableFilter);
-        return showOpenDialog(parent);
-    }
-
-    @Override
-    public int showOpenDialog(Component parent) throws HeadlessException {
+    public int showOpenDialog(@Nullable Component parent, @Nullable File startingDirectory,
+                              @NotNull FileNameExtensionFilter filter, @NotNull FileNameExtensionFilter... choosableFilters) throws HeadlessException {
         setDialogTitle(localeOpenDialogTitle);
-        return super.showOpenDialog(parent);
-    }
 
-    public int showSaveDialog(Component parent, FileNameExtensionFilter filter, FileNameExtensionFilter... choosableFilters) throws HeadlessException {
         resetChoosableFileFilters();
         setFileFilter(filter);
         for (FileNameExtensionFilter choosableFilter : choosableFilters)
             addChoosableFileFilter(choosableFilter);
-        return showSaveDialog(parent);
+
+        if (startingDirectory == null)
+            setCurrentDirectory(openDialogDirectory);
+        else setCurrentDirectory(startingDirectory);
+
+        int response = super.showOpenDialog(parent);
+        openDialogDirectory = getCurrentDirectory();
+        return response;
     }
 
     @Override
-    public int showSaveDialog(Component parent) throws HeadlessException {
+    public int showOpenDialog(@Nullable Component parent) throws HeadlessException {
+        setDialogTitle(localeOpenDialogTitle);
+
+        setCurrentDirectory(openDialogDirectory);
+        int response = super.showOpenDialog(parent);
+        openDialogDirectory = getCurrentDirectory();
+        return response;
+    }
+
+    public int showSaveDialog(@Nullable Component parent, @Nullable File startingDirectory,
+                              @NotNull FileNameExtensionFilter filter, @NotNull FileNameExtensionFilter... choosableFilters) throws HeadlessException {
         setDialogTitle(localeSaveDialogTitle);
-        return super.showSaveDialog(parent);
+
+        resetChoosableFileFilters();
+        setFileFilter(filter);
+        for (FileNameExtensionFilter choosableFilter : choosableFilters)
+            addChoosableFileFilter(choosableFilter);
+
+        if (startingDirectory == null)
+            setCurrentDirectory(saveDialogDirectory);
+        else setCurrentDirectory(startingDirectory);
+
+        int response = super.showSaveDialog(parent);
+        saveDialogDirectory = getCurrentDirectory();
+        return response;
     }
 
     @Override
-    protected JDialog createDialog(Component parent) throws HeadlessException {
+    public int showSaveDialog(@Nullable Component parent) throws HeadlessException {
+        setDialogTitle(localeSaveDialogTitle);
+
+        setCurrentDirectory(saveDialogDirectory);
+        int response = super.showSaveDialog(parent);
+        saveDialogDirectory = getCurrentDirectory();
+        return response;
+    }
+
+    @Override
+    protected JDialog createDialog(@Nullable Component parent) throws HeadlessException {
         JDialog dialog = super.createDialog(parent);
         switch (getDialogType()) {
             case SAVE_DIALOG:

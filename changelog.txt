@@ -1,5 +1,12 @@
 
 -- Version (v1.12.0-RELEASE)
+
+-- Version (v1.11.5-RELEASE)
+-- Changes from commit @024ef15
+
+Made Open File Dialog start in the directory of the current program
+Now Open and Save Dialog Paths aren't the same
+
 -- Changes from commit @bfa9631
 
 Added command line argument: "--version"
