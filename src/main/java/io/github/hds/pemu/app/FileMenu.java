@@ -71,7 +71,7 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
 
     private void openProgram(ActionEvent e) {
         GFileDialog gFileDialog = GFileDialog.getInstance();
-        if (gFileDialog.showOpenDialog(this, GFileDialog.getPEMUFileFilter(), GFileDialog.getPEMULibFileFilter()) == JFileChooser.APPROVE_OPTION)
+        if (gFileDialog.showOpenDialog(this, app.currentProgram, GFileDialog.getPEMUFileFilter(), GFileDialog.getPEMULibFileFilter()) == JFileChooser.APPROVE_OPTION)
             app.setCurrentProgram(gFileDialog.getSelectedFile());
     }
 
