@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
 
 /**
  * An interface that holds all basic methods that
@@ -104,7 +103,7 @@ public interface IProcessor extends Runnable, IStoppable {
      * Can return null if not implemented.
      * @return The history of {@link Instruction}s executed by this {@link IProcessor}
      */
-    @Nullable HashMap<Integer, String> getInstructionHistory();
+    @Nullable InstructionHistory getInstructionHistory();
 
     /**
      * Returns how many milliseconds elapsed since this {@link IProcessor} started running for the first time

@@ -3,6 +3,7 @@ package io.github.hds.pemu.app;
 import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
+import io.github.hds.pemu.instructions.InstructionHistory;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
@@ -145,7 +146,7 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
         }
 
         // Getting the history of executed processor instructions
-        HashMap<Integer, String> history = processor.getInstructionHistory();
+        InstructionHistory history = processor.getInstructionHistory();
 
         // These will be populated when looking through registers
         Integer IPValue = null;

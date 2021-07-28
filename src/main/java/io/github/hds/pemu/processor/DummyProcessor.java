@@ -1,5 +1,6 @@
 package io.github.hds.pemu.processor;
 
+import io.github.hds.pemu.instructions.InstructionHistory;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.*;
 import io.github.hds.pemu.memory.flags.*;
@@ -8,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
 
 public final class DummyProcessor implements IDummyProcessor {
 
@@ -102,7 +102,7 @@ public final class DummyProcessor implements IDummyProcessor {
     }
 
     @Override
-    public @Nullable HashMap<Integer, String> getInstructionHistory() {
+    public @Nullable InstructionHistory getInstructionHistory() {
         return null;
     }
 
