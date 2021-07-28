@@ -1,5 +1,16 @@
 
 -- Version (v1.12.0-RELEASE)
+-- Changes from commit @c2f5bea
+
+Added basic Plugin System
+Added class BasePlugin
+Added interface IPlugin
+
+Added methods to Application: addPlugin, getLoadedPlugin
+Removed methods from Application: setProducer, setDummyProducer
+
+Added class InstructionHistory
+ - Which will now be used by IProcessor#getInstructionHistory
 
 -- Version (v1.11.5-RELEASE)
 -- Changes from commit @024ef15
