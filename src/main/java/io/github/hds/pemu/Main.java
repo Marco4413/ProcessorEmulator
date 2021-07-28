@@ -2,7 +2,7 @@ package io.github.hds.pemu;
 
 import io.github.hds.pemu.app.Application;
 import io.github.hds.pemu.app.Console;
-import io.github.hds.pemu.processor.Processor;
+import io.github.hds.pemu.plugins.BasePlugin;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.arguments.ArgumentsParser;
 import io.github.hds.pemu.processor.ProcessorConfig;
@@ -116,12 +116,8 @@ public final class Main {
         if (parser.isSpecified("--clock-frequency"))
             processorConfig.setClockFrequency((int) parser.getOption("--clock-frequency").getValue());
 
-        // Setting up app instance and showing it
-        app.setProducer(Processor::new);
-
-        // If not specified the app will create a full Processor instead
-        //  This is used when verifying or obfuscating code
-        app.setDummyProducer(Processor::getDummyProcessor);
+        // Adding base plugin
+        app.addPlugin(new BasePlugin());
 
         app.setCurrentProgram(new File((String) parser.getOption("--program").getValue()));
 

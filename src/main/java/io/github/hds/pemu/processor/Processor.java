@@ -2,6 +2,7 @@ package io.github.hds.pemu.processor;
 
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionError;
+import io.github.hds.pemu.instructions.InstructionHistory;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.*;
 import io.github.hds.pemu.memory.flags.*;
@@ -11,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
 
 public final class Processor implements IProcessor {
 
@@ -31,7 +31,7 @@ public final class Processor implements IProcessor {
     private final Clock CLOCK;
 
     private final InstructionSet INSTRUCTIONSET;
-    private final HashMap<Integer, String> HISTORY;
+    private final InstructionHistory HISTORY;
 
     private volatile char charPressed = '\0';
     private volatile int keyPressed = KeyEvent.VK_UNDEFINED;
@@ -48,7 +48,7 @@ public final class Processor implements IProcessor {
         CLOCK = new Clock(config.getClockFrequency());
 
         INSTRUCTIONSET = config.getInstructionSet();
-        HISTORY = new HashMap<>();
+        HISTORY = new InstructionHistory();
 
         REGISTERS = new RegisterHolder<>(
                 new MemoryRegister(getProgramAddress(), "Instruction Pointer", MEMORY, 0),
@@ -138,7 +138,7 @@ public final class Processor implements IProcessor {
     }
 
     @Override
-    public @Nullable HashMap<Integer, String> getInstructionHistory() {
+    public @Nullable InstructionHistory getInstructionHistory() {
         return HISTORY;
     }
 
@@ -150,7 +150,7 @@ public final class Processor implements IProcessor {
 
     @Override
     public @Nullable String loadProgram(int[] program) {
-        if (program.length > MEMORY.getSize() - (getReservedWords()))
+        if (program.length > MEMORY.getSize() - getReservedWords())
             return "Couldn't load program because there's not enough space!";
 
         MEMORY.setValuesAt(getProgramAddress(), program);

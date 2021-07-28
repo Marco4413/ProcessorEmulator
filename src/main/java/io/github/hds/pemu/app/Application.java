@@ -8,6 +8,7 @@ import io.github.hds.pemu.config.IConfigurable;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
+import io.github.hds.pemu.plugins.IPlugin;
 import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.IDummyProcessor;
 import io.github.hds.pemu.processor.IProcessor;
@@ -21,7 +22,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.function.Function;
+import java.util.HashMap;
 
 public final class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
@@ -41,6 +42,9 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     private static Application INSTANCE;
 
+    private final HashMap<String, IPlugin> PLUGINS = new HashMap<>();
+    private String loadedPluginID = null;
+
     private boolean closeOnProcessorStop = false;
     private boolean allowVisibilityChange = true;
     private boolean disableConfigAutoSave = false;
@@ -53,10 +57,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     protected final JLabel PERFORMANCE_LABEL;
     protected final Timer UPDATE_TIMER;
 
-    protected @Nullable Function<ProcessorConfig, IDummyProcessor> dummyProcessorProducer = null;
-
     protected @Nullable File currentProgram = null;
-    protected @Nullable Function<ProcessorConfig, IProcessor> processorProducer = null;
     protected @Nullable IProcessor currentProcessor = null;
     protected @NotNull ProcessorConfig processorConfig;
 
@@ -216,12 +217,16 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         );
     }
 
-    public void setProducer(@NotNull Function<ProcessorConfig, IProcessor> producer) {
-        processorProducer = producer;
+    public void addPlugin(@Nullable IPlugin plugin) {
+        if (plugin == null || PLUGINS.containsKey(plugin.getID())) return;
+        PLUGINS.put(plugin.getID(), plugin);
+
+        if (loadedPluginID == null) loadedPluginID = plugin.getID();
     }
 
-    public void setDummyProducer(@NotNull Function<ProcessorConfig, IDummyProcessor> producer) {
-        dummyProcessorProducer = producer;
+    public @Nullable IPlugin getLoadedPlugin() {
+        if (loadedPluginID == null) return null;
+        return PLUGINS.get(loadedPluginID);
     }
 
     public void setCurrentProgram(@NotNull File program) {
@@ -274,14 +279,15 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     }
 
     public @Nullable IProcessor createProcessor() {
-        if (processorProducer == null) {
-            Console.Debug.println("Processor Producer was never specified (Try downloading the latest version of the app)!\n");
+        IPlugin loadedPlugin = getLoadedPlugin();
+        if (loadedPlugin == null) {
+            Console.Debug.println("No plugin loaded (Try downloading the latest version of the app)!\n");
             return null;
         }
 
         // Create a new Processor with the current ProcessorConfig
         try {
-            return processorProducer.apply(processorConfig);
+            return loadedPlugin.createProcessor(processorConfig);
         } catch (Exception err) {
             Console.Debug.println("Couldn't create Processor.");
             Console.Debug.printStackTrace(err, false);
@@ -292,12 +298,16 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     }
 
     public @Nullable IProcessor createDummyProcessor() {
-        // If no DummyProcessor was specified then create a full Processor
-        if (dummyProcessorProducer == null)
-            return createProcessor();
+        IPlugin loadedPlugin = getLoadedPlugin();
+        if (loadedPlugin == null) {
+            Console.Debug.println("No plugin loaded (Try downloading the latest version of the app)!\n");
+            return null;
+        }
 
         try {
-            return dummyProcessorProducer.apply(processorConfig);
+            IDummyProcessor dummyProcessor = loadedPlugin.createDummyProcessor(processorConfig);
+            if (dummyProcessor == null) return loadedPlugin.createProcessor(processorConfig);
+            return dummyProcessor;
         } catch (Exception err) {
             Console.Debug.println("Couldn't create Dummy Processor.");
             Console.Debug.printStackTrace(err, false);
