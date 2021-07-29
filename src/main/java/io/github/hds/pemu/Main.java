@@ -5,6 +5,7 @@ import io.github.hds.pemu.app.Console;
 import io.github.hds.pemu.plugins.BasePlugin;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.arguments.ArgumentsParser;
+import io.github.hds.pemu.plugins.PluginManager;
 import io.github.hds.pemu.processor.ProcessorConfig;
 import io.github.hds.pemu.utils.StringUtils;
 
@@ -117,7 +118,9 @@ public final class Main {
             processorConfig.setClockFrequency((int) parser.getOption("--clock-frequency").getValue());
 
         // Adding base plugin
-        app.addPlugin(new BasePlugin());
+        app.loadPlugin(
+            PluginManager.registerPlugin(new BasePlugin())
+        );
 
         app.setCurrentProgram(new File((String) parser.getOption("--program").getValue()));
 

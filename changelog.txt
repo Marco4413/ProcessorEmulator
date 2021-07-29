@@ -1,5 +1,22 @@
 
 -- Version (v1.12.0-RELEASE)
+-- Changes from commit @63f88ca
+
+Added static class PluginManager
+Added Plugin Selection in File Menu
+Removed method IPlugin.getDescription
+Added defaults to all methods from interface IPlugin
+Added abstract class Plugin which implements IPlugin and overrides the toString method
+
+Removed some methods related to Plugins from Application class (Now everything is handled by PluginManager)
+ - Kept methods: loadPlugin, getLoadedPlugin
+
+Added package pemu.files
+Added static classes to package pemu.files: FileManager, FileUtils
+Moved and renamed File-related methods from class StringUtils to FileUtils
+
+Added constructor overload for class DummyProcessor that accepts Lists instead of Arrays
+
 -- Changes from commit @c2f5bea
 
 Added basic Plugin System

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.event.KeyEvent;
+import java.util.List;
 
 public final class DummyProcessor implements IDummyProcessor {
 
@@ -41,6 +42,16 @@ public final class DummyProcessor implements IDummyProcessor {
         MEMORY = new DummyMemory(Word.getClosestWord(config.getBits()));
         CLOCK = new Clock(config.getClockFrequency());
         INSTRUCTIONSET = config.getInstructionSet();
+    }
+
+    /**
+     * Creates a new {@link DummyProcessor}'s instance
+     * @param config The {@link ProcessorConfig} to create the new instance with
+     * @param registers The {@link IRegister}s to add to this {@link IProcessor}
+     * @param flags The {@link IFlag}s to add to this {@link IProcessor}
+     */
+    public DummyProcessor(@NotNull ProcessorConfig config, @NotNull List<IDummyRegister> registers, @NotNull List<IDummyFlag> flags) {
+        this(config, registers.toArray(new IDummyRegister[0]), flags.toArray(new IDummyFlag[0]));
     }
 
     @Override
