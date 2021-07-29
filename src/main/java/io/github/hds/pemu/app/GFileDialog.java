@@ -1,5 +1,6 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.files.FileUtils;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
@@ -148,7 +149,7 @@ public final class GFileDialog extends JFileChooser implements ITranslatable {
     @Override
     public void approveSelection() {
         if (getDialogType() == SAVE_DIALOG) {
-            File file = new File(StringUtils.getFilePathWExt(getSelectedFile(), StringUtils.getFileExtFromFilter(getFileFilter())));
+            File file = new File(FileUtils.getFilePathWithExtension(getSelectedFile(), FileUtils.getFileExtensionFromFilter(getFileFilter())));
             setSelectedFile(file);
 
             if (file.exists()) {

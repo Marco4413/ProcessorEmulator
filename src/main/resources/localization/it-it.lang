@@ -13,11 +13,15 @@
 "fileMenu.openProgram._mnemonic"    = 'A'
 "fileMenu.changeLanguage._text"     = "Cambia Lingua"
 "fileMenu.changeLanguage._mnemonic" = 'L'
+"fileMenu.loadPlugin._text"         = "Carica Plugin"
+"fileMenu.loadPlugin._mnemonic"     = 'P'
 "fileMenu.quit._text"               = "Esci"
 "fileMenu.quit._mnemonic"           = 'E'
 
 "fileMenu.selectLanguageTitle" = "Cambia Lingua"
 "fileMenu.selectLanguageMsg"   = "Seleziona la Lingua:"
+"fileMenu.selectPluginTitle"   = "Carica Plugin"
+"fileMenu.selectPluginMsg"     = "Seleziona il Plugin:"
 
 "programMenu._text"                      = "Programma"
 "programMenu._mnemonic"                  = 'P'

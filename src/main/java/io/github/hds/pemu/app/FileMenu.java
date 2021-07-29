@@ -4,9 +4,12 @@ import io.github.hds.pemu.Main;
 import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
+import io.github.hds.pemu.files.FileUtils;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
+import io.github.hds.pemu.plugins.IPlugin;
+import io.github.hds.pemu.plugins.PluginManager;
 import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,13 +26,17 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
 
     private final JMenuItem OPEN_PROGRAM;
     private final JMenuItem CHANGE_LANGUAGE;
+    private final JMenuItem LOAD_PLUGIN;
     private final JMenuItem QUIT;
 
     private final ImageIcon ICON_CHANGE_LANGUAGE;
+    private final ImageIcon ICON_LOAD_PLUGIN;
     private final ImageIcon ICON_QUIT;
 
     private String localeSelectLanguageTitle = "";
     private String localeSelectLanguageMsg = "";
+    private String localeSelectPluginTitle = "";
+    private String localeSelectPluginMsg = "";
 
     protected FileMenu(@NotNull Application parentApp) {
         super();
@@ -51,6 +58,13 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
         CHANGE_LANGUAGE.addActionListener(this::changeLanguage);
         add(CHANGE_LANGUAGE);
 
+        ICON_LOAD_PLUGIN = IconUtils.importIcon("/assets/load_plugin.png", Application.MENU_ITEM_ICON_SIZE);
+
+        LOAD_PLUGIN = new JMenuItem("Load Plugin");
+        LOAD_PLUGIN.setIcon(ICON_LOAD_PLUGIN);
+        LOAD_PLUGIN.addActionListener(this::loadPlugin);
+        add(LOAD_PLUGIN);
+
         ICON_QUIT = IconUtils.importIcon("/assets/quit.png", Application.MENU_ITEM_ICON_SIZE);
 
         QUIT = new JMenuItem();
@@ -64,9 +78,12 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
         translation.translateComponent("fileMenu", this);
         translation.translateComponent("fileMenu.openProgram", OPEN_PROGRAM);
         translation.translateComponent("fileMenu.changeLanguage", CHANGE_LANGUAGE);
+        translation.translateComponent("fileMenu.loadPlugin", LOAD_PLUGIN);
         translation.translateComponent("fileMenu.quit", QUIT);
         localeSelectLanguageTitle = translation.getOrDefault("fileMenu.selectLanguageTitle");
         localeSelectLanguageMsg = translation.getOrDefault("fileMenu.selectLanguageMsg");
+        localeSelectPluginTitle = translation.getOrDefault("fileMenu.selectPluginTitle");
+        localeSelectPluginMsg = translation.getOrDefault("fileMenu.selectPluginMsg");
     }
 
     private void openProgram(ActionEvent e) {
@@ -75,16 +92,28 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
             app.setCurrentProgram(gFileDialog.getSelectedFile());
     }
 
+    private void loadPlugin(ActionEvent e) {
+        IPlugin[] availablePlugins = PluginManager.getAllPlugins();
+
+        IPlugin selectedPlugin = (IPlugin) JOptionPane.showInputDialog(
+                this, localeSelectPluginMsg, localeSelectPluginTitle,
+                JOptionPane.PLAIN_MESSAGE, ICON_LOAD_PLUGIN, availablePlugins, app.getLoadedPlugin()
+        );
+        if (selectedPlugin == null) return;
+
+        app.loadPlugin(selectedPlugin);
+    }
+
     private void changeLanguage(ActionEvent e) {
         ArrayList<Translation> availableTranslations = new ArrayList<>();
         InputStream stream = Main.class.getResourceAsStream("/localization/languages.txt");
         Scanner scanner = new Scanner(stream);
         while (scanner.hasNextLine()) {
-            String languageName = scanner.nextLine();
-            if (languageName.equals("")) continue;
+            String languageName = scanner.nextLine().trim();
+            if (languageName.length() == 0) continue;
             try {
                 availableTranslations.add(
-                        TranslationManager.loadTranslation(StringUtils.getPathWExt("/localization/" + languageName, "lang"))
+                        TranslationManager.loadTranslation(FileUtils.getPathWithExtension("/localization/" + languageName, "lang"))
                 );
             } catch (Exception ignored) { }
         }
@@ -120,7 +149,7 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
         String languageName = e.config.get(String.class, "selectedLanguage");
         TranslationManager.setCurrentTranslation(
                 TranslationManager.loadTranslation(
-                        StringUtils.getPathWExt("/localization/" + languageName, "lang")
+                        FileUtils.getPathWithExtension("/localization/" + languageName, "lang")
                 )
         );
     }

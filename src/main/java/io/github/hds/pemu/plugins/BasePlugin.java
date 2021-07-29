@@ -5,7 +5,7 @@ import io.github.hds.pemu.app.Application;
 import io.github.hds.pemu.processor.*;
 import org.jetbrains.annotations.NotNull;
 
-public final class BasePlugin implements IPlugin {
+public final class BasePlugin extends Plugin {
     public BasePlugin() { }
 
     @Override
@@ -16,11 +16,6 @@ public final class BasePlugin implements IPlugin {
     @Override
     public String getName() {
         return "Default Processor";
-    }
-
-    @Override
-    public String getDescription() {
-        return "The Default PEMU Processor";
     }
 
     @Override

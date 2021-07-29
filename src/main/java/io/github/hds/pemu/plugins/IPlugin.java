@@ -7,10 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface IPlugin {
-    @NotNull  String getID();
-    @Nullable String getName();
-    @Nullable String getDescription();
-    @Nullable String getVersion();
-    @Nullable IProcessor createProcessor(@NotNull ProcessorConfig config);
-    @Nullable IDummyProcessor createDummyProcessor(@NotNull ProcessorConfig config);
+    default @Nullable String getID() { return null; }
+    default @Nullable String getName() { return null; }
+    default @Nullable String getVersion() { return null; }
+    default @Nullable IProcessor createProcessor(@NotNull ProcessorConfig config) { return null; }
+    default @Nullable IDummyProcessor createDummyProcessor(@NotNull ProcessorConfig config) { return null; }
 }

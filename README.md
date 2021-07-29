@@ -10,9 +10,11 @@ Don't expect much from this emulator, it's made just for learning purposes.
 
 ## Does this program create any files on disk?
 
-From version 1.0.0 this program creates one file named `PEMU.config` in the user's home dir to save all config data.
+~~From version 1.0.0 this program creates one file named `PEMU.config` in the user's home dir to save all config data.~~
 
-On Windows: `%USERPROFILE%/PEMU.config`
+From version 1.12.0 this program creates a folder named `PEMU` in the user's home dir to store all program's data.
+
+On Windows: `%USERPROFILE%/PEMU/`
 
 ## How to run:
 

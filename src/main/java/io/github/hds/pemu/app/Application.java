@@ -9,6 +9,7 @@ import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.plugins.IPlugin;
+import io.github.hds.pemu.plugins.PluginManager;
 import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.IDummyProcessor;
 import io.github.hds.pemu.processor.IProcessor;
@@ -22,7 +23,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.HashMap;
 
 public final class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
@@ -42,8 +42,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     private static Application INSTANCE;
 
-    private final HashMap<String, IPlugin> PLUGINS = new HashMap<>();
-    private String loadedPluginID = null;
+    private IPlugin loadedPlugin = null;
 
     private boolean closeOnProcessorStop = false;
     private boolean allowVisibilityChange = true;
@@ -217,16 +216,18 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         );
     }
 
-    public void addPlugin(@Nullable IPlugin plugin) {
-        if (plugin == null || PLUGINS.containsKey(plugin.getID())) return;
-        PLUGINS.put(plugin.getID(), plugin);
+    public boolean loadPlugin(@Nullable String pluginID) {
+        return loadPlugin(PluginManager.getPlugin(pluginID));
+    }
 
-        if (loadedPluginID == null) loadedPluginID = plugin.getID();
+    public boolean loadPlugin(@Nullable IPlugin plugin) {
+        if (!PluginManager.hasPlugin(plugin)) return false;
+        loadedPlugin = plugin;
+        return true;
     }
 
     public @Nullable IPlugin getLoadedPlugin() {
-        if (loadedPluginID == null) return null;
-        return PLUGINS.get(loadedPluginID);
+        return loadedPlugin;
     }
 
     public void setCurrentProgram(@NotNull File program) {

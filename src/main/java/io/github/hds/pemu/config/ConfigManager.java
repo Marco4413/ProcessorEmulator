@@ -1,6 +1,6 @@
 package io.github.hds.pemu.config;
 
-import io.github.hds.pemu.app.Application;
+import io.github.hds.pemu.files.FileManager;
 import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
 import io.github.hds.pemu.tokenizer.keyvalue.KeyValueParser;
 import org.jetbrains.annotations.NotNull;
@@ -8,13 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public final class ConfigManager {
-
-    public static final @NotNull Path CONFIG_PATH = Paths.get(System.getProperty("user.home"), Application.APP_TITLE + ".config");
 
     private static KeyValueData config = new KeyValueData();
     private static KeyValueData defaultConfig = null;
@@ -56,8 +52,8 @@ public final class ConfigManager {
     }
 
     public static boolean loadConfig() {
-        File file = CONFIG_PATH.toFile();
-        if (file.exists() && file.isFile() && file.canRead()) {
+        File file = FileManager.getConfigFile();
+        if (file.isFile() && file.canRead()) {
             FileReader reader;
             try {
                 reader = new FileReader(file);
@@ -79,8 +75,8 @@ public final class ConfigManager {
     public static boolean saveConfig(boolean skipListeners) {
         if (!skipListeners) sendEvent(ConfigEvent.EVENT_TYPE.SAVE);
 
-        File file = CONFIG_PATH.toFile();
-        if (file.isDirectory()) return false;
+        File file = FileManager.getConfigFile();
+        if (file.isDirectory() || !file.canWrite()) return false;
         try {
             PrintWriter writer = new PrintWriter(file, "UTF-8");
             writer.print(config.toString());
