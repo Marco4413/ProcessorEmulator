@@ -11,7 +11,6 @@ import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.plugins.IPlugin;
 import io.github.hds.pemu.plugins.PluginManager;
 import io.github.hds.pemu.processor.Clock;
-import io.github.hds.pemu.processor.IDummyProcessor;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.processor.ProcessorConfig;
 import io.github.hds.pemu.utils.*;
@@ -23,6 +22,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.StringWriter;
 
 public final class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
@@ -130,8 +130,6 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
         UPDATE_TIMER = new Timer(PERFORMANCE_UPDATE_INTERVAL, this::updateFrame);
         UPDATE_TIMER.start();
-
-        ConfigManager.loadOrCreate();
     }
 
     public static @NotNull Application getInstance() {
@@ -222,6 +220,17 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     public boolean loadPlugin(@Nullable IPlugin plugin) {
         if (!PluginManager.hasPlugin(plugin)) return false;
+
+        StringWriter stderr = new StringWriter();
+        boolean successfulLoad = plugin.onLoad(stderr);
+        if (!successfulLoad) {
+            Console.Debug.println(stderr.toString());
+            return false;
+        }
+
+        if (loadedPlugin != null)
+            loadedPlugin.onUnload();
+
         loadedPlugin = plugin;
         return true;
     }
@@ -279,16 +288,27 @@ public final class Application extends JFrame implements KeyListener, ITranslata
             currentProcessor.setKeyPressed(KeyEvent.VK_UNDEFINED);
     }
 
+    private String getPluginNotLoadedMessage() {
+        return StringUtils.format(
+                "No plugin loaded ({0} -> {1}).\n",
+                FILE_MENU.getText(), FILE_MENU.LOAD_PLUGIN.getText()
+        );
+    }
+
     public @Nullable IProcessor createProcessor() {
         IPlugin loadedPlugin = getLoadedPlugin();
         if (loadedPlugin == null) {
-            Console.Debug.println("No plugin loaded (Try downloading the latest version of the app)!\n");
+            Console.Debug.println(getPluginNotLoadedMessage());
             return null;
         }
 
         // Create a new Processor with the current ProcessorConfig
         try {
-            return loadedPlugin.createProcessor(processorConfig);
+            IProcessor processor = loadedPlugin.onCreateProcessor(processorConfig);
+            if (processor == null) {
+                Console.Debug.println("Couldn't create Processor using plugin: " + loadedPlugin.toString());
+                Console.Debug.println();
+            } else return processor;
         } catch (Exception err) {
             Console.Debug.println("Couldn't create Processor.");
             Console.Debug.printStackTrace(err, false);
@@ -301,14 +321,18 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public @Nullable IProcessor createDummyProcessor() {
         IPlugin loadedPlugin = getLoadedPlugin();
         if (loadedPlugin == null) {
-            Console.Debug.println("No plugin loaded (Try downloading the latest version of the app)!\n");
+            Console.Debug.println(getPluginNotLoadedMessage());
             return null;
         }
 
         try {
-            IDummyProcessor dummyProcessor = loadedPlugin.createDummyProcessor(processorConfig);
-            if (dummyProcessor == null) return loadedPlugin.createProcessor(processorConfig);
-            return dummyProcessor;
+            IProcessor dummyProcessor = loadedPlugin.onCreateDummyProcessor(processorConfig);
+            if (dummyProcessor == null) dummyProcessor = loadedPlugin.onCreateProcessor(processorConfig);
+
+            if (dummyProcessor == null) {
+                Console.Debug.println("Couldn't create Dummy Processor using plugin: " + loadedPlugin.toString());
+                Console.Debug.println();
+            } else return dummyProcessor;
         } catch (Exception err) {
             Console.Debug.println("Couldn't create Dummy Processor.");
             Console.Debug.printStackTrace(err, false);

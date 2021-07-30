@@ -1,5 +1,34 @@
 
 -- Version (v1.12.0-RELEASE)
+-- Changes from commit @304a9ff
+
+Added Dependency: JRuby
+
+Renamed methods of interface IPlugin:
+ - createProcessor -> onCreateProcessor
+ - createDummyProcessor -> onCreateDummyProcessor
+Added methods to interface IPlugin: onLoad, onUnload
+
+Added static field FileManager.PLUGINS_DIR
+Added static method FileManager.getPluginDirectory
+
+Added enum PluginType
+Added class ExternalPlugin, which is used when loading an external plugin
+Reworked class PluginManager (See JavaDocs, it's been Documented)
+
+Added interface IConsole
+Modified interface IPrintable
+Added class ConsolePrintStream
+Removed class PrintablePrintStream
+
+Now outputs stored by the Console class are stored as IConsole(s)
+
+Added margins to ConsoleComponent
+Updated ConsoleComponent to use the new IConsole interface instead of IPrintable
+Now if not on the command line, both System.out and System.err are re-routed to Console.Debug
+
+Improved message for when no plugin is loaded by the Application
+
 -- Changes from commit @63f88ca
 
 Added static class PluginManager

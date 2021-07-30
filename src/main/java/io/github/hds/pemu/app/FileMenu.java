@@ -26,7 +26,7 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
 
     private final JMenuItem OPEN_PROGRAM;
     private final JMenuItem CHANGE_LANGUAGE;
-    private final JMenuItem LOAD_PLUGIN;
+    protected final JMenuItem LOAD_PLUGIN;
     private final JMenuItem QUIT;
 
     private final ImageIcon ICON_CHANGE_LANGUAGE;
@@ -93,7 +93,7 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
     }
 
     private void loadPlugin(ActionEvent e) {
-        IPlugin[] availablePlugins = PluginManager.getAllPlugins();
+        IPlugin[] availablePlugins = PluginManager.getRegisteredPlugins();
 
         IPlugin selectedPlugin = (IPlugin) JOptionPane.showInputDialog(
                 this, localeSelectPluginMsg, localeSelectPluginTitle,

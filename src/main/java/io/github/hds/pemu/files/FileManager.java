@@ -13,11 +13,18 @@ public final class FileManager {
     public static final Path PEMU_DIR = HOME_DIR.resolve(Application.APP_TITLE + "/");
 
     public static final File CONFIG = PEMU_DIR.resolve("pemu.config").toFile();
+    public static final File PLUGINS_DIR = PEMU_DIR.resolve("plugins/").toFile();
 
     public static @NotNull File getConfigFile() {
         if (!FileUtils.createFile(CONFIG, false))
             throw new IllegalStateException("pemu config file couldn't be created.");
         return CONFIG;
+    }
+
+    public static @NotNull File getPluginDirectory() {
+        if (!FileUtils.createFile(PLUGINS_DIR, true))
+            throw new IllegalStateException("plugins directory couldn't be created.");
+        return PLUGINS_DIR;
     }
 
 }

@@ -10,9 +10,9 @@ Don't expect much from this emulator, it's made just for learning purposes.
 
 ## Does this program create any files on disk?
 
-~~From version 1.0.0 this program creates one file named `PEMU.config` in the user's home dir to save all config data.~~
+~~From version `1.0.0` this program creates one file named `PEMU.config` in the user's home dir to save all config data.~~
 
-From version 1.12.0 this program creates a folder named `PEMU` in the user's home dir to store all program's data.
+From version `1.12.0` this program creates a folder named `PEMU` in the user's home dir to store all program's data.
 
 On Windows: `%USERPROFILE%/PEMU/`
 
@@ -44,6 +44,13 @@ You can download the above linked folder and start using it yourself to make you
 
 Can be found [@DOCUMENTATION.md](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/DOCUMENTATION.md)
 
+## Plugins:
+
+On version `1.12.0` plugin support was added, and since then you can write your own implementation of a Processor using
+the Ruby Programming Language (This added support also increased PEMU's size by ~25MB).
+
+You can learn more about plugins [@plugins/](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/plugins)
+
 ## Utilities:
 
 ### vscode-pemu-language
@@ -68,7 +75,9 @@ it should also work on newer versions, but it's not tested.
 
 ## Dependencies:
 
-There are actually no dependencies except for `JetBrains Annotations` that's used at compile time.
+There are 2 main dependencies:
+1. [JRuby](https://www.jruby.org) (Used to add support for Plugins written in Ruby)
+2. [JetBrains Annotations](https://github.com/JetBrains/java-annotations)
 
 ## Screenshots:
 

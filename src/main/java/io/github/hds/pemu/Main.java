@@ -97,6 +97,9 @@ public final class Main {
             }
 
             Console.usePrintStream(System.out);
+        } else {
+            System.setOut(Console.Debug.getPrintStream());
+            System.setErr(Console.Debug.getPrintStream());
         }
 
         // Setting System-based look and feel
@@ -107,6 +110,7 @@ public final class Main {
         // Trying to get an instance of the app
         ConfigManager.setDefaultOnLoadError(true);
         Application app = Application.getInstance();
+        ConfigManager.loadOrCreate();
 
         // Setting App's ProcessorConfig based on the specified arguments
         ProcessorConfig processorConfig = app.getProcessorConfig();
@@ -117,10 +121,9 @@ public final class Main {
         if (parser.isSpecified("--clock-frequency"))
             processorConfig.setClockFrequency((int) parser.getOption("--clock-frequency").getValue());
 
-        // Adding base plugin
-        app.loadPlugin(
-            PluginManager.registerPlugin(new BasePlugin())
-        );
+        // Registering and Loading Base Plugin
+        //app.loadPlugin(PluginManager.registerPlugin(new BasePlugin()));
+        PluginManager.registerExternalPlugins();
 
         app.setCurrentProgram(new File((String) parser.getOption("--program").getValue()));
 
