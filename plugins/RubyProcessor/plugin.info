@@ -1,0 +1,14 @@
+# Comments can be added using the # character
+# This file works the same way as a .lang file
+# See (https://github.com/hds536jhmk/ProcessorEmulator/blob/master/src/main/resources/localization/en-us.lang)
+
+# It's really simple, it's a key-value file with the following syntax:
+# "key.which.is.a.double.quoted.string" = "Value which can be a String, char, long, double, null"
+
+# The ID of this plugin, if more plugins have the same ID only one of them will be registered
+"plugin.id" = "io.github.hds.pemu:ruby_processor"
+
+# The name and version of this plugin, it's used to show the user a pretty name for the plugin
+# It's usually "name:version" but can be changed by overloading the "toString" method
+"plugin.name" = "Ruby Processor"
+"plugin.version" = "1.0"
