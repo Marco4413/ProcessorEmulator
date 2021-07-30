@@ -11,17 +11,17 @@ public final class Console {
     private static final @NotNull ConsoleComponent PROGRAM_COMPONENT = new ConsoleComponent();
     private static final @NotNull ConsoleComponent DEBUG_COMPONENT = new ConsoleComponent();
 
-    public static volatile @NotNull IPrintable ProgramOutput = PROGRAM_COMPONENT;
-    public static volatile @NotNull IPrintable Debug = DEBUG_COMPONENT;
+    public static volatile @NotNull IConsole ProgramOutput = PROGRAM_COMPONENT;
+    public static volatile @NotNull IConsole Debug = DEBUG_COMPONENT;
 
-    public static void usePrintStream(@Nullable PrintStream stream) {
+    public static synchronized void usePrintStream(@Nullable PrintStream stream) {
         if (stream == null) {
             ProgramOutput = PROGRAM_COMPONENT;
             Debug = DEBUG_COMPONENT;
         } else {
-            IPrintable printableStream = new PrintablePrintStream(stream);
-            ProgramOutput = printableStream;
-            Debug = printableStream;
+            IConsole consoleStream = new ConsolePrintStream(stream);
+            ProgramOutput = consoleStream;
+            Debug = consoleStream;
         }
     }
 

@@ -30,5 +30,6 @@ jar {
 }
 
 dependencies {
+    compile 'org.jruby:jruby-complete:9.2.19.0'
     compileOnly 'org.jetbrains:annotations:20.1.0'
 }

@@ -5,6 +5,8 @@ import io.github.hds.pemu.app.Application;
 import io.github.hds.pemu.processor.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.StringWriter;
+
 public final class BasePlugin extends Plugin {
     public BasePlugin() { }
 
@@ -24,12 +26,25 @@ public final class BasePlugin extends Plugin {
     }
 
     @Override
-    public IProcessor createProcessor(@NotNull ProcessorConfig config) {
+    public IProcessor onCreateProcessor(@NotNull ProcessorConfig config) {
         return new Processor(config);
     }
 
     @Override
-    public IDummyProcessor createDummyProcessor(@NotNull ProcessorConfig config) {
+    public IDummyProcessor onCreateDummyProcessor(@NotNull ProcessorConfig config) {
         return Processor.getDummyProcessor(config);
+    }
+
+    @Override
+    public boolean onLoad(@NotNull StringWriter stderr) {
+        return true;
+    }
+
+    @Override
+    public void onUnload() { }
+
+    @Override
+    public String toString() {
+        return super.toString();
     }
 }
