@@ -122,7 +122,7 @@ public final class Main {
             processorConfig.setClockFrequency((int) parser.getOption("--clock-frequency").getValue());
 
         // Registering and Loading Base Plugin
-        //app.loadPlugin(PluginManager.registerPlugin(new BasePlugin()));
+        app.loadPlugin(PluginManager.registerPlugin(new BasePlugin()));
         PluginManager.registerExternalPlugins();
 
         app.setCurrentProgram(new File((String) parser.getOption("--program").getValue()));
