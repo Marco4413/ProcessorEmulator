@@ -47,7 +47,7 @@ The above mentioned file can be required by `require "PEMUJRubyPluginAPI"`
 
 ### Example
 
-A well-documented example can be found [@RubyProcessor/](https://github.com/hds536jhmk/ProcessorEmulator/tree/latest/plugins/RubyProcessor)
+A well-documented example can be found [@RubyProcessor/](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/plugins/RubyProcessor)
 
 ### Adding Ruby Plugins
 
