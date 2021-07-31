@@ -23,11 +23,12 @@
 
 require "PEMUJRubyPluginAPI"
 require_relative "Utils.rb"
+require_relative "localization/Translations.rb"
 
 # This class is a copy-paste of PEMU::Processor (But written in Ruby):
 # https://github.com/hds536jhmk/ProcessorEmulator/blob/master/src/main/java/io/github/hds/pemu/processor/Processor.java
 class Processor
-	protected
+protected
 	attr_accessor :is_running
 	attr_accessor :register_words
 	attr_accessor :reserved_stack_elements
@@ -44,7 +45,7 @@ class Processor
 	attr_accessor :is_paused
 	attr_accessor :stepping
 
-	public
+public
 	# Implementing interface PEMU::IProcessor
 	include PEMU::IProcessor
 
@@ -134,9 +135,15 @@ class Processor
 	end
 
 	def getInfo()
-        return "\tClock:\t#{ PEMU::StringUtils.getEngNotation(self.clock.getFrequency(), "Hz") }\n"\
-               "\tMemory:\t#{ self.memory.getSize() }x#{ self.memory.getWord().TOTAL_BYTES } Bytes\n"\
-               "\tInstructions:\t#{ self.instruction_set.getSize() }\n";
+		current_translation = Translations.instance.current_translation
+        return PEMU::StringUtils.format(
+			"\t{0}:\t#{ PEMU::StringUtils.getEngNotation(self.clock.getFrequency(), "Hz") }\n"\
+            "\t{1}:\t#{ self.memory.getSize() }x#{ self.memory.getWord().TOTAL_BYTES } Bytes\n"\
+            "\t{2}:\t#{ self.instruction_set.getSize() }\n",
+			current_translation.getOrDefault("messages.clock"),
+			current_translation.getOrDefault("messages.memory"),
+			current_translation.getOrDefault("messages.instructions")
+		);
 	end
 
 	def getInstructionHistory()
@@ -149,7 +156,7 @@ class Processor
 	end
 
 	def loadProgram(program)
-		return "Couldn't load program because there's not enough space!" if program.length > self.memory.getSize() - getReservedWords()
+		return Translations.instance.current_translation.getOrDefault("messages.processorOutOfMemory") if program.length > self.memory.getSize() - getReservedWords()
 		self.memory.setValuesAt(getProgramAddress(), program)
 		return nil
 	end

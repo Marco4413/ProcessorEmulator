@@ -1,0 +1,5 @@
+# The first two fields don't need to be specified, since Translations.rb extends the default translation
+"_shortName" = "en-us"
+"_longName"  = "English - US"
+"plugins.loaded" = "{0} Plugin Loaded!"
+"plugins.unloaded" = "{0} Plugin Unloaded."
