@@ -113,7 +113,7 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
             if (languageName.length() == 0) continue;
             try {
                 availableTranslations.add(
-                        TranslationManager.loadTranslation(FileUtils.getPathWithExtension("/localization/" + languageName, "lang"))
+                        TranslationManager.loadTranslation(FileUtils.getPathWithExtension("/localization/" + languageName, TranslationManager.LANGUAGE_EXTENSION))
                 );
             } catch (Exception ignored) { }
         }
@@ -149,7 +149,7 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
         String languageName = e.config.get(String.class, "selectedLanguage");
         TranslationManager.setCurrentTranslation(
                 TranslationManager.loadTranslation(
-                        FileUtils.getPathWithExtension("/localization/" + languageName, "lang")
+                        FileUtils.getPathWithExtension("/localization/" + languageName, TranslationManager.LANGUAGE_EXTENSION)
                 )
         );
     }

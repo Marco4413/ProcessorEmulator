@@ -24,7 +24,9 @@
 
 module PEMU
 
+    include_package Java::IoGithubHdsPemuFiles
     include_package Java::IoGithubHdsPemuInstructions
+    include_package Java::IoGithubHdsPemuLocalization
     include_package Java::IoGithubHdsPemuMemoryFlags
     include_package Java::IoGithubHdsPemuMemoryRegisters
     include_package Java::IoGithubHdsPemuMemory

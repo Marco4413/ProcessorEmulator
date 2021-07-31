@@ -149,7 +149,7 @@ public final class GFileDialog extends JFileChooser implements ITranslatable {
     @Override
     public void approveSelection() {
         if (getDialogType() == SAVE_DIALOG) {
-            File file = new File(FileUtils.getFilePathWithExtension(getSelectedFile(), FileUtils.getFileExtensionFromFilter(getFileFilter())));
+            File file = FileUtils.getFilePathWithExtension(getSelectedFile(), FileUtils.getFileExtensionFromFilter(getFileFilter()));
             setSelectedFile(file);
 
             if (file.exists()) {

@@ -13,7 +13,9 @@ import java.util.HashMap;
 
 public final class TranslationManager {
 
-    private static Translation currentTranslation;
+    public static final String LANGUAGE_EXTENSION = "lang";
+
+    private static Translation currentTranslation = new Translation();
     private static final ArrayList<ITranslatable> LISTENERS = new ArrayList<>();
 
     public static void addTranslationListener(@NotNull ITranslatable translatable) {
@@ -25,7 +27,7 @@ public final class TranslationManager {
     }
 
     public static @NotNull Translation getCurrentTranslation() {
-        return currentTranslation == null ? new Translation() : currentTranslation;
+        return currentTranslation;
     }
 
     public static void setCurrentTranslation(@NotNull Translation translation) {
@@ -38,7 +40,7 @@ public final class TranslationManager {
         return parseTranslation(new InputStreamReader(stream, StandardCharsets.UTF_8));
     }
 
-    private static @NotNull Translation parseTranslation(@NotNull Readable readable) {
+    public static @NotNull Translation parseTranslation(@NotNull Readable readable) {
         KeyValueData parsedData = KeyValueParser.parseKeyValuePairs(readable);
         HashMap<String, String> translationData = new HashMap<>();
         parsedData.forEach(
