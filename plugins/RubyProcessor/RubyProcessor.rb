@@ -30,6 +30,7 @@ require "PEMUJRubyPluginAPI"
 
 # A plugin can contain multiple files and require them
 require_relative "Processor.rb"
+require_relative "localization/Translations.rb"
 
 class Plugin < PEMU::Plugin
 	# Returns the id of this plugin, must be the same as specified in the plugin.info file
@@ -48,7 +49,7 @@ class Plugin < PEMU::Plugin
 	# Returns the version of this plugin, must be the same as specified in the plugin.info file
 	# @return [String] The version of this plugin
 	def getVersion()
-		return "1.0"
+		return "1.1"
 	end
 
 	# This method is called when creating a new Processor that is needed to Compile a file
@@ -57,7 +58,7 @@ class Plugin < PEMU::Plugin
 	# @param [PEMU::ProcessorConfig] config The config for the Processor
 	# @return [PEMU::IDummyProcessor] A Dummy Processor
 	def onCreateDummyProcessor(config)
-		return Processor::getDummyProcessor(config)
+		return Processor::getDummyProcessor config
 	end
 	
 	# This method is called when creating a new Processor that needs to be ran
@@ -65,7 +66,7 @@ class Plugin < PEMU::Plugin
 	# @param [PEMU::ProcessorConfig] config The config for the Processor
 	# @return [PEMU::IProcessor] A Processor
 	def onCreateProcessor(config)
-		return Processor.new(config)
+		return Processor.new config
 	end
 
 	# This method is called when the plugin is being loaded (The last plugin is still loaded)
@@ -73,14 +74,26 @@ class Plugin < PEMU::Plugin
 	# @return [true, false] Whether or not the plugin successfully loaded, if false stderr should be populated with the description of the error
 	def onLoad(stderr)
 		# Consoles can be used to write stuff to the user
-		PEMU::Console.Debug.println("Ruby Plugin Loaded!\n")
+		# "puts" could also be used but it doesn't support all characters (like accented ones)
+		PEMU::Console.Debug.println(
+			PEMU::StringUtils.format(
+				Translations.instance.current_translation.getOrDefault("plugins.loaded"),
+				"Ruby"
+			)
+		)
+		PEMU::Console.Debug.println
 		return true
 	end
 
 	# This method is called when the plugin is being unloaded (The new plugin is already loaded)
 	def onUnload()
-		# The method "puts" is the same as calling PEMU::Console.Debug.print
-		puts "Ruby Plugin Unloaded.\n\n"
+		PEMU::Console.Debug.println(
+			PEMU::StringUtils.format(
+				Translations.instance.current_translation.getOrDefault("plugins.unloaded"),
+				"Ruby"
+			)
+		)
+		PEMU::Console.Debug.println
 	end
 
 	# This method returns a pretty name for this plugin, this is only called when the plugin is loaded
