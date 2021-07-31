@@ -2,6 +2,8 @@
 
 ![](./logo.png)
 
+[![Gradle Build](https://github.com/hds536jhmk/ProcessorEmulator/actions/workflows/gradle.yml/badge.svg)](https://github.com/hds536jhmk/ProcessorEmulator/actions/workflows/gradle.yml)
+
 ## What's this project all about?
 
 One day I woke up and decided to challenge myself.
