@@ -24,7 +24,20 @@ menu).**
 It's really simple, you just need to open PEMU and go to `File -> Load Plugin` and select one from the drop down menu
 and confirm your choice.
 
+## How do I add Plugins to PEMU?
+
+Plugins can be added by going into `User's Home Dir -> PEMU -> plugins` and dropping the Plugin's folder.
+
+On Windows: `%USERPROFILE%/PEMU/plugins/`
+
 ## Writing plugins using Ruby:
+
+### Recommended VSCode Plugins
+
+ 1. [Ruby Solargraph](https://marketplace.visualstudio.com/items?itemName=castwide.solargraph)
+    which adds intellisense and code completion to Ruby files.
+ 2. [PEMU Language Extension](https://marketplace.visualstudio.com/items?itemName=hds.pemu-language-extension)
+    which adds syntax highlighting to language and plugin.info files.
 
 ### Folder layout
 
@@ -48,9 +61,3 @@ The above mentioned file can be required by `require "PEMUJRubyPluginAPI"`
 ### Example
 
 A well-documented example can be found [@RubyProcessor/](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/plugins/RubyProcessor)
-
-### Adding Ruby Plugins
-
-Ruby Plugins can be added by going into `User's Home Dir -> PEMU -> plugins` and dropping the Plugin's folder.
-
-On Windows: `%USERPROFILE%/PEMU/plugins/`
