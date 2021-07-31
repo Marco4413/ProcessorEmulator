@@ -62,6 +62,8 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     protected final MemoryView MEMORY_VIEW;
 
+    private @NotNull Translation currentTranslation = TranslationManager.getCurrentTranslation();
+
     private @NotNull String localeNoProgramSelected = "";
     private @NotNull String localeProgramSelected = "";
     private @NotNull String localePerformanceLabel = "";
@@ -164,6 +166,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     @Override
     public void updateTranslations(@NotNull Translation translation) {
+        currentTranslation = translation;
         localeNoProgramSelected = translation.getOrDefault("application.noProgramSelected");
         localeProgramSelected = translation.getOrDefault("application.programSelected");
 
@@ -290,7 +293,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     private String getPluginNotLoadedMessage() {
         return StringUtils.format(
-                "No plugin loaded ({0} -> {1}).\n",
+                "No plugin loaded ({0} -> {1}).",
                 FILE_MENU.getText(), FILE_MENU.LOAD_PLUGIN.getText()
         );
     }
@@ -299,6 +302,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         IPlugin loadedPlugin = getLoadedPlugin();
         if (loadedPlugin == null) {
             Console.Debug.println(getPluginNotLoadedMessage());
+            Console.Debug.println();
             return null;
         }
 
@@ -306,11 +310,14 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         try {
             IProcessor processor = loadedPlugin.onCreateProcessor(processorConfig);
             if (processor == null) {
-                Console.Debug.println("Couldn't create Processor using plugin: " + loadedPlugin.toString());
+                Console.Debug.println(StringUtils.format(
+                        currentTranslation.getOrDefault("messages.pluginNullProcessor"),
+                        loadedPlugin.toString()
+                ));
                 Console.Debug.println();
             } else return processor;
         } catch (Exception err) {
-            Console.Debug.println("Couldn't create Processor.");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.processorCreationError"));
             Console.Debug.printStackTrace(err, false);
             Console.Debug.println();
         }
@@ -322,6 +329,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         IPlugin loadedPlugin = getLoadedPlugin();
         if (loadedPlugin == null) {
             Console.Debug.println(getPluginNotLoadedMessage());
+            Console.Debug.println();
             return null;
         }
 
@@ -330,11 +338,14 @@ public final class Application extends JFrame implements KeyListener, ITranslata
             if (dummyProcessor == null) dummyProcessor = loadedPlugin.onCreateProcessor(processorConfig);
 
             if (dummyProcessor == null) {
-                Console.Debug.println("Couldn't create Dummy Processor using plugin: " + loadedPlugin.toString());
+                Console.Debug.println(StringUtils.format(
+                        currentTranslation.getOrDefault("messages.pluginNullDummyProcessor"),
+                        loadedPlugin.toString()
+                ));
                 Console.Debug.println();
             } else return dummyProcessor;
         } catch (Exception err) {
-            Console.Debug.println("Couldn't create Dummy Processor.");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.dummyProcessorCreationError"));
             Console.Debug.printStackTrace(err, false);
             Console.Debug.println();
         }
@@ -349,25 +360,29 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         CompiledProgram compiledProgram = null;
 
         if (currentProgram == null) {
-            Console.Debug.println("No program specified!");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.noProgramSpecified"));
         } else if (!currentProgram.exists()) {
-            Console.Debug.println("The specified program doesn't exist!");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.programNotFound"));
         } else if (!currentProgram.canRead()) {
-            Console.Debug.println("The specified program can't be read!");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.programNotReadable"));
         } else {
             try {
                 compiledProgram = Compiler.compileFile(currentProgram, processorInstance);
-                Console.Debug.println(
-                        String.format(
-                                "File was compiled successfully (%s), it occupies %d/%d Words",
-                                currentProgram.getName(), compiledProgram.getProgram().length, processorInstance.getMemory().getSize() - processorInstance.getReservedWords()
-                        )
-                );
-                Console.Debug.println(
-                        "Compilation took " + StringUtils.getEngNotation(compiledProgram.getCompileTime(), "s")
-                );
+                Console.Debug.println(StringUtils.format(
+                        currentTranslation.getOrDefault("messages.compiledSuccessfully"),
+                        currentProgram.getName(), compiledProgram.getProgram().length,
+                        processorInstance.getMemory().getSize() - processorInstance.getReservedWords(),
+                        "Words"
+                ));
+                Console.Debug.println(StringUtils.format(
+                        currentTranslation.getOrDefault("messages.compileTime"),
+                        StringUtils.getEngNotation(compiledProgram.getCompileTime(), "s")
+                ));
             } catch (Exception err) {
-                Console.Debug.println("Compilation error (for file @'" + currentProgram.getAbsolutePath() + "'):");
+                Console.Debug.println(StringUtils.format(
+                        currentTranslation.getOrDefault("messages.compileError"),
+                        currentProgram.getAbsolutePath()
+                ));
                 Console.Debug.printStackTrace(err, false);
             }
         }
@@ -391,7 +406,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         CompiledProgram compiledProgram = compileProgram(dummyProcessor);
         if (compiledProgram == null) return;
 
-        Console.Debug.println("Program obfuscated successfully:");
+        Console.Debug.println(currentTranslation.getOrDefault("messages.obfuscatedSuccessfully"));
         Console.Debug.println(Compiler.obfuscateProgram(compiledProgram));
         Console.Debug.println();
     }
@@ -399,7 +414,8 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public boolean runProcessor(ActionEvent e) {
         // Make sure that the last thread is dead
         if (currentProcessor != null && currentProcessor.isRunning()) {
-            Console.Debug.println("Processor is already running!\n");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.processorAlreadyRunning"));
+            Console.Debug.println();
             return false;
         }
 
@@ -419,21 +435,26 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         try {
             loadError = currentProcessor.loadProgram(compiledProgram.getProgram());
         } catch (Exception err) {
-            Console.Debug.println("Error while loading program into memory!");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.programMemoryLoadError"));
             Console.Debug.printStackTrace(err, false);
             Console.Debug.println();
             return false;
         }
 
         if (loadError != null) {
-            Console.Debug.println("Error while loading program!");
-            Console.Debug.println("Processor Error: " + loadError + "\n");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.programLoadError"));
+            Console.Debug.println(StringUtils.format(
+                    currentTranslation.getOrDefault("messages.processorError"),
+                    loadError
+            ));
+            Console.Debug.println();
             return false;
         }
 
         // Run the processor
         try {
-            Console.Debug.println("Running Processor:\n" + currentProcessor.getInfo());
+            Console.Debug.println(currentTranslation.getOrDefault("messages.processorRunning"));
+            Console.Debug.println(currentProcessor.getInfo());
 
             if (Console.ProgramOutput instanceof IClearable)
                 ((IClearable) Console.ProgramOutput).clear();
@@ -446,10 +467,11 @@ public final class Application extends JFrame implements KeyListener, ITranslata
                         super.run();
                     } catch (Exception err) {
                         currentProcessor.stop(); // Make sure to stop the processor if it fails
-                        Console.Debug.println("Error while running program!");
+                        Console.Debug.println(currentTranslation.getOrDefault("messages.programRunningError"));
                         Console.Debug.printStackTrace(err, false);
                     }
-                    Console.Debug.println("Processor stopped!\n");
+                    Console.Debug.println(currentTranslation.getOrDefault("messages.processorStopped"));
+                    Console.Debug.println();
 
                     if (closeOnProcessorStop) Application.this.close(null);
                 }
@@ -458,7 +480,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
             return true;
         } catch (Exception err) {
-            Console.Debug.println("Error while starting processor's thread!");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.processorThreadError"));
             Console.Debug.printStackTrace(err, false);
             Console.Debug.println();
             return false;
@@ -467,7 +489,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     public void stopProcessor(ActionEvent e) {
         if (currentProcessor == null || !currentProcessor.isRunning()) {
-            Console.Debug.println("Couldn't stop processor because it isn't currently running!");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.processorStopNotRunning"));
             Console.Debug.println();
             return;
         }
@@ -476,13 +498,13 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     public void toggleProcessorExecution(ActionEvent e) {
         if (currentProcessor == null || !currentProcessor.isRunning()) {
-            Console.Debug.println("Couldn't pause or resume processor because it isn't currently running!");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.processorPauseResumeNotRunning"));
         } else if (currentProcessor.isPaused()) {
             currentProcessor.resume();
-            Console.Debug.println("Processor was resumed!");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.processorResumed"));
         } else {
             currentProcessor.pause();
-            Console.Debug.println("Processor was paused!");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.processorPaused"));
         }
 
         Console.Debug.println();
@@ -490,10 +512,10 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     public void stepProcessor(ActionEvent e) {
         if (currentProcessor == null || !currentProcessor.isRunning()) {
-            Console.Debug.println("Couldn't step processor because it isn't currently running!");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.processorStepNotRunning"));
         } else {
             currentProcessor.step();
-            Console.Debug.println("Processor stepped forward!");
+            Console.Debug.println(currentTranslation.getOrDefault("messages.processorStepped"));
         }
 
         Console.Debug.println();

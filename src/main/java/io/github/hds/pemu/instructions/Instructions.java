@@ -1,6 +1,7 @@
 package io.github.hds.pemu.instructions;
 
 import io.github.hds.pemu.app.Console;
+import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.memory.*;
 import io.github.hds.pemu.memory.flags.IFlag;
 import io.github.hds.pemu.memory.registers.IRegister;
@@ -28,7 +29,10 @@ public final class Instructions {
         public void execute(@NotNull IProcessor p, int[] args) {
             if (!p.isPaused()) {
                 p.pause();
-                Console.Debug.println("Processor encountered a breakpoint.\n");
+                Console.Debug.println(
+                        TranslationManager.getCurrentTranslation().getOrDefault("messages.processorBreakpoint")
+                );
+                Console.Debug.println();
             }
         }
     };

@@ -4,6 +4,8 @@ import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionError;
 import io.github.hds.pemu.instructions.InstructionHistory;
 import io.github.hds.pemu.instructions.InstructionSet;
+import io.github.hds.pemu.localization.Translation;
+import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.memory.*;
 import io.github.hds.pemu.memory.flags.*;
 import io.github.hds.pemu.memory.registers.*;
@@ -132,9 +134,15 @@ public final class Processor implements IProcessor {
 
     @Override
     public @NotNull String getInfo() {
-        return "\tClock:\t" + StringUtils.getEngNotation(CLOCK.getFrequency(), "Hz") + "\n" +
-               "\tMemory:\t" + MEMORY.getSize() + 'x' + MEMORY.getWord().TOTAL_BYTES + " Bytes\n" +
-               "\tInstructions:\t" + INSTRUCTIONSET.getSize() + "\n";
+        Translation currentTranslation = TranslationManager.getCurrentTranslation();
+        return StringUtils.format(
+                ("\t{0}:\t" + StringUtils.getEngNotation(CLOCK.getFrequency(), "Hz") + "\n" +
+                 "\t{1}:\t" + MEMORY.getSize() + 'x' + MEMORY.getWord().TOTAL_BYTES + " Bytes\n" +
+                 "\t{2}:\t" + INSTRUCTIONSET.getSize() + "\n"),
+                currentTranslation.getOrDefault("messages.clock"),
+                currentTranslation.getOrDefault("messages.memory"),
+                currentTranslation.getOrDefault("messages.instructions")
+        );
     }
 
     @Override
@@ -151,7 +159,7 @@ public final class Processor implements IProcessor {
     @Override
     public @Nullable String loadProgram(int[] program) {
         if (program.length > MEMORY.getSize() - getReservedWords())
-            return "Couldn't load program because there's not enough space!";
+            return TranslationManager.getCurrentTranslation().getOrDefault("messages.processorOutOfMemory");
 
         MEMORY.setValuesAt(getProgramAddress(), program);
         return null;

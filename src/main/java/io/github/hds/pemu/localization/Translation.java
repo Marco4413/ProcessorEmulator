@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public final class Translation {
 
-    private final HashMap<String, String> MAP;
+    protected final HashMap<String, String> MAP;
 
     public Translation() {
         this(new HashMap<>());
@@ -17,6 +17,19 @@ public final class Translation {
 
     public Translation(@NotNull HashMap<String, String> translationMap) {
         MAP = translationMap;
+    }
+
+    public static @NotNull Translation mergeTranslations(@NotNull Translation... translations) {
+        Translation mergedTranslation = new Translation();
+        for (int i = translations.length - 1; i >= 0; i--)
+            translations[i].MAP.forEach(mergedTranslation.MAP::put);
+        return mergedTranslation;
+    }
+
+    public @NotNull Translation merge(@NotNull Translation... others) {
+        Translation mergedOthers = mergeTranslations(others);
+        this.MAP.forEach(mergedOthers.MAP::put);
+        return mergedOthers;
     }
 
     public @NotNull String getName() {

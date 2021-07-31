@@ -46,8 +46,8 @@ public final class FileUtils {
         return new String[0];
     }
 
-    public static @NotNull String getFilePathWithExtension(@NotNull File file, @NotNull String... extensions) {
-        return getPathWithExtension(file.getAbsolutePath(), extensions);
+    public static @NotNull File getFilePathWithExtension(@NotNull File file, @NotNull String... extensions) {
+        return new File(getPathWithExtension(file.getAbsolutePath(), extensions));
     }
 
     public static @NotNull String getPathWithExtension(@NotNull String path, @NotNull String... extensions) {
