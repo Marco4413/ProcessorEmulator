@@ -21,18 +21,19 @@ On Windows: `%USERPROFILE%/PEMU/`
 ## How to run:
 
 There are four main ways to run this project:
- 1. By downloading the precompiled jar file and running it.
+ 1. By downloading the jar file from [Releases](https://github.com/hds536jhmk/ProcessorEmulator/releases).
  2. By opening the project using **IntelliJ IDEA** and building the **project's artifact**.
  3. By opening the project using **IntelliJ IDEA** and creating a new **Run Config**:
-    - Java Version: `1.8`
+    - Java Version: `1.8` (Adopt OpenJDK)
     - Class Path: `Processor_Emulator.main`
     - Main Class: `io.github.hds.pemu.Main`
- 4. (**NOTE: This isn't really tested or supported**) By compiling it yourself! Download the latest version from the repo
-    and run `gradlew build`, the compiled file should be located in `./build/libs/PEMU-version.jar`.
+ 4. By building the source with gradle. Pull the latest version from the repo and run `gradlew build`,
+    the jar file should be located in `./build/libs/PEMU-version.jar`.
 
 ## Examples:
 
-PEMU Program Examples can be found [@examples/](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/examples)
+PEMU Program Examples can be found in the [examples](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/examples)
+folder.
 
 ## PEMU Libraries:
 
@@ -44,14 +45,15 @@ You can download the above linked folder and start using it yourself to make you
 
 ## Documentation:
 
-Can be found [@DOCUMENTATION.md](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/DOCUMENTATION.md)
+Can be found in the file [DOCUMENTATION.md](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/DOCUMENTATION.md)
 
 ## Plugins:
 
 On version `1.12.0` plugin support was added, and since then you can write your own implementation of a Processor using
 the Ruby Programming Language (This added support also increased PEMU's size by ~25MB).
 
-You can learn more about plugins [@plugins/](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/plugins)
+You can learn more about plugins in the [plugins](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/plugins)
+folder.
 
 ## Utilities:
 
@@ -67,13 +69,6 @@ utilities to be used with the PEMU Programming Language:
 ![](https://raw.githubusercontent.com/hds536jhmk/vscode-pemu-language/master/pemu-language-extension.verify-code.gif)
 
 ![](https://raw.githubusercontent.com/hds536jhmk/vscode-pemu-language/master/pemu-language-extension.snippets.gif)
-
-### PEMULangUtil.py
-
-There's also a bundled Python script in the jar file that is useful if you want to verify your PEMU programs from the
-command line, it's called [PEMULangUtil.py](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/src/main/resources/PEMULangUtil.py).
-It doesn't require any dependencies, it just needs the standard Python library and [Python 3.8.X](https://www.python.org/downloads/),
-it should also work on newer versions, but it's not tested.
 
 ## Dependencies:
 

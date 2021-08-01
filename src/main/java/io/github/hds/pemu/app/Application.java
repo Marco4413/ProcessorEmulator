@@ -5,6 +5,7 @@ import io.github.hds.pemu.compiler.Compiler;
 import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
+import io.github.hds.pemu.files.FileUtils;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
@@ -212,7 +213,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
                         APP_TITLE, APP_VERSION,
                         currentProgram == null ?
                                 localeNoProgramSelected :
-                                StringUtils.format(localeProgramSelected, currentProgram.getAbsolutePath())
+                                StringUtils.format(localeProgramSelected, FileUtils.tryGetCanonicalPath(currentProgram))
                 )
         );
     }
@@ -243,7 +244,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     }
 
     public void setCurrentProgram(@NotNull File program) {
-        if (program.exists() && program.canRead())
+        if (program.canRead())
             currentProgram = program;
         else currentProgram = null;
         updateTitle();
@@ -381,7 +382,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
             } catch (Exception err) {
                 Console.Debug.println(StringUtils.format(
                         currentTranslation.getOrDefault("messages.compileError"),
-                        currentProgram.getAbsolutePath()
+                        currentProgram.getName()
                 ));
                 Console.Debug.printStackTrace(err, false);
             }

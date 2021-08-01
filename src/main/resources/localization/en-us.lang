@@ -99,7 +99,7 @@
 "messages.programNotReadable" = "The specified program can't be read!"
 "messages.compiledSuccessfully" = "File was compiled successfully ({0}), it occupies {1}/{2} Words"
 "messages.compileTime"  = "Compilation took {0}"
-"messages.compileError" = "Compilation error (for file @'{0}'):"
+"messages.compileError" = "Compilation error ({0}):"
 "messages.obfuscatedSuccessfully"  = "Program obfuscated successfully:"
 "messages.processorAlreadyRunning" = "Processor is already running!"
 "messages.programMemoryLoadError"  = "Error while loading program into memory!"

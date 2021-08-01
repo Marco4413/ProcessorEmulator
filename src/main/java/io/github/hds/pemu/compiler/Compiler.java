@@ -2,6 +2,7 @@ package io.github.hds.pemu.compiler;
 
 import io.github.hds.pemu.compiler.labels.BasicLabel;
 import io.github.hds.pemu.compiler.labels.OffsetLabel;
+import io.github.hds.pemu.files.FileUtils;
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.flags.IFlag;
@@ -98,8 +99,9 @@ public final class Compiler {
         protected CompilerError(@Nullable File file, @NotNull String errorName, @NotNull String message, int errorLine, int errorChar) {
             super(
                     String.format(
-                            "'%s': %s Error (%d:%d): %s.",
-                            file == null ? "Unknown" : file.getName(), errorName, errorLine, errorChar, message
+                            "'%s': %s Error (%d:%d): %s",
+                            file == null ? "Unknown" : file.getName(), errorName, errorLine, errorChar,
+                            message.endsWith(".") ? message : (message + ".")
                     )
             );
         }
@@ -572,13 +574,7 @@ public final class Compiler {
     }
 
     private static void internalCompileFile(@NotNull File file, @NotNull HashSet<String> compiledFiles, @NotNull CompilerData cd) {
-        String filePath;
-        try {
-            // Getting the Canonical Path, if it fails then get the Absolute one
-            filePath = file.getCanonicalPath();
-        } catch (Exception err) {
-            filePath = file.getAbsolutePath();
-        }
+        String filePath = FileUtils.tryGetCanonicalPath(file);
 
         // Make sure that we're not compiling an already compiled file
         if (compiledFiles.contains(filePath))

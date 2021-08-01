@@ -53,11 +53,11 @@ On Windows: `%USERPROFILE%/PEMU/plugins/`
 
 ### PEMU API
 
-A list of easy-to-access classes from PEMU can be found [@PEMUJRubyPluginAPI.rb](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/src/main/resources/PEMUJRubyPluginAPI.rb)
+A list of easy-to-access classes from PEMU can be found in the file [PEMUJRubyPluginAPI.rb](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/src/main/resources/PEMUJRubyPluginAPI.rb)
 
 The above mentioned file can be required by `require "PEMUJRubyPluginAPI"`
 
-
 ### Example
 
-A well-documented example can be found [@RubyProcessor/](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/plugins/RubyProcessor)
+A well-documented example can be found in the [RubyProcessor](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/plugins/RubyProcessor)
+folder.
