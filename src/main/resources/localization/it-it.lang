@@ -99,7 +99,7 @@
 "messages.programNotReadable" = "Il programma specificato non può essere letto!"
 "messages.compiledSuccessfully" = "File compilato con successo ({0}), occupa {1}/{2} {3}"
 "messages.compileTime"  = "La compilazione ha impiegato {0}"
-"messages.compileError" = "Errore di compilazione (per il file @'{0}'):"
+"messages.compileError" = "Errore di compilazione ({0}):"
 "messages.obfuscatedSuccessfully"  = "Programma offuscato con successo:"
 "messages.processorAlreadyRunning" = "Il processore è già in esecuzione!"
 "messages.programMemoryLoadError"  = "Errore durante il caricamento del programma in memoria!"

@@ -20,7 +20,7 @@ public final class FileUtils {
             if (isDirectory) {
                 Files.createDirectories(file.toPath());
             } else {
-                Files.createDirectories(file.getParentFile().toPath());
+                Files.createDirectories(file.toPath().normalize().getParent());
                 file.createNewFile();
             }
             return true;
@@ -46,7 +46,7 @@ public final class FileUtils {
         return new String[0];
     }
 
-    public static @NotNull File getFilePathWithExtension(@NotNull File file, @NotNull String... extensions) {
+    public static @NotNull File getFileWithExtension(@NotNull File file, @NotNull String... extensions) {
         return new File(getPathWithExtension(file.getAbsolutePath(), extensions));
     }
 
@@ -57,5 +57,12 @@ public final class FileUtils {
             if (path.endsWith("." + extension)) return path;
         }
         return path + "." + extensions[0];
+    }
+
+    public static @NotNull String tryGetCanonicalPath(@NotNull File file) {
+        try {
+            return file.getCanonicalPath();
+        } catch (Exception ignored) { }
+        return file.getAbsolutePath();
     }
 }
