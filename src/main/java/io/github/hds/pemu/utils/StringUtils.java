@@ -123,6 +123,7 @@ public final class StringUtils {
             "E-24", "E-21", "E-18", "E-15", "E-12", "E-09", "E-06", "E-03", "E00", "E03", "E06", "E09", "E12", "E15", "E18", "E21", "E24",
             "y"   , "z"   , "a"   , "f"   , "p"   , "n"   , "u"   , "m"   , ""   , "k"  , "M"  , "G"  , "T"  , "P"  , "E"  , "Z"  , "Y"
     };
+    private static final int ENG_NOTATION_PREFIXES_START = ENG_NOTATION_PREFIXES.length / 2;
 
     public static @NotNull String getEngNotation(@NotNull Number number) {
         return getEngNotation(number, "");
@@ -130,14 +131,39 @@ public final class StringUtils {
 
     public static @NotNull String getEngNotation(@NotNull Number number, @NotNull String measureUnit) {
         String engineeringNumber = ENG_FORMAT.format(number);
-        int halfPrefixesLength = ENG_NOTATION_PREFIXES.length / 2;
 
-        for (int i = 0; i < halfPrefixesLength; i++) {
+        for (int i = 0; i < ENG_NOTATION_PREFIXES_START; i++) {
             if (engineeringNumber.contains(ENG_NOTATION_PREFIXES[i])) {
-                return engineeringNumber.replace(ENG_NOTATION_PREFIXES[i], ENG_NOTATION_PREFIXES[i + halfPrefixesLength]) + measureUnit;
+                return engineeringNumber.replace(
+                        ENG_NOTATION_PREFIXES[i],
+                        ENG_NOTATION_PREFIXES[i + ENG_NOTATION_PREFIXES_START]
+                ) + measureUnit;
             }
         }
 
         return engineeringNumber + measureUnit;
+    }
+
+    private static final HashMap<Character, String> HTML_TAG_CHARACTERS = new HashMap<>();
+    static {
+        HTML_TAG_CHARACTERS.put('&', "&amp;");
+        HTML_TAG_CHARACTERS.put('<', "&lt;");
+        HTML_TAG_CHARACTERS.put('>', "&gt;");
+    }
+
+    /**
+     * This method escapes the following HTML Characters: &amp;, &lt;, &gt;<br>
+     * This was tested on an i7 9750H and got an average of 208.37ns for the following string: "&lt;html&gt;&lt;/html&gt;"
+     * so performance shouldn't be a concern
+     * @param str The String to escape
+     * @return The escaped String
+     */
+    public static @NotNull String escapeHTML(@NotNull String str) {
+        StringBuilder escapedString = new StringBuilder(str.length());
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            escapedString.append(HTML_TAG_CHARACTERS.getOrDefault(c, String.valueOf(c)));
+        }
+        return escapedString.toString();
     }
 }
