@@ -16,6 +16,8 @@
    * [--memory-size](#--memory-size)
    * [--clock-frequency](#--clock-frequency)
    * [--program](#--program)
+   * [--plugin](#--plugin)
+   * [--language](#--language)
  - [Common Mistakes](#common-mistakes)
    * [Running on the command line](#running-on-the-command-line)
    * [Declaring variables between instructions](#declaring-variables-between-instructions)
@@ -189,6 +191,22 @@ Type: `String`
 Short: `-p`
 
 If specified, the following argument will be used to open the program it points to.
+
+## --plugin
+
+Type: `String`
+
+Short: `-pl`
+
+If specified, the following argument will be used as the ID of the plugin to load.
+
+## --language
+
+Type: `String`
+
+Short: `-lang`
+
+If specified, the following argument will be used as the short name of the language to use.
 
 # Common Mistakes
 

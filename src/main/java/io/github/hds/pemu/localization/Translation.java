@@ -37,11 +37,11 @@ public final class Translation {
     }
 
     public @NotNull String getLongName() {
-        return getOrDefault("_longName", toString());
+        return getOrDefault("_longName");
     }
 
     public @NotNull String getShortName() {
-        return getOrDefault("_shortName", toString());
+        return getOrDefault("_shortName");
     }
 
     public @Nullable String get(@NotNull String key) {
@@ -69,4 +69,8 @@ public final class Translation {
         component.setMnemonic(getOrDefault(translationPath + "._mnemonic", String.valueOf(KeyEvent.CHAR_UNDEFINED)).charAt(0));
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

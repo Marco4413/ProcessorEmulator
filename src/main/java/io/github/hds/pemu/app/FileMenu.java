@@ -1,13 +1,12 @@
 package io.github.hds.pemu.app;
 
-import io.github.hds.pemu.Main;
 import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
-import io.github.hds.pemu.files.FileUtils;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
+import io.github.hds.pemu.plugins.BasePlugin;
 import io.github.hds.pemu.plugins.IPlugin;
 import io.github.hds.pemu.plugins.PluginManager;
 import io.github.hds.pemu.utils.*;
@@ -16,9 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Scanner;
 
 public final class FileMenu extends JMenu implements ITranslatable, IConfigurable {
 
@@ -103,65 +99,46 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
 
         app.loadPlugin(selectedPlugin);
     }
-
+    
     private void changeLanguage(ActionEvent e) {
-        ArrayList<Translation> availableTranslations = new ArrayList<>();
-        InputStream stream = Main.class.getResourceAsStream("/localization/languages.txt");
-        Scanner scanner = new Scanner(stream);
-        while (scanner.hasNextLine()) {
-            String languageName = scanner.nextLine().trim();
-            if (languageName.length() == 0) continue;
-            try {
-                availableTranslations.add(
-                        TranslationManager.loadTranslation(FileUtils.getPathWithExtension("/localization/" + languageName, TranslationManager.LANGUAGE_EXTENSION))
-                );
-            } catch (Exception ignored) { }
-        }
+        Translation[] availableTranslations = TranslationManager.getAvailableTranslations();
+        Translation currentTranslation = TranslationManager.getCurrentTranslation();
 
-        String[] languagesNames = new String[availableTranslations.size()];
-        String currentLanguage = null;
-        for (int i = 0; i < languagesNames.length; i++) {
-            Translation translation = availableTranslations.get(i);
-            String translationName = translation.getName();
-            if (TranslationManager.getCurrentTranslation().getName().equals(translationName)) currentLanguage = translationName;
-            languagesNames[i] = translationName;
-        }
-        if (languagesNames.length == 0) return;
-        if (currentLanguage == null) currentLanguage = languagesNames[0];
-
-        String selectedLanguage = (String) JOptionPane.showInputDialog(
+        Translation selectedTranslation = (Translation) JOptionPane.showInputDialog(
                 this, localeSelectLanguageTitle, localeSelectLanguageMsg,
-                JOptionPane.PLAIN_MESSAGE, ICON_CHANGE_LANGUAGE, languagesNames, currentLanguage
+                JOptionPane.PLAIN_MESSAGE, ICON_CHANGE_LANGUAGE, availableTranslations, currentTranslation
         );
-        if (selectedLanguage == null) return;
+        if (selectedTranslation == null) return;
 
-        for (int i = 0; i < languagesNames.length; i++) {
-            if (languagesNames[i].equals(selectedLanguage)) {
-                Translation selectedTranslation = availableTranslations.get(i);
-                TranslationManager.setCurrentTranslation(selectedTranslation);
-                break;
-            }
-        }
+        TranslationManager.setCurrentTranslation(
+                selectedTranslation.getShortName()
+        );
     }
 
     @Override
     public void loadConfig(@NotNull ConfigEvent e) {
-        String languageName = e.config.get(String.class, "selectedLanguage");
         TranslationManager.setCurrentTranslation(
-                TranslationManager.loadTranslation(
-                        FileUtils.getPathWithExtension("/localization/" + languageName, TranslationManager.LANGUAGE_EXTENSION)
-                )
+                e.config.get(String.class, "selectedLanguage")
         );
+
+        app.loadPlugin(PluginManager.getPlugin(
+                e.config.get(String.class, "loadedPlugin")
+        ));
     }
 
     @Override
     public void saveConfig(@NotNull ConfigEvent e) {
         String selectedLanguage = TranslationManager.getCurrentTranslation().getShortName();
         e.config.put("selectedLanguage", selectedLanguage);
+
+        IPlugin loadedPlugin = app.getLoadedPlugin();
+        if (loadedPlugin != null && loadedPlugin.getID() != null)
+            e.config.put("loadedPlugin", loadedPlugin.getID());
     }
 
     @Override
     public void setDefaults(@NotNull ConfigEvent e) {
         e.config.put("selectedLanguage", "en-us");
+        e.config.put("loadedPlugin", BasePlugin.getInstance().getID());
     }
 }
