@@ -1,5 +1,11 @@
 
 -- Version (v1.12.0-RELEASE)
+-- Changes from commit @8d10fc5
+
+Fixed MemoryView adding extra rows on Registers and Flags Table
+Added class HTMLTableBuilder
+Added static method StringUtils.escapeHTML
+
 -- Changes from commit @35678f9
 
 Added command line arguments: "--plugin", "--language"
