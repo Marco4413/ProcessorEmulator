@@ -8,7 +8,14 @@ import org.jetbrains.annotations.NotNull;
 import java.io.StringWriter;
 
 public final class BasePlugin extends Plugin {
-    public BasePlugin() { }
+    private static BasePlugin instance;
+
+    private BasePlugin() { }
+
+    public static @NotNull BasePlugin getInstance() {
+        if (instance == null) instance = new BasePlugin();
+        return instance;
+    }
 
     @Override
     public @NotNull String getID() {

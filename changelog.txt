@@ -1,5 +1,20 @@
 
 -- Version (v1.12.0-RELEASE)
+-- Changes from commit @35678f9
+
+Added command line arguments: "--plugin", "--language"
+Now the last loaded plugin is saved in the config so that it's loaded when the app is opened again
+
+Reworked TranslationManager class:
+Added static methods to class TranslationManager: hasTranslation, getTranslation, getAvailableTranslations
+Made static method TranslationManager.setCurrentTranslation return a boolean (which says if the specified language loaded)
+Made static method TranslationManager.loadTranslation private
+
+Changed the return value of methods Translation#getShortName and Translation#getLongName
+Added overload for method Translation#toString
+
+Made class BasePlugin a singleton
+
 -- Changes from commit @d61b49c
 
 Improved the compilation error message

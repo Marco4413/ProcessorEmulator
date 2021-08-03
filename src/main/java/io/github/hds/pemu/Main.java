@@ -2,6 +2,7 @@ package io.github.hds.pemu;
 
 import io.github.hds.pemu.app.Application;
 import io.github.hds.pemu.app.Console;
+import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.plugins.BasePlugin;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.arguments.ArgumentsParser;
@@ -32,7 +33,9 @@ public final class Main {
               .defineRangedInt("--bits", "-b", ProcessorConfig.DEFAULT_BITS, ProcessorConfig.MIN_BITS, ProcessorConfig.MAX_BITS)
               .defineRangedInt("--memory-size", "-ms", ProcessorConfig.DEFAULT_MEMORY_SIZE, ProcessorConfig.MIN_MEMORY_SIZE, ProcessorConfig.MAX_MEMORY_SIZE)
               .defineRangedInt("--clock-frequency", "-cf", ProcessorConfig.DEFAULT_FREQUENCY, ProcessorConfig.MIN_FREQUENCY, ProcessorConfig.MAX_FREQUENCY)
-              .defineStr("--program", "-p", "");
+              .defineStr("--program", "-p", "")
+              .defineStr("--plugin", "-pl", "")
+              .defineStr("--language", "-lang", "");
         // Parse Arguments
         parser.parse(args);
 
@@ -110,8 +113,15 @@ public final class Main {
         // Trying to get an instance of the app
         ConfigManager.setDefaultOnLoadError(true);
         Application app = Application.getInstance();
+
+        // Registering and Loading Base Plugin
+        app.loadPlugin(PluginManager.registerPlugin(BasePlugin.getInstance()));
+        PluginManager.registerExternalPlugins();
+
+        // Loading config after all managers are set-up
         ConfigManager.loadOrCreate();
 
+        // Console Arguments override config settings
         // Setting App's ProcessorConfig based on the specified arguments
         ProcessorConfig processorConfig = app.getProcessorConfig();
         if (parser.isSpecified("--bits"))
@@ -121,9 +131,17 @@ public final class Main {
         if (parser.isSpecified("--clock-frequency"))
             processorConfig.setClockFrequency((int) parser.getOption("--clock-frequency").getValue());
 
-        // Registering and Loading Base Plugin
-        app.loadPlugin(PluginManager.registerPlugin(new BasePlugin()));
-        PluginManager.registerExternalPlugins();
+        if (parser.isSpecified("--language")) {
+            TranslationManager.setCurrentTranslation(
+                    (String) parser.getOption("--language").getValue()
+            );
+        }
+
+        if (parser.isSpecified("--plugin")) {
+            app.loadPlugin(PluginManager.getPlugin(
+                    (String) parser.getOption("--plugin").getValue()
+            ));
+        }
 
         app.setCurrentProgram(new File((String) parser.getOption("--program").getValue()));
 
