@@ -1,5 +1,23 @@
 
 -- Version (v1.12.0-RELEASE)
+-- Changes from commit @817a967
+
+Added methods to PEMUJRubyPluginAPI to add a compat layer
+Added throw signature to method IPlugin#onLoad
+Removed arguments from method IPlugin#onLoad
+Translated class ExternalPlugin's console messages
+
+Changed the way Application displays plugin's errors
+Changed the way errors are handled by method PluginManager.compilePlugin
+
+Moved all Console-related classes from package pemu.app and pemu.utils to package pemu.console
+Renamed methods of interface IConsole:
+ - getWriter -> toWriter
+ - getPrintStream -> toPrintStream
+
+Changed static method FileUtils.tryGetCanonicalPath return fallback, it should now be more similar to the real canonical path
+Made static method StringUtils.stackTraceAsString trim its result
+
 -- Changes from commit @8d10fc5
 
 Fixed MemoryView adding extra rows on Registers and Flags Table

@@ -1,14 +1,17 @@
 package io.github.hds.pemu.plugins;
 
+import io.github.hds.pemu.console.Console;
 import io.github.hds.pemu.files.FileManager;
+import io.github.hds.pemu.localization.Translation;
+import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.processor.IDummyProcessor;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.processor.ProcessorConfig;
+import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.StringWriter;
 import java.util.Objects;
 
 public final class ExternalPlugin extends Plugin {
@@ -55,23 +58,26 @@ public final class ExternalPlugin extends Plugin {
     }
 
     @Override
-    public boolean onLoad(@NotNull StringWriter stderr) {
-        pluginInstance = PluginManager.compilePlugin(stderr, PLUGIN_FILE, PLUGIN_TYPE);
+    public boolean onLoad() throws Exception {
+        pluginInstance = PluginManager.compilePlugin(Console.Debug, PLUGIN_FILE, PLUGIN_TYPE);
         if (pluginInstance == null) return false;
+
+        Translation currentTranslation = TranslationManager.getCurrentTranslation();
 
         String mismatchType = null;
         if (!Objects.equals(getID(), pluginInstance.getID()))
-            mismatchType = "ID";
+            mismatchType = currentTranslation.getOrDefault("messages.pluginID");
         else if (!Objects.equals(getName(), pluginInstance.getName()))
-            mismatchType = "Name";
+            mismatchType = currentTranslation.getOrDefault("messages.pluginName");
         else if (!Objects.equals(getVersion(), pluginInstance.getVersion()))
-            mismatchType = "Version";
+            mismatchType = currentTranslation.getOrDefault("messages.pluginVersion");
 
-        if (mismatchType == null) return pluginInstance.onLoad(stderr);
+        if (mismatchType == null) return pluginInstance.onLoad();
 
         String relativePluginPath = FileManager.getPluginDirectory().toPath().relativize(PLUGIN_FILE.toPath()).toString();
-        stderr.write("Failed to load plugin: \"" + relativePluginPath + "\"\n");
-        stderr.write(" - " + mismatchType + " mismatch between " + PluginManager.PLUGIN_INFO_FILE_NAME + " and given Plugin instance.\n");
+        Console.Debug.println(StringUtils.format(currentTranslation.getOrDefault("messages.pluginLoadFailed"), relativePluginPath));
+        Console.Debug.println(StringUtils.format(currentTranslation.getOrDefault("messages.pluginInfoMismatch"), mismatchType, PluginManager.PLUGIN_INFO_FILE_NAME));
+        Console.Debug.println();
         return false;
     }
 

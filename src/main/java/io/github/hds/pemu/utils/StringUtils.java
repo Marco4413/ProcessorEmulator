@@ -115,7 +115,7 @@ public final class StringUtils {
     public static @NotNull String stackTraceAsString(@NotNull Exception err) {
         StringWriter str = new StringWriter();
         err.printStackTrace(new PrintWriter(str));
-        return str.toString();
+        return str.toString().trim();
     }
 
     private static final DecimalFormat ENG_FORMAT = new DecimalFormat("##0E00");

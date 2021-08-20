@@ -116,6 +116,7 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public void loadConfig(@NotNull ConfigEvent e) {
         TranslationManager.setCurrentTranslation(
                 e.config.get(String.class, "selectedLanguage")

@@ -245,8 +245,7 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
     }
 
     @Override
-    // Suppressing all, because the app should throw if the config isn't a good one
-    @SuppressWarnings("all")
+    @SuppressWarnings("ConstantConditions")
     public void loadConfig(@NotNull ConfigEvent e) {
         COLS_SPINNER.setValue(e.config.get(Integer.class, "memoryView.columns"));
         UPDATE_INTERVAL_SPINNER.setValue(e.config.get(Double.class, "memoryView.updateInterval"));

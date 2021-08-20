@@ -43,13 +43,14 @@ public interface IPlugin {
      */
     default @Nullable IDummyProcessor onCreateDummyProcessor(@NotNull ProcessorConfig config) { return null; }
 
+
     /**
      * Called when this plugin is being loaded
      * Before the old one is fully unloaded
-     * @param stderr Used to write a description of the error if one occurred
      * @return Whether or not an error was encountered, if false then this plugin won't be fully loaded
+     * @throws Exception This method may throw exceptions if any error occurred
      */
-    default boolean onLoad(@NotNull StringWriter stderr) { return true; }
+    default boolean onLoad() throws Exception { return true; }
 
     /**
      * Called when this plugin is being unloaded

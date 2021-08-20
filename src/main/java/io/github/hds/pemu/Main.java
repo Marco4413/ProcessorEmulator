@@ -1,7 +1,7 @@
 package io.github.hds.pemu;
 
 import io.github.hds.pemu.app.Application;
-import io.github.hds.pemu.app.Console;
+import io.github.hds.pemu.console.Console;
 import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.plugins.BasePlugin;
 import io.github.hds.pemu.config.ConfigManager;
@@ -101,8 +101,8 @@ public final class Main {
 
             Console.usePrintStream(System.out);
         } else {
-            System.setOut(Console.Debug.getPrintStream());
-            System.setErr(Console.Debug.getPrintStream());
+            System.setOut(Console.Debug.toPrintStream());
+            System.setErr(Console.Debug.toPrintStream());
         }
 
         // Setting System-based look and feel

@@ -2,11 +2,14 @@ package io.github.hds.pemu.plugins;
 
 import io.github.hds.pemu.Main;
 import io.github.hds.pemu.app.*;
-import io.github.hds.pemu.app.Console;
 import io.github.hds.pemu.files.FileManager;
 import io.github.hds.pemu.files.FileUtils;
+import io.github.hds.pemu.localization.Translation;
+import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
 import io.github.hds.pemu.tokenizer.keyvalue.KeyValueParser;
+import io.github.hds.pemu.console.IConsole;
+import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jruby.Profile;
@@ -121,41 +124,66 @@ public final class PluginManager {
         return PLUGINS.values().toArray(new IPlugin[0]);
     }
 
-    private static @Nullable IPlugin compileRubyPlugin(@NotNull StringWriter stderr, @NotNull File file) {
+    private static @Nullable IPlugin compileRubyPlugin(@Nullable IConsole outputConsole, @NotNull File file) {
         if (!file.canRead()) return null;
 
-        String relativePluginPath = FileManager.getPluginDirectory().toPath().relativize(file.toPath()).toString();
-        Writer stdout = Console.Debug.getWriter();
+        Translation currentTranslation = TranslationManager.getCurrentTranslation();
+        Writer stdout, stderr;
+        if (outputConsole == null) {
+            stdout = new StringWriter();
+            stderr = stdout;
+        } else {
+            stdout = outputConsole.toWriter();
+            stderr = outputConsole.toWriter();
+
+            String relativePluginPath = FileManager.getPluginDirectory().toPath().relativize(file.toPath()).toString();
+            try {
+                stderr.write(StringUtils.format(currentTranslation.getOrDefault("messages.pluginCompilationFailed"), relativePluginPath));
+                stderr.write('\n');
+            } catch (Exception ignored) { }
+        }
 
         try {
+            // Creating Scripting container and setting stdout to the given IConsole
             ScriptingContainer container = getScriptingContainer(stdout, stderr);
+
+            // Getting the return value from the script
             Object rubyPlugin = container.runScriptlet(PathType.ABSOLUTE, file.getAbsolutePath());
 
+            // If it's not null and is assignable to IPlugin then return it casted to IPlugin
             if (rubyPlugin != null && IPlugin.class.isAssignableFrom(rubyPlugin.getClass()))
                 return (IPlugin) rubyPlugin;
 
-            stderr.write(" - The Plugin didn't return an instance of IPlugin\n");
-        } catch (Exception err) {
-            if (stderr.getBuffer().length() == 0)
-                err.printStackTrace(new PrintWriter(stderr));
-        }
+            // Else write to stderr the description of the error
+            stderr.write(
+                    StringUtils.format(
+                            currentTranslation.getOrDefault("messages.pluginInvalidType"),
+                            "IPlugin"
+                    )
+            );
+            stderr.write('\n');
+        } catch (Exception ignored) { }
 
-        stderr.getBuffer().insert(0, "Failed to load plugin: \"" + relativePluginPath + "\"\n");
+        try {
+            stderr.write('\n');
+            stderr.flush();
+        } catch (Exception ignored) { }
+
         return null;
     }
 
     /**
      * Compiles and returns an instance of the specified plugin main file
      * NOTE: This doesn't register the compiled plugin, see {@link PluginManager#registerPlugin} instead
-     * @param stderr If any error occurs this gets populated with the description
+     * @param outputConsole The console to print stdout and stderr to
      * @param file The main file of the plugin to compile
      * @param pluginType The type of the plugin, for now only {@link PluginType#RUBY} is supported
      * @return An instance of the compiled plugin or null if it failed to load
      */
-    public static @Nullable IPlugin compilePlugin(@NotNull StringWriter stderr, @Nullable File file, @NotNull PluginType pluginType) {
+    public static @Nullable IPlugin compilePlugin(@Nullable IConsole outputConsole, @Nullable File file, @NotNull PluginType pluginType) {
         if (file == null) return null;
         if (pluginType == PluginType.RUBY)
-            return compileRubyPlugin(stderr, file);
+            return compileRubyPlugin(outputConsole, file);
         return null;
     }
 }

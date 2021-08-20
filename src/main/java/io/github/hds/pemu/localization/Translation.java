@@ -56,17 +56,17 @@ public final class Translation {
         return MAP.getOrDefault(key, defaultValue);
     }
 
-    public void translateFrame(@NotNull String translationPath, @NotNull JFrame frame) {
-        frame.setTitle(getOrDefault(translationPath + "._title"));
+    public void translateFrame(@NotNull String key, @NotNull JFrame frame) {
+        frame.setTitle(getOrDefault(key + "._title"));
     }
 
-    public void translateComponent(@NotNull String translationPath, @NotNull JLabel component) {
-        component.setText(getOrDefault(translationPath + "._text"));
+    public void translateComponent(@NotNull String key, @NotNull JLabel component) {
+        component.setText(getOrDefault(key + "._text"));
     }
 
-    public void translateComponent(@NotNull String translationPath, @NotNull AbstractButton component) {
-        component.setText(getOrDefault(translationPath + "._text"));
-        component.setMnemonic(getOrDefault(translationPath + "._mnemonic", String.valueOf(KeyEvent.CHAR_UNDEFINED)).charAt(0));
+    public void translateComponent(@NotNull String key, @NotNull AbstractButton component) {
+        component.setText(getOrDefault(key + "._text"));
+        component.setMnemonic(getOrDefault(key + "._mnemonic", String.valueOf(KeyEvent.CHAR_UNDEFINED)).charAt(0));
     }
 
     @Override
