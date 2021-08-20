@@ -27,12 +27,19 @@
 # This file adds the module "PEMU" which gives easy access to commonly used classes
 #  like PEMU::Processor
 require "PEMUJRubyPluginAPI"
+require "singleton"
 
 # A plugin can contain multiple files and require them
 require_relative "Processor.rb"
 require_relative "localization/Translations.rb"
 
 class Plugin < PEMU::Plugin
+protected
+	@@MIN_PEMU_VERSION = "1.12.0"
+	@@MAX_PEMU_VERSION = "1.12.99"
+public
+	include Singleton
+
 	# Returns the id of this plugin, must be the same as specified in the plugin.info file
 	# If more plugins with the same ID are found then only one is registered
 	# @return [String] The id of this plugin
@@ -69,31 +76,39 @@ class Plugin < PEMU::Plugin
 		return Processor.new config
 	end
 
+	def pemu_compatible?()
+		return PEMU::version_in_range? PEMU::get_version, @@MIN_PEMU_VERSION, @@MAX_PEMU_VERSION
+	end
+
 	# This method is called when the plugin is being loaded (The last plugin is still loaded)
-	# @param [Java::JavaIo::StringWriter] stderr If any error occurs then the description of the error can be written here
-	# @return [true, false] Whether or not the plugin successfully loaded, if false stderr should be populated with the description of the error
-	def onLoad(stderr)
-		# Consoles can be used to write stuff to the user
-		# "puts" could also be used but it doesn't support all characters (like accented ones)
-		PEMU::Console.Debug.println(
-			PEMU::StringUtils.format(
-				Translations.instance.current_translation.getOrDefault("plugins.loaded"),
+	# @return [Boolean] Whether or not the plugin successfully loaded
+	# @raise [Java::JavaLang::Exception] This method may throw resulting in a failed load
+	def onLoad()
+		if !self.pemu_compatible? then
+			raise PEMU::format_string PEMU::get_from_translation(Translations.instance.current_translation, "plugins.incompatible"), @@MIN_PEMU_VERSION, @@MAX_PEMU_VERSION
+			return false
+		end
+
+		# "puts" could also be used but it doesn't support all Java characters
+		PEMU::debug_log(
+			PEMU::format_string(
+				PEMU::get_from_translation(Translations.instance.current_translation, "plugins.loaded"),
 				"Ruby"
 			)
 		)
-		PEMU::Console.Debug.println
+		PEMU::debug_log
 		return true
 	end
 
 	# This method is called when the plugin is being unloaded (The new plugin is already loaded)
 	def onUnload()
-		PEMU::Console.Debug.println(
-			PEMU::StringUtils.format(
-				Translations.instance.current_translation.getOrDefault("plugins.unloaded"),
+		PEMU::debug_log(
+			PEMU::format_string(
+				PEMU::get_from_translation(Translations.instance.current_translation, "plugins.unloaded"),
 				"Ruby"
 			)
 		)
-		PEMU::Console.Debug.println
+		PEMU::debug_log
 	end
 
 	# This method returns a pretty name for this plugin, this is only called when the plugin is loaded
@@ -105,4 +120,4 @@ class Plugin < PEMU::Plugin
 	end
 end
 
-return Plugin.new
+return Plugin.instance

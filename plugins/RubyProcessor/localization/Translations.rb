@@ -46,26 +46,16 @@ protected
     attr_writer :current_translation
 
     def initialize()
-        self.current_translation = Translations.get_plugin_translation PEMU::TranslationManager.getCurrentTranslation
+        self.current_translation = Translations.get_plugin_translation PEMU::get_current_translation
         PEMU::TranslationManager.addTranslationListener self
     end
 
-    # Function that returns source.merge with this Plugin's Translation
+    # Function that merges source with this Plugin's Translation
     # @param [PEMU::Translation] source The source traslation
     # @return [PEMU::Translation] The source translation merged with this plugin's or source if there's no translation from this plugin
     def self.get_plugin_translation(source)
-        # Getting translation name from source and adding the language file extension
-        translation_file_name = PEMU::FileUtils.getPathWithExtension source.getShortName, PEMU::TranslationManager::LANGUAGE_EXTENSION
-
-        # Getting the plugin's translation file relative to this one
-        plugin_translation_file = Paths::get(__dir__, translation_file_name).toFile
-        # If we can't read the translation then return source
-        return source if !plugin_translation_file.canRead
-        
-        # Getting file reader and parsing the plugin's translation
-        plugin_translation_file_reader = FileReader.new plugin_translation_file
-        plugin_translation = PEMU::TranslationManager.parseTranslation plugin_translation_file_reader
-        # Merging source and this plugin's translation
-        return source.merge plugin_translation
+        plugin_translation = PEMU::parse_translation! __dir__, PEMU::get_translation_file_name( source )
+        return source if plugin_translation == nil
+        return PEMU::merge_translations source, plugin_translation
     end
 end
