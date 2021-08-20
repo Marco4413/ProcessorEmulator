@@ -1,6 +1,6 @@
 package io.github.hds.pemu.instructions;
 
-import io.github.hds.pemu.app.Console;
+import io.github.hds.pemu.console.Console;
 import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.memory.*;
 import io.github.hds.pemu.memory.flags.IFlag;

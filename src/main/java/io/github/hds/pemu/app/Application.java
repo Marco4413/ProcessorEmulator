@@ -1,5 +1,8 @@
 package io.github.hds.pemu.app;
 
+import io.github.hds.pemu.console.Console;
+import io.github.hds.pemu.console.ConsoleComponent;
+import io.github.hds.pemu.console.ConsoleContextualMenu;
 import io.github.hds.pemu.compiler.CompiledProgram;
 import io.github.hds.pemu.compiler.Compiler;
 import io.github.hds.pemu.config.ConfigEvent;
@@ -23,7 +26,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.io.StringWriter;
 
 public final class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
@@ -90,9 +92,8 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
         setLayout(new BorderLayout());
 
-        // Making instances of these to allow them to get their translation
+        // Making instances of this class to allow it to get its translation
         GFileDialog.getInstance();
-        ConsoleContextualMenu.getInstance();
 
         MEMORY_VIEW = new MemoryView(this);
 
@@ -177,6 +178,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public void loadConfig(@NotNull ConfigEvent e) {
         // Check if the config is on the right version, if not reset it to defaults
         String configVersion = e.config.get(String.class, "version");
@@ -225,10 +227,30 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public boolean loadPlugin(@Nullable IPlugin plugin) {
         if (!PluginManager.hasPlugin(plugin)) return false;
 
-        StringWriter stderr = new StringWriter();
-        boolean successfulLoad = plugin.onLoad(stderr);
-        if (!successfulLoad) {
-            Console.Debug.println(stderr.toString());
+        boolean loadFailed = true;
+        try {
+            loadFailed = !plugin.onLoad();
+        } catch (Exception err) {
+            Console.Debug.println(
+                    StringUtils.format(
+                            currentTranslation.getOrDefault("messages.pluginLoadFailed"),
+                            plugin.getName()
+                    )
+            );
+            Console.Debug.println(err.getMessage());
+            Console.Debug.printStackTrace(err);
+            Console.Debug.println();
+        }
+
+        if (loadFailed) {
+            Console.Debug.println(
+                    StringUtils.format(
+                            currentTranslation.getOrDefault("messages.revertingPlugin"),
+                            plugin.toString(),
+                            loadedPlugin == null ? currentTranslation.getOrDefault("messages.noPlugin") : loadedPlugin.toString()
+                    )
+            );
+            Console.Debug.println();
             return false;
         }
 
@@ -292,9 +314,9 @@ public final class Application extends JFrame implements KeyListener, ITranslata
             currentProcessor.setKeyPressed(KeyEvent.VK_UNDEFINED);
     }
 
-    private String getPluginNotLoadedMessage() {
+    private @NotNull String getPluginNotLoadedMessage() {
         return StringUtils.format(
-                "No plugin loaded ({0} -> {1}).",
+                currentTranslation.getOrDefault("messages.noPluginLoaded"),
                 FILE_MENU.getText(), FILE_MENU.LOAD_PLUGIN.getText()
         );
     }

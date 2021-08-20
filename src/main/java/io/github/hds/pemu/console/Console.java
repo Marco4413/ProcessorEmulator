@@ -1,6 +1,5 @@
-package io.github.hds.pemu.app;
+package io.github.hds.pemu.console;
 
-import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

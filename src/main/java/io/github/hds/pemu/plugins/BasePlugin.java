@@ -5,8 +5,6 @@ import io.github.hds.pemu.app.Application;
 import io.github.hds.pemu.processor.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.StringWriter;
-
 public final class BasePlugin extends Plugin {
     private static BasePlugin instance;
 
@@ -43,7 +41,7 @@ public final class BasePlugin extends Plugin {
     }
 
     @Override
-    public boolean onLoad(@NotNull StringWriter stderr) {
+    public boolean onLoad() {
         return true;
     }
 

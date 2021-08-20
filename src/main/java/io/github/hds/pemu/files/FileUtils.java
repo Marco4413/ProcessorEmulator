@@ -14,7 +14,7 @@ public final class FileUtils {
         return createFile(file, file.isDirectory());
     }
 
-    @SuppressWarnings("all")
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static boolean createFile(@NotNull File file, boolean isDirectory) {
         try {
             if (isDirectory) {
@@ -63,6 +63,6 @@ public final class FileUtils {
         try {
             return file.getCanonicalPath();
         } catch (Exception ignored) { }
-        return file.getAbsolutePath();
+        return file.toPath().normalize().toFile().getAbsolutePath();
     }
 }

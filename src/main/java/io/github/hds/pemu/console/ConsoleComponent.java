@@ -1,7 +1,6 @@
-package io.github.hds.pemu.app;
+package io.github.hds.pemu.console;
 
 import io.github.hds.pemu.utils.IClearable;
-import io.github.hds.pemu.utils.IConsole;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,7 +13,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.Writer;
 import java.util.Objects;
 
 public final class ConsoleComponent extends JTextArea implements IConsole, IClearable {
@@ -22,32 +20,11 @@ public final class ConsoleComponent extends JTextArea implements IConsole, IClea
     public static final int DEFAULT_FONT_SIZE = 12;
     private static final int MARGIN = 3;
 
-    private final Writer WRITER = new Writer() {
-        @Override
-        public synchronized void write(char[] cbuf, int off, int len) {
-            ConsoleComponent.this.print(
-                    String.copyValueOf(cbuf, off, len)
-            );
-        }
-
-        @Override
-        public void flush() { }
-
-        @Override
-        public void close() { }
-    };
-
-    private final PrintStream PRINT_STREAM = new PrintStream(
-            new OutputStream() {
-                @Override
-                public synchronized void write(int b) {
-                    ConsoleComponent.this.print((char) b);
-                }
-            }
-    );
-
     protected ConsoleComponent() {
         super();
+
+        // If no instance was created then do it now
+        ConsoleContextualMenu.getInstance();
 
         setEditable(false);
         setFont(new Font("Consolas", Font.PLAIN, DEFAULT_FONT_SIZE));
@@ -131,13 +108,20 @@ public final class ConsoleComponent extends JTextArea implements IConsole, IClea
     }
 
     @Override
-    public @NotNull Writer getWriter() {
-        return WRITER;
+    public @NotNull ConsoleWriter toWriter() {
+        return new ConsoleWriter(this);
     }
 
     @Override
-    public @NotNull PrintStream getPrintStream() {
-        return PRINT_STREAM;
+    public @NotNull PrintStream toPrintStream() {
+        return new PrintStream(
+                new OutputStream() {
+                    @Override
+                    public synchronized void write(int b) {
+                        ConsoleComponent.this.print((char) b);
+                    }
+                }
+        );
     }
 
 }

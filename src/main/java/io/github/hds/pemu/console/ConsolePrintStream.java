@@ -1,4 +1,4 @@
-package io.github.hds.pemu.utils;
+package io.github.hds.pemu.console;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -64,12 +64,12 @@ public final class ConsolePrintStream implements IConsole {
     }
 
     @Override
-    public synchronized @NotNull Writer getWriter() {
+    public synchronized @NotNull Writer toWriter() {
         return WRITER;
     }
 
     @Override
-    public synchronized @NotNull PrintStream getPrintStream() {
+    public synchronized @NotNull PrintStream toPrintStream() {
         return STREAM;
     }
 }

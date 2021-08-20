@@ -1,5 +1,8 @@
-package io.github.hds.pemu.app;
+package io.github.hds.pemu.console;
 
+import io.github.hds.pemu.app.Application;
+import io.github.hds.pemu.app.GFileDialog;
+import io.github.hds.pemu.app.TJMenuItem;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
