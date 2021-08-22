@@ -1,6 +1,0 @@
-# The first two fields don't need to be specified, since Translations.rb extends the default translation
-"_shortName" = "en-us"
-"_longName"  = "English - US"
-"plugins.incompatible" = "Incompatible PEMU version (Min: {0}, Max: {1})"
-"plugins.loaded" = "{0} Plugin Loaded!"
-"plugins.unloaded" = "{0} Plugin Unloaded."

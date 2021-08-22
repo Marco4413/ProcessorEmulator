@@ -59,5 +59,5 @@ The above mentioned file can be required by `require "PEMUJRubyPluginAPI"`
 
 ### Example
 
-A well-documented example can be found in the [RubyProcessor](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/plugins/RubyProcessor)
-folder.
+A well-documented example can be found in the [PEMU-RubyProcessor](https://github.com/hds536jhmk/pemu-RubyProcessor)
+repository.
