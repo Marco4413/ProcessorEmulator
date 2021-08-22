@@ -1,6 +1,0 @@
-# Non c'è bisogno di specificare i primi due campi, siccome Translations.rb estende la traduzione base
-"_shortName" = "it-it"
-"_longName"  = "Italiano - Italia"
-"plugins.incompatible" = "Versione PEMU non compatibile (Minima: {0}, Massima: {1})"
-"plugins.loaded" = "Plugin {0} Caricato!"
-"plugins.unloaded" = "Plugin {0} Fermato."

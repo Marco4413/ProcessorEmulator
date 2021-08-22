@@ -38,7 +38,7 @@ folder.
 ## PEMU Libraries:
 
 Since version `1.10.0` added the `#INCLUDE` Compiler Instruction (see [docs](#documentation)) libraries became possible,
-so I've made a [Standard Library](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/stdlib) Which is separated
+so I've made a [Standard Library](https://github.com/hds536jhmk/pemu-stdlib) Which is separated
 into modules (since Memory Management is so important) with all functions that I've found myself rewriting all the time.
 
 You can download the above linked folder and start using it yourself to make your life much easier!
