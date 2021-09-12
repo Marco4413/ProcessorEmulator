@@ -1,5 +1,6 @@
 package io.github.hds.pemu.console;
 
+import io.github.hds.pemu.Main;
 import io.github.hds.pemu.utils.IClearable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,6 +12,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Objects;
@@ -20,6 +22,16 @@ public final class ConsoleComponent extends JTextArea implements IConsole, IClea
     public static final int DEFAULT_FONT_SIZE = 12;
     private static final int MARGIN = 3;
 
+    private static String DEFAULT_FONT_FAMILY = "JetBrains Mono";
+    static {
+        InputStream fontStream = Main.class.getResourceAsStream("/assets/JetBrainsMono.ttf");
+        try {
+            Font font = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+            GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
+            DEFAULT_FONT_FAMILY = font.getFamily();
+        } catch (Exception ignored) { }
+    }
+
     protected ConsoleComponent() {
         super();
 
@@ -27,7 +39,7 @@ public final class ConsoleComponent extends JTextArea implements IConsole, IClea
         ConsoleContextualMenu.getInstance();
 
         setEditable(false);
-        setFont(new Font("Consolas", Font.PLAIN, DEFAULT_FONT_SIZE));
+        setFont(new Font(DEFAULT_FONT_FAMILY, Font.PLAIN, DEFAULT_FONT_SIZE));
         setMargin(new Insets(MARGIN, MARGIN, MARGIN, MARGIN));
 
         DefaultCaret caret = (DefaultCaret) getCaret();

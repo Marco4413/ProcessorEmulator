@@ -46,7 +46,7 @@ public interface IPlugin {
 
     /**
      * Called when this plugin is being loaded
-     * Before the old one is fully unloaded
+     * The old one is unloaded
      * @return Whether or not an error was encountered, if false then this plugin won't be fully loaded
      * @throws Exception This method may throw exceptions if any error occurred
      */
@@ -54,7 +54,7 @@ public interface IPlugin {
 
     /**
      * Called when this plugin is being unloaded
-     * After the new one was successfully loaded
+     * Before the new one is loaded
      */
     default void onUnload() { }
 }

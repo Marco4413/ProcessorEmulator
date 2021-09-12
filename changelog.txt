@@ -1,4 +1,12 @@
 
+-- Version (v1.12.1-RELEASE)
+-- Changes from commit @dc910e9
+
+Changed Consoles' Font to JetBrains Mono (It's also bundled with the Jar, so no issues of not having the Font)
+
+Changed Plugin's Load and Unload order (Now the old Plugin is unloaded before the new one is Loaded)
+Made Application#loadPlugin not load the same Plugin twice
+
 -- Version (v1.12.0-RELEASE)
 -- Changes from commit @817a967
 

@@ -83,8 +83,10 @@ public final class ExternalPlugin extends Plugin {
 
     @Override
     public void onUnload() {
-        pluginInstance.onUnload();
-        pluginInstance = null;
+        if (pluginInstance != null) {
+            pluginInstance.onUnload();
+            pluginInstance = null;
+        }
     }
 
     @Override
