@@ -26,7 +26,11 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.util.Objects;
 
+/**
+ * This class is not thread-safe by any means
+ */
 public final class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
 
     public static final int NONE = 0;
@@ -35,7 +39,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public static final int DISABLE_CONFIG_AUTO_SAVE  = 1 << 2;
 
     public static final String APP_TITLE = "PEMU";
-    public static final String APP_VERSION = "1.12.0";
+    public static final String APP_VERSION = "1.12.1";
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
@@ -224,12 +228,12 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         return loadPlugin(PluginManager.getPlugin(pluginID));
     }
 
-    public boolean loadPlugin(@Nullable IPlugin plugin) {
-        if (!PluginManager.hasPlugin(plugin)) return false;
-
-        boolean loadFailed = true;
+    private boolean internalLoadPlugin(@NotNull IPlugin plugin) {
         try {
-            loadFailed = !plugin.onLoad();
+            if (plugin.onLoad()) {
+                loadedPlugin = plugin;
+                return true;
+            }
         } catch (Exception err) {
             Console.Debug.println(
                     StringUtils.format(
@@ -241,8 +245,24 @@ public final class Application extends JFrame implements KeyListener, ITranslata
             Console.Debug.printStackTrace(err);
             Console.Debug.println();
         }
+        return false;
+    }
 
-        if (loadFailed) {
+    public boolean loadPlugin(@Nullable IPlugin plugin) {
+        // Load the Plugin only if it was registered in the PluginManager
+        //  or if it's not the same as the currently loaded one
+        if (
+                !PluginManager.hasPlugin(plugin) ||
+                loadedPlugin != null &&
+                Objects.equals(loadedPlugin.getID(), plugin.getID())
+        ) return false;
+
+        if (loadedPlugin != null)
+            loadedPlugin.onUnload();
+
+        boolean pluginLoaded = internalLoadPlugin(plugin);
+
+        if (!pluginLoaded) {
             Console.Debug.println(
                     StringUtils.format(
                             currentTranslation.getOrDefault("messages.revertingPlugin"),
@@ -251,13 +271,15 @@ public final class Application extends JFrame implements KeyListener, ITranslata
                     )
             );
             Console.Debug.println();
+
+            if (loadedPlugin != null) {
+                if (!internalLoadPlugin(loadedPlugin))
+                    loadedPlugin = null;
+            }
+
             return false;
         }
 
-        if (loadedPlugin != null)
-            loadedPlugin.onUnload();
-
-        loadedPlugin = plugin;
         return true;
     }
 

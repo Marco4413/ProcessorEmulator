@@ -16,11 +16,15 @@ Don't expect much from this emulator, it's made just for learning purposes.
 
 From version `1.12.0` this program creates a folder named `PEMU` in the user's home dir to store all program's data.
 
-On Windows: `%USERPROFILE%/PEMU/`
+ - Windows: `%USERPROFILE%/PEMU/`
+ - Linux: `$HOME/PEMU/`
 
 ## How to run:
 
-There are four main ways to run this project:
+This project is built using [**Adopt OpenJDK 8**](https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=hotspot),
+though any newer JRE should be able to run this properly.
+
+There are four main ways to run it:
  1. By downloading the jar file from [Releases](https://github.com/hds536jhmk/ProcessorEmulator/releases).
  2. By opening the project using **IntelliJ IDEA** and building the **project's artifact**.
  3. By opening the project using **IntelliJ IDEA** and creating a new **Run Config**:

@@ -28,7 +28,8 @@ and confirm your choice.
 
 Plugins can be added by going into `User's Home Dir -> PEMU -> plugins` and dropping the Plugin's folder.
 
-On Windows: `%USERPROFILE%/PEMU/plugins/`
+ - Windows: `%USERPROFILE%/PEMU/plugins/`
+ - Linux: `$HOME/PEMU/plugins/`
 
 ## Writing plugins using Ruby:
 
