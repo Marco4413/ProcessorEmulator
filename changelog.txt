@@ -1,4 +1,11 @@
 
+-- Version (v1.12.2-RELEASE)
+-- Changes from commit @e0e292b
+
+Hopefully fixed all issues with TJMenuItem's disabled color
+Removed useless constructors for class TJMenuItem
+Fixed an issue that would prevent Icons from loading and raise exceptions in newer Java Versions
+
 -- Version (v1.12.1-RELEASE)
 -- Changes from commit @dc910e9
 

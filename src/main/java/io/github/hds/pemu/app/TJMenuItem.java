@@ -1,7 +1,6 @@
 package io.github.hds.pemu.app;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.function.Function;
 
 public class TJMenuItem extends JMenuItem {
@@ -11,31 +10,13 @@ public class TJMenuItem extends JMenuItem {
     public TJMenuItem(Function<TJMenuItem, Boolean> enableCondition) {
         super();
         ENABLE_CONDITION = enableCondition;
-    }
 
-    public TJMenuItem(Icon icon, Function<TJMenuItem, Boolean> enableCondition) {
-        super(icon);
-        ENABLE_CONDITION = enableCondition;
-    }
-
-    public TJMenuItem(String text, Function<TJMenuItem, Boolean> enableCondition) {
-        super(text);
-        ENABLE_CONDITION = enableCondition;
-    }
-
-    public TJMenuItem(Action a, Function<TJMenuItem, Boolean> enableCondition) {
-        super(a);
-        ENABLE_CONDITION = enableCondition;
-    }
-
-    public TJMenuItem(String text, Icon icon, Function<TJMenuItem, Boolean> enableCondition) {
-        super(text, icon);
-        ENABLE_CONDITION = enableCondition;
-    }
-
-    public TJMenuItem(String text, int mnemonic, Function<TJMenuItem, Boolean> enableCondition) {
-        super(text, mnemonic);
-        ENABLE_CONDITION = enableCondition;
+        setModel(new DefaultButtonModel() {
+            @Override
+            public boolean isEnabled() {
+                return TJMenuItem.this.isEnabled();
+            }
+        });
     }
 
     @Override
@@ -45,9 +26,4 @@ public class TJMenuItem extends JMenuItem {
         else return super.isEnabled() && ENABLE_CONDITION.apply(this);
     }
 
-    @Override
-    public Color getForeground() {
-        // For some reason this doesn't happen by default
-        return isEnabled() ? super.getForeground() : (new Color(UIManager.getColor("MenuItem.disabledForeground").getRGB()));
-    }
 }
