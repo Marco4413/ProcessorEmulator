@@ -1,3 +1,5 @@
+* text=auto
+
 # PEMU Program Files
 *.pemu text eol=lf linguist-language=Assembly
 # PEMU Library Files
