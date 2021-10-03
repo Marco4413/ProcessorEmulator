@@ -1,5 +1,13 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @95d7ffe
+
+Added class InstructionNode
+Now Compiler.obfuscateProgram keeps Instructions' Keyword instead of putting their opcode
+Removed warning from ProgramMenu's Obfuscate button
+
+Fixed bug that caused Infinite Loop if an Array wasn't terminated
+
 -- Changes from commit @875af38
 
 Added class RegisterNode

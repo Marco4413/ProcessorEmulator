@@ -47,7 +47,7 @@ public final class Parser {
     private static final TokenDefinition C_VAR      = new TokenDefinition("Compiler Variable", "@([_A-Z][_A-Z0-9]*)", false, true);
     private static final TokenDefinition C_INSTR    = new TokenDefinition("Compiler Instruction", "#(DW|DS|DA|INCLUDE)");
     private static final TokenDefinition L_BRACE    = new TokenDefinition("Left Brace", "{", true);
-    private static final TokenDefinition R_BRACE    = new TokenDefinition("Right Braces", "}", true);
+    private static final TokenDefinition R_BRACE    = new TokenDefinition("Right Brace", "}", true);
     private static final TokenDefinition L_BRACKET  = new TokenDefinition("Left Bracket", "[", true);
     private static final TokenDefinition R_BRACKET  = new TokenDefinition("Right Bracket", "]", true);
     private static final TokenDefinition IDENTIFIER = new TokenDefinition("Identifier", "[_A-Z][_A-Z0-9]*", false, true);
@@ -259,11 +259,6 @@ public final class Parser {
         return result;
     }
 
-    /**
-     *
-     * @param ctx
-     * @return
-     */
     private static int parseArgument(@NotNull ParserContext ctx, boolean allowLabelDeclaration) {
         if (
                 parseOffset(ctx, true).SUCCESS ||
@@ -291,7 +286,7 @@ public final class Parser {
 
         currentToken = ctx.tokenizer.goForward();
         if (!R_BRACKET.isDefinitionOf(currentToken))
-            return new ParseResult<>();
+            throw new ParserError.SyntaxError(ctx, L_BRACKET.getName(), formatToken(currentToken));
 
         return new ParseResult<>(true, staticValue.VALUE);
     }
@@ -307,12 +302,13 @@ public final class Parser {
             return false;
 
         do {
-            ctx.tokenizer.goForward();
+            if (ctx.tokenizer.goForward() == null)
+                throw new ParserError.SyntaxError(ctx, R_BRACE.getName(), formatToken(null));
         } while (parseArgument(ctx, true) >= 0);
 
         Token arrayEndToken = ctx.tokenizer.getCurrentToken();
-        if (!R_BRACE.isDefinitionOf(ctx.tokenizer.getCurrentToken()))
-            throw new ParserError.SyntaxError(ctx, "Array Definition", formatToken(arrayEndToken));
+        if (!R_BRACE.isDefinitionOf(arrayEndToken))
+            throw new ParserError.SyntaxError(ctx, R_BRACE.getName(), formatToken(arrayEndToken));
         return true;
     }
 
@@ -366,17 +362,17 @@ public final class Parser {
         assert currentToken != null;
 
         InstructionSet instructionSet = ctx.processor.getInstructionSet();
-        int keyCode = instructionSet.getOpcode(
+        int opcode = instructionSet.getOpcode(
                 currentToken.getMatch()
         );
 
-        if (keyCode < 0)
+        if (opcode < 0)
             return new ParseResult<>();
 
-        Instruction instruction = instructionSet.getInstruction(keyCode);
+        Instruction instruction = instructionSet.getInstruction(opcode);
         assert instruction != null;
 
-        ctx.addNode(new ValueNode(keyCode));
+        ctx.addNode(new InstructionNode(opcode, instruction));
         for (int i = 0; i < instruction.getArgumentsCount();) {
             Token currentArgToken = ctx.tokenizer.goForward();
 

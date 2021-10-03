@@ -1,1 +1,1 @@
-#DA { 29 a b: [1] 72 101 108 108 111 32 87 111 114 108 100 33 10 0 c: 0 d: 0 e: 47 c 47 f 46 c g: 28 f: 0 d 34 h 3 i f 7 i: 0 13 f 29 g h: 45 a: 46 b 44 e 49 }
+JMP _a #DA { _b: [1] 72 101 108 108 111 32 87 111 114 108 100 33 10 0 _c: 0 _d: 0 _e: } POP _c POP _f PUSH _c #DA { _g: } CMP _f: 0 _d JE _h MOV _i _f OUTC _i: 0 INC _f JMP _g #DA { _h: } RET #DA { _a: } PUSH _b CALL _e HLT

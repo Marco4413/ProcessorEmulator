@@ -29,8 +29,6 @@
 "programMenu.verify._mnemonic"           = 'V'
 "programMenu.obfuscate._text"            = "Obfuscate"
 "programMenu.obfuscate._mnemonic"        = 'O'
-"programMenu.obfuscateWarningPanelTitle" = "Obfuscate Warning"
-"programMenu.obfuscateWarningPanelMsg"   = "Note that obfuscated code might break between updates,\nsince Instructions can either be added or removed,\nso their instruction code might change."
 
 "processorMenu._text"                    = "Processor"
 "processorMenu._mnemonic"                = 'P'

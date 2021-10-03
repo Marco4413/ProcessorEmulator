@@ -1,6 +1,7 @@
 package io.github.hds.pemu.compiler;
 
 import io.github.hds.pemu.compiler.parser.*;
+import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.processor.IProcessor;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,6 +43,7 @@ public final class Compiler {
 
                     break;
                 }
+                case INSTRUCTION:
                 case REGISTER:
                 case VALUE:
                     assert node instanceof ValueNode;
@@ -110,15 +112,11 @@ public final class Compiler {
         );
     }
 
-    private static final char[] RANDOM_STRING_CHARACTERS;
-    static {
-        // Not allowing uppercase characters because Strings may be
-        //  the same as Instruction names which should always be uppercase
-        RANDOM_STRING_CHARACTERS = new char['z' - 'a' + 1];
-        for (int i = 0; i < RANDOM_STRING_CHARACTERS.length; i++) {
-            RANDOM_STRING_CHARACTERS[i] = (char) ('a' + i);
-        }
-    }
+    private static final char[] ALPHANUMERIC_CHARACTERS = new char[] {
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+    };
 
     /**
      * Function that generates a pseudo-random String using the specified seed
@@ -132,9 +130,9 @@ public final class Compiler {
         StringBuilder str = new StringBuilder();
 
         do {
-            int remainder = seed % RANDOM_STRING_CHARACTERS.length;
-            str.append(RANDOM_STRING_CHARACTERS[remainder]);
-            seed /= RANDOM_STRING_CHARACTERS.length;
+            int remainder = seed % ALPHANUMERIC_CHARACTERS.length;
+            str.append(ALPHANUMERIC_CHARACTERS[remainder]);
+            seed /= ALPHANUMERIC_CHARACTERS.length;
         } while (seed != 0);
 
         return str.toString();
@@ -145,18 +143,49 @@ public final class Compiler {
         if (nodes.length == 0)
             return "; This program was obfuscated so much that it's become invisible!";
 
-        StringBuilder obfProgram = new StringBuilder("#DA { ");
+        // This StringBuilder will store the obfuscated program
+        StringBuilder obfProgram = new StringBuilder();
+        // An HashMap which contains the renamed names of labels (k: Original Name, v: New Name)
         HashMap<String, String> renamedLabels = new HashMap<>();
+        // This is increased each time generateRandomString is called
         int randomStrSeed = 0;
 
+        // Whether or not we're into an Array (Instructions can't be inside Arrays!)
+        boolean isInArray = false;
+        // How many arguments are left to fulfill the last InstructionNode
+        int argsCount = 0;
+
         for (INode node : nodes) {
+            // If we're not already in an array, this node isn't an InstructionNode and we don't need to parse arguments
+            if (!isInArray && node.getType() != NodeType.INSTRUCTION && argsCount <= 0) {
+                // Set that we're in an Array and start defining one
+                isInArray = true;
+                obfProgram.append("#DA { ");
+            }
+
             switch (node.getType()) {
                 case ARRAY: {
+                    assert isInArray;
                     assert node instanceof ArrayNode;
                     int arrayLength = ((ArrayNode) node).getLength();
                     for (int i = 0; i < arrayLength; i++) {
                         obfProgram.append("0 ");
                     }
+
+                    break;
+                }
+                case INSTRUCTION: {
+                    assert node instanceof InstructionNode;
+                    Instruction instruction = ((InstructionNode) node).getInstruction();
+
+                    if (isInArray) obfProgram.append("} ");
+                    isInArray = false;
+
+                    obfProgram.append(
+                            instruction.getKeyword()
+                    ).append(' ');
+
+                    argsCount = instruction.getArgumentsCount();
 
                     break;
                 }
@@ -166,6 +195,7 @@ public final class Compiler {
                             ((RegisterNode) node).getName()
                     ).append(' ');
 
+                    if (argsCount > 0) argsCount--;
                     break;
                 case VALUE:
                     assert node instanceof ValueNode;
@@ -173,6 +203,7 @@ public final class Compiler {
                             ((ValueNode) node).getValue()
                     ).append(' ');
 
+                    if (argsCount > 0) argsCount--;
                     break;
                 case OFFSET:
                     assert node instanceof OffsetNode;
@@ -181,8 +212,10 @@ public final class Compiler {
                             .append(((OffsetNode) node).getValue())
                             .append("] ");
 
+                    if (argsCount > 0) argsCount--;
                     break;
                 case STRING: {
+                    assert isInArray;
                     assert node instanceof StringNode;
                     String str = ((StringNode) node).getString();
                     for (int i = 0; i < str.length(); i++)
@@ -198,11 +231,15 @@ public final class Compiler {
                     String labelName = labelNode.getName();
 
                     if (!renamedLabels.containsKey(labelName))
-                        renamedLabels.put(labelName, generateRandomString(randomStrSeed++));
+                        renamedLabels.put(labelName, "_" + generateRandomString(randomStrSeed++));
 
-                    obfProgram
-                            .append(renamedLabels.get(labelName))
-                            .append(labelNode.isDeclaration() ? ": " : " ");
+                    obfProgram.append(renamedLabels.get(labelName));
+                    if (labelNode.isDeclaration())
+                        obfProgram.append(": ");
+                    else {
+                        obfProgram.append(' ');
+                        if (argsCount > 0) argsCount--;
+                    }
 
                     break;
                 }
@@ -211,6 +248,7 @@ public final class Compiler {
             }
         }
 
-        return obfProgram.append('}').toString();
+        if (isInArray) obfProgram.append('}');
+        return obfProgram.toString();
     }
 }
