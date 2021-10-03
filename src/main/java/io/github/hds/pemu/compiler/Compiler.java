@@ -42,6 +42,7 @@ public final class Compiler {
 
                     break;
                 }
+                case REGISTER:
                 case VALUE:
                     assert node instanceof ValueNode;
                     program.add(((ValueNode) node).getValue());
@@ -159,6 +160,13 @@ public final class Compiler {
 
                     break;
                 }
+                case REGISTER:
+                    assert node instanceof RegisterNode;
+                    obfProgram.append(
+                            ((RegisterNode) node).getName()
+                    ).append(' ');
+
+                    break;
                 case VALUE:
                     assert node instanceof ValueNode;
                     obfProgram.append(

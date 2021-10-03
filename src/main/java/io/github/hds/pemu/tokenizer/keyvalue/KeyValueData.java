@@ -89,7 +89,7 @@ public final class KeyValueData {
         StringBuilder strBuilder = new StringBuilder();
         ENTRIES.forEach(
                 (k, v) -> {
-                    strBuilder.append('"').append(
+                    strBuilder.append(
                             escapeString(k, KeyValueParser.STRING_QUOTE, KeyValueParser.ESCAPE_CHARACTER)
                     ).append(" = ").append(objectToString(v)).append('\n');
                 }

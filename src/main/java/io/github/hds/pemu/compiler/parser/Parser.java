@@ -32,8 +32,8 @@ public final class Parser {
     private static final String CI_DEFINE_ARRAY  = "DA";
     private static final String CI_INCLUDE       = "INCLUDE";
 
-    private static final String STATIC_TYPES = "Number, Character, Compiler Variable or Register";
-    private static final String ARGUMENT_TYPES = "Label, Offset, " + STATIC_TYPES;
+    private static final String STATIC_TYPES = "Number, Character or Compiler Variable";
+    private static final String ARGUMENT_TYPES = "Label, Offset, Register, " + STATIC_TYPES;
     private static final String GENERIC_TYPES = "Instruction, Compiler Instruction, Compiler Variable or Label";
 
     private static final TokenDefinition COMMENT    = new TokenDefinition("Comment", ";[^\\v]*\\v?");
@@ -216,10 +216,11 @@ public final class Parser {
 
         if (address < 0) return new ParseResult<>();
 
+        if (addNodes)
+            ctx.addNode(new RegisterNode(address, regName));
+
         int finalAddress = address; // IntelliJ would get mad at me if I didn't put this here, don't know why tho
-        IValueProvider valueProvider = () -> finalAddress;
-        if (addNodes) ctx.addNode(new ValueNode(valueProvider));
-        return new ParseResult<>(true, valueProvider);
+        return new ParseResult<>(true, () -> finalAddress);
     }
 
     private static @NotNull ParseResult<IValueProvider> parseCompilerVar(@NotNull ParserContext ctx, boolean isGetting, boolean addNodes) {
@@ -254,7 +255,6 @@ public final class Parser {
         result = parseNumber(ctx, addNodes);
         if (!result.SUCCESS) result = parseCharacter(ctx, addNodes);
         if (!result.SUCCESS) result = parseCompilerVar(ctx, true, addNodes);
-        if (!result.SUCCESS) result = parseRegister(ctx, addNodes);
 
         return result;
     }
@@ -265,12 +265,17 @@ public final class Parser {
      * @return
      */
     private static int parseArgument(@NotNull ParserContext ctx, boolean allowLabelDeclaration) {
+        if (
+                parseOffset(ctx, true).SUCCESS ||
+                parseRegister(ctx, true).SUCCESS ||
+                parseStaticValue(ctx, true).SUCCESS
+        ) return 1;
+
         int labelParseResult = parseLabel(ctx, allowLabelDeclaration, true);
         if (labelParseResult > 0) return 1;
         else if (labelParseResult == 0) return 0;
 
-        if (parseOffset(ctx, true).SUCCESS) return 1;
-        return parseStaticValue(ctx, true).SUCCESS ? 1 : -1;
+        return -1;
     }
 
     private static @NotNull ParseResult<IValueProvider> parseOffset(@NotNull ParserContext ctx, boolean addNodes) {
@@ -361,7 +366,7 @@ public final class Parser {
         assert currentToken != null;
 
         InstructionSet instructionSet = ctx.processor.getInstructionSet();
-        int keyCode = instructionSet.getKeyCode(
+        int keyCode = instructionSet.getOpcode(
                 currentToken.getMatch()
         );
 

@@ -535,14 +535,56 @@ public final class Instructions {
     };
 
     public static final InstructionSet SET = new InstructionSet(
+            0xFF,
+            new int[] {
+                    0x00, 0xFF,
+                    // Debugging
+                    0x01,
+                    // Memory Manipulation
+                    0x10, 0x11, 0x12, 0x13,
+                    // Display
+                    0x20, 0x21,
+                    // Input
+                    0x30, 0x31, 0x32,
+                    // Timing
+                    0x40, 0x41,
+                    // Maths
+                    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+                    0x58,
+                    // Logic
+                    0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76,
+                    // Jumps
+                    0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7,
+                    0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF,
+                    // Calls
+                    0xC0, 0xC1,
+                    // Stack Manipulation
+                    0xE0, 0xE1
+            },
             new Instruction[] {
-                    NULL, BRK , DATA, MOV , SWP , XMOV, OUTI, OUTC,
-                    GETI, GETC, GETK, TS  , TMS , INC , DEC , ADD ,
-                    SUB , MUL , DIV , MOD , AND , OR  , NOT , XOR ,
-                    SHL , SHR , ROL , ROR , CMP , JMP , JC  , JNC ,
-                    JZ  , JNZ , JE  , JNE , JB  , JNB , JBE , JNBE,
-                    JA  , JNA , JAE , JNAE, CALL, RET , PUSH, POP ,
-                    LOOP, HLT
+                    NULL, HLT,
+                    // 0x01-0x0F Debugging
+                    BRK,
+                    // 0x10-0x1F Memory Manipulation
+                    DATA, MOV, SWP, XMOV,
+                    // 0x20-0x2F Display
+                    OUTI, OUTC,
+                    // 0x30-0x3F Input
+                    GETI, GETC, GETK,
+                    // 0x40-0x4F Timing
+                    TS, TMS,
+                    // 0x50-0x6F Maths
+                    INC, DEC, ADD, SUB, MUL, DIV, MOD, SHL,
+                    SHR,
+                    // 0x70-0x9F Logic
+                    CMP, AND, OR, NOT, XOR, ROL, ROR,
+                    // 0xA0-0xBF Jumps
+                    JMP, JC , JNC , JZ, JNZ, JE , JNE , JB  ,
+                    JNB, JBE, JNBE, JA, JNA, JAE, JNAE, LOOP,
+                    // 0xC0-0xDF Calls
+                    CALL, RET,
+                    // 0xE0-0xEF Stack Manipulation
+                    PUSH, POP
             }
     );
 

@@ -24,7 +24,7 @@
    * [Dividing by ZERO](#dividing-by-zero)
    * [Setting the clock too high](#setting-the-clock-too-high)
  - [Compiler Basics](#compiler-basics)
-   * [Constants](#constants)
+   * [Compiler Variables](#compiler-variables)
    * [Labels](#labels)
    * [Compiler Instructions](#compiler-instructions)
    * [Registers and Flags](#registers-and-flags)
@@ -273,15 +273,15 @@ lock the emulator if the program has an uncapped loop that writes to the console
 
 # Compiler Basics
 
-## Constants
+## Compiler Variables
 
-Constants can be declared as follows:
+Compiler Variables can be declared as follows:
 
 ```Assembly
-@const_variable 10
+@compiler_variable 10
 ```
 
-Constants are values, they don't point to anything in memory, so they are rarely used as arguments for instructions (see [DATA](#data)).
+Compiler Variables are values, they don't point to anything in memory, so they are rarely used as arguments for instructions (see [DATA](#data)).
 
 Though they are still useful if used to specify User Settings at the top of the source file or within Libraries as
 "Library Settings".
@@ -305,14 +305,14 @@ key: #DW @time_till_stop
 HLT
 
 ; The library file to be able to compile must still specify
-;  the constant before using it
+;  the Compiler Variable before using it
 #INCLUDE "mylib.pemulib"
 
 ; But it can be changed/used by others
 @MY_LIB_SETTING @VK_ENTER
 ```
 
-Values that can be assigned to constants are: Previously Declared Constants, Characters or Numbers
+Values that can be assigned to Compiler Variables are: Previously Declared Compiler Variables, Characters or Numbers
 
 ```Assembly
 @key_confirm @VK_ENTER
@@ -320,15 +320,13 @@ Values that can be assigned to constants are: Previously Declared Constants, Cha
 @n_delay 500
 ```
 
-A Constant's value is the very last one that was assigned to it.
+A Compiler Variable's value is the very last one that was assigned to it.
 
-Though if used as an array's length or offset their value will be the one that was assigned before said array/offset
-creation.
-
-There are some constants that are already declared, such as virtual keys (or VK), the emulator uses reflection to get
-all VKs from the [KeyEvent](https://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html) class that then are
-used as a base template for constants. So if you want to declare a variable that stores the value of a virtual key you
-can go to the above linked class's docs and search if there's the field (starting with `VK_`) that you want to use:
+There are some Compiler Variables that are already declared, such as virtual keys (or VK), the emulator uses reflection
+to get all VKs from the [KeyEvent](https://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html) class that
+then are used as a base template for Compiler Variables. So if you want to declare a variable that stores the value of
+a virtual key you can go to the above linked class's docs and search if there's the field (starting with `VK_`) that
+you want to use:
 
 ```Assembly
 ; If I want to put the enter key's key code inside my memory,
@@ -368,14 +366,14 @@ str: #DS "Hello World!\0"
 str_ptr: #DW str
 ```
 
-An offset can also be specified on labels using the characters `[` and `]` and putting either a constant
-or static number between them:
+An offset can also be specified on labels using the characters `[` and `]` and putting either a compiler variable,
+number or character (If you really want) between them:
 
 ```Assembly
 @offset 0
 
 ; This will print the character at the address specified
-;  by str + the specified offset (that can be either a constant or number)
+;  by str + the specified offset (that can be either a compiler variable, number or character)
 OUTC str[ @offset ]
 OUTC str[11]
 HLT
@@ -394,10 +392,10 @@ These instructions are useful to put values into memory where there's no process
 ```
 
 They are 4 and always have an `#` in front of them:
- - \#DW (Define Word): Can be followed by a [constant](#constants), a [label](#labels), a character (`'\''`) or a numeric value.
+ - \#DW (Define Word): Can be followed by a [compiler variable](#compiler-variables), a [label](#labels), a character (`'\''`) or a numeric value.
  - \#DS (Define String): Can only be followed by a string (`"\"This is a string\""` or `'"This is a string"'`).
  - \#DA (Define Array): Can be followed by either an array (`{ 3 2 newline: '\n' @VK_ENTER }`) where said array can contain
-   constants, labels, characters, offsets or numbers, or an array size (`[10]`).
+   compiler variables, labels, characters, offsets or numbers, or an array size (`[10]`) which accepts the same types as offsets.
  - \#INCLUDE: Can only be followed by a String and said String must point to a File using a Path relative to the File
    where the instruction is found.
 
@@ -419,7 +417,7 @@ string: #DS "Hello World!\0"
 ;   If you want to add a digit after a Code Point, it can be terminated using a semicolon (;):
 ;   "\10;2\0"
 
-; #DA adds all elements in the array to memory, constants can be used too
+; #DA adds all elements in the array to memory, compiler variables can be used too
 ;  and labels can be declared pointing to a certain element
 array: #DA {
    10 3 2
@@ -485,7 +483,7 @@ Sets the value at `addr` to `val`.
 
 ```Assembly
 ; Sets the contents of val to the value of the
-;  constant @VK_A
+;  compiler variable @VK_A
 DATA val @VK_A
 
 ; Printing contents of val, it isn't equal to
@@ -690,8 +688,8 @@ null: #DW 0
 `GETK dst`
 
 Gets the currently pressed key and sets `dst` to its [keycode](https://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html)
-(Constants can be used to add keys to memory. e.g. `@VK_ENTER`).
-If no key is pressed, it's set to the constant `@VK_UNDEFINED`.
+(Compiler Variables can be used to add keys to memory. e.g. `@VK_ENTER`).
+If no key is pressed, it's set to the Compiler Variable `@VK_UNDEFINED`.
 
 **Example:**
 

@@ -1,5 +1,15 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @875af38
+
+Added class RegisterNode
+Now Compiler.obfuscateProgram will keep Registers' name instead of their address
+
+Added overloads for InstructionSet's constructor to add custom opcodes
+Renamed method InstructionSet#getKeyCode to getOpcode
+
+Fixed method KeyValueData#toString not serializing Strings properly
+
 -- Changes from commit @a2cd584
 
 Added Back Code Obfuscation
