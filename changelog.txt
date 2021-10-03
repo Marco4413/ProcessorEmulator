@@ -1,5 +1,10 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @eeac51a
+
+Fixed typo KeyValueParser's Float TokenDefinition's Pattern
+Moved package pemu.tokenizer.keyvalue to pemu
+
 -- Changes from commit @95d7ffe
 
 Added class InstructionNode

@@ -1,6 +1,6 @@
 package io.github.hds.pemu.config;
 
-import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
+import io.github.hds.pemu.keyvalue.KeyValueData;
 import io.github.hds.pemu.utils.IStoppable;
 
 public final class ConfigEvent implements IStoppable {

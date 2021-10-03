@@ -1,4 +1,4 @@
-package io.github.hds.pemu.tokenizer.keyvalue;
+package io.github.hds.pemu.keyvalue;
 
 import io.github.hds.pemu.tokenizer.Token;
 import io.github.hds.pemu.tokenizer.TokenDefinition;
@@ -17,7 +17,7 @@ public final class KeyValueParser {
     private static final TokenDefinition STRING     = new TokenDefinition("String", "\"((?:[^\\\\\"]|\\\\.)*)\"");
     private static final TokenDefinition CHARACTER  = new TokenDefinition("Character", "'(\\\\.|[^\\\\])'");
     private static final TokenDefinition COMMENT    = new TokenDefinition("Comment", "#[^\\v]*\\v?");
-    private static final TokenDefinition FLOAT      = new TokenDefinition("Float", "[+\\-]?[0-9]+(?:\\.[0-9]+)*");
+    private static final TokenDefinition FLOAT      = new TokenDefinition("Float", "[+\\-]?[0-9]+(?:\\.[0-9]+)?");
     private static final TokenDefinition INTEGER    = new TokenDefinition("Integer", "[+\\-]?[0-9]+");
     private static final TokenDefinition BOOLEAN    = new TokenDefinition("Boolean", "true|false");
     private static final TokenDefinition ASSIGNMENT = new TokenDefinition("Assignment", "=", true);

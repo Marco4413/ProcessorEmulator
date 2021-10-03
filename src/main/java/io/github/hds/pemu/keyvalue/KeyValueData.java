@@ -1,4 +1,4 @@
-package io.github.hds.pemu.tokenizer.keyvalue;
+package io.github.hds.pemu.keyvalue;
 
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;

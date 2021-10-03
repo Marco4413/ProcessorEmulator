@@ -2,8 +2,8 @@ package io.github.hds.pemu.localization;
 
 import io.github.hds.pemu.Main;
 import io.github.hds.pemu.files.FileUtils;
-import io.github.hds.pemu.tokenizer.keyvalue.KeyValueData;
-import io.github.hds.pemu.tokenizer.keyvalue.KeyValueParser;
+import io.github.hds.pemu.keyvalue.KeyValueData;
+import io.github.hds.pemu.keyvalue.KeyValueParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
