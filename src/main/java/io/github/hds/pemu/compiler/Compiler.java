@@ -140,7 +140,69 @@ public final class Compiler {
     }
 
     public static @NotNull String obfuscateProgram(@NotNull CompiledProgram compiledProgram) {
-        // TODO: Implement this Again
-        return "";
+        INode[] nodes = compiledProgram.getNodes();
+        if (nodes.length == 0)
+            return "; This program was obfuscated so much that it's become invisible!";
+
+        StringBuilder obfProgram = new StringBuilder("#DA { ");
+        HashMap<String, String> renamedLabels = new HashMap<>();
+        int randomStrSeed = 0;
+
+        for (INode node : nodes) {
+            switch (node.getType()) {
+                case ARRAY: {
+                    assert node instanceof ArrayNode;
+                    int arrayLength = ((ArrayNode) node).getLength();
+                    for (int i = 0; i < arrayLength; i++) {
+                        obfProgram.append("0 ");
+                    }
+
+                    break;
+                }
+                case VALUE:
+                    assert node instanceof ValueNode;
+                    obfProgram.append(
+                            ((ValueNode) node).getValue()
+                    ).append(' ');
+
+                    break;
+                case OFFSET:
+                    assert node instanceof OffsetNode;
+                    obfProgram
+                            .append('[')
+                            .append(((OffsetNode) node).getValue())
+                            .append("] ");
+
+                    break;
+                case STRING: {
+                    assert node instanceof StringNode;
+                    String str = ((StringNode) node).getString();
+                    for (int i = 0; i < str.length(); i++)
+                        obfProgram
+                                .append((int) str.charAt(i))
+                                .append(' ');
+
+                    break;
+                }
+                case LABEL: {
+                    assert node instanceof LabelNode;
+                    LabelNode labelNode = (LabelNode) node;
+                    String labelName = labelNode.getName();
+
+                    if (!renamedLabels.containsKey(labelName))
+                        renamedLabels.put(labelName, generateRandomString(randomStrSeed++));
+
+                    obfProgram
+                            .append(renamedLabels.get(labelName))
+                            .append(labelNode.isDeclaration() ? ": " : " ");
+
+                    break;
+                }
+                default:
+                    throw new IllegalStateException("Invalid Node Reached Compiler.");
+            }
+        }
+
+        return obfProgram.append('}').toString();
     }
 }

@@ -44,6 +44,7 @@ public final class KeyValueParser {
                 strBuilder.append(
                         StringUtils.SpecialCharacters.MAP.getOrDefault(currentChar, currentChar)
                 );
+                isEscaping = false;
             } else if (currentChar == ESCAPE_CHARACTER)
                 isEscaping = true;
             else strBuilder.append(strContent.charAt(i));

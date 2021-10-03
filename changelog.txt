@@ -1,5 +1,10 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @a2cd584
+
+Added Back Code Obfuscation
+Fixed escape characters in Strings parsed by KeyValueParser not being parsed correctly
+
 -- Changes from commit @8ff7ec6
 
 Completely reworked both the Compiler and Tokenizer
