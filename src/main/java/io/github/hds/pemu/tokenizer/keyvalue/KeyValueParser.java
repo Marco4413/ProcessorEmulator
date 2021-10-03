@@ -1,7 +1,7 @@
 package io.github.hds.pemu.tokenizer.keyvalue;
 
 import io.github.hds.pemu.tokenizer.Token;
-import io.github.hds.pemu.tokenizer.TokenGroup;
+import io.github.hds.pemu.tokenizer.TokenDefinition;
 import io.github.hds.pemu.tokenizer.Tokenizer;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -11,71 +11,87 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public final class KeyValueParser {
-    private static final Token STRING      = new Token('"');
-    private static final Token CHARACTER   = new Token('\'');
-    private static final Token ESCAPE_CHAR = new Token('\\', true);
-    private static final Token ASSIGN      = new Token('=');
-    private static final Token WHITESPACE  = new Token(' ', "\\s", false);
-    private static final Token COMMENT     = new Token('#');
+    protected static final char ESCAPE_CHARACTER = '\\';
+    protected static final char STRING_QUOTE = '"';
+    protected static final char CHAR_QUOTE   = '\'';
+    private static final TokenDefinition STRING     = new TokenDefinition("String", "\"((?:[^\\\\\"]|\\\\.)*)\"");
+    private static final TokenDefinition CHARACTER  = new TokenDefinition("Character", "'(\\\\.|[^\\\\])'");
+    private static final TokenDefinition COMMENT    = new TokenDefinition("Comment", "#[^\\v]*\\v?");
+    private static final TokenDefinition FLOAT      = new TokenDefinition("Float", "[+\\-]?[0-9]+(?:\\.[0-9]+)*");
+    private static final TokenDefinition INTEGER    = new TokenDefinition("Integer", "[+\\-]?[0-9]+");
+    private static final TokenDefinition BOOLEAN    = new TokenDefinition("Boolean", "true|false");
+    private static final TokenDefinition ASSIGNMENT = new TokenDefinition("Assignment", "=", true);
+    private static final TokenDefinition WHITESPACE = new TokenDefinition("Whitespace", "\\s+");
 
-    private static final TokenGroup ALL_TOKENS = new TokenGroup().addTokens(
-            STRING, CHARACTER, ESCAPE_CHAR, ASSIGN, WHITESPACE, COMMENT
-    );
+    private static final TokenDefinition[] ALL_DEFINITIONS = new TokenDefinition[] {
+            STRING, CHARACTER, COMMENT, FLOAT, INTEGER, BOOLEAN, ASSIGNMENT, WHITESPACE
+    };
 
-    private static @Nullable String parseString(@NotNull Tokenizer tokenizer) {
-        String terminator = tokenizer.peekNext(WHITESPACE);
-        if (!STRING.matches(terminator)) return null;
-        tokenizer.consumeNext(WHITESPACE);
+    private static @Nullable String parseString(@Nullable Token token) {
+        if (!STRING.isDefinitionOf(token))
+            return null;
 
-        StringBuilder builder = new StringBuilder();
+        assert token != null;
+        assert token.getGroups().length > 0;
+
+        String strContent = token.getGroups()[0];
+        StringBuilder strBuilder = new StringBuilder();
+
         boolean isEscaping = false;
-
-        while (true) {
-            String nextToken = tokenizer.consumeNext();
-            if (nextToken == null) return null;
+        for (int i = 0; i < strContent.length(); i++) {
+            char currentChar = strContent.charAt(i);
             if (isEscaping) {
-                char firstChar = nextToken.charAt(0);
-                builder.append(StringUtils.SpecialCharacters.MAP.getOrDefault(firstChar, firstChar));
-                if (nextToken.length() > 1) builder.append(nextToken.substring(1));
-                isEscaping = false;
-            } else if (nextToken.equals(terminator)) return builder.toString();
-            else if (ESCAPE_CHAR.matches(nextToken)) isEscaping = true;
-            else builder.append(nextToken);
+                strBuilder.append(
+                        StringUtils.SpecialCharacters.MAP.getOrDefault(currentChar, currentChar)
+                );
+            } else if (currentChar == ESCAPE_CHARACTER)
+                isEscaping = true;
+            else strBuilder.append(strContent.charAt(i));
         }
+
+        return strBuilder.toString();
     }
 
-    private static @Nullable Character parseCharacter(@NotNull Tokenizer tokenizer) {
-        String terminator = tokenizer.peekNext(WHITESPACE);
-        if (!CHARACTER.matches(terminator)) return null;
-        tokenizer.consumeNext(WHITESPACE);
+    private static @Nullable Character parseCharacter(@Nullable Token token) {
+        if (!CHARACTER.isDefinitionOf(token))
+            return null;
 
-        String nextToken = tokenizer.consumeNext();
-        if (nextToken == null) return null;
+        assert token != null;
+        assert token.getGroups().length > 0;
 
-        if (ESCAPE_CHAR.matches(nextToken)) {
-            String charToEscape = tokenizer.consumeNext();
-            if (charToEscape == null || charToEscape.length() > 1) return null;
-            if (!terminator.equals(tokenizer.consumeNext())) return null;
-            char actualChar = charToEscape.charAt(0);
-            return StringUtils.SpecialCharacters.MAP.getOrDefault(actualChar, actualChar);
-        } else if (nextToken.length() > 1) return null;
-        else if (terminator.equals(tokenizer.consumeNext())) return nextToken.charAt(0);
+        String charContent = token.getGroups()[0];
+
+        char character;
+        if (charContent.charAt(0) == ESCAPE_CHARACTER) {
+            char escapedChar = charContent.charAt(1);
+            character = StringUtils.SpecialCharacters.MAP.getOrDefault(escapedChar, escapedChar);
+        } else character = charContent.charAt(0);
+        return character;
+    }
+
+    private static @Nullable Number parseNumber(@Nullable Token token) {
+        if (INTEGER.isDefinitionOf(token)) {
+            assert token != null;
+            try {
+                return StringUtils.parseLong(token.getMatch());
+            } catch (Exception ignored) { }
+
+        } else if (FLOAT.isDefinitionOf(token)) {
+            assert token != null;
+            try {
+                return Double.parseDouble(token.getMatch());
+            } catch (Exception ignored) { }
+        }
+
         return null;
     }
 
-    private static @Nullable Number parseNumber(@NotNull Tokenizer tokenizer) {
-        String number = tokenizer.peekNext(WHITESPACE);
-        if (number == null) return null;
+    private static @Nullable Boolean parseBoolean(@Nullable Token token) {
+        if (!BOOLEAN.isDefinitionOf(token))
+            return null;
 
-        try {
-            return StringUtils.parseLong(number);
-        } catch (Exception ignored) { }
-
-        try {
-            return Double.parseDouble(number);
-        } catch (Exception ignored) { }
-
-        return null;
+        assert token != null;
+        return token.getMatch().equals("true");
     }
 
     public static @NotNull KeyValueData parseKeyValuePairs(@NotNull Readable readable) {
@@ -85,40 +101,40 @@ public final class KeyValueParser {
 
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
+            Tokenizer tokenizer = new Tokenizer(line, ALL_DEFINITIONS);
+            tokenizer.removeTokensByDefinition(WHITESPACE);
 
-            Tokenizer tokenizer = new Tokenizer(line, ALL_TOKENS);
+            Token currentToken = tokenizer.goForward();
+            if (COMMENT.isDefinitionOf(currentToken)) continue;
 
-            if (COMMENT.matches(tokenizer.peekNext(WHITESPACE))) continue;
-
-            String key = parseString(tokenizer);
+            String key = parseString(currentToken);
             if (key == null) continue;
 
-            String nextToken = tokenizer.consumeNext(WHITESPACE);
-            if (!ASSIGN.matches(nextToken)) continue;
+            if (!ASSIGNMENT.isDefinitionOf(tokenizer.goForward())) continue;
 
-            String str = parseString(tokenizer);
+            currentToken = tokenizer.goForward();
+
+            String str = parseString(currentToken);
             if (str != null) {
                 entries.put(key, str);
                 continue;
             }
 
-            Character character = parseCharacter(tokenizer);
+            Character character = parseCharacter(currentToken);
             if (character != null) {
                 entries.put(key, character);
                 continue;
             }
 
-            Number number = parseNumber(tokenizer);
+            Number number = parseNumber(currentToken);
             if (number != null) {
                 entries.put(key, number);
                 continue;
             }
 
-            String bool = tokenizer.peekNext(WHITESPACE);
+            Boolean bool = parseBoolean(currentToken);
             if (bool == null) continue;
-            if (bool.equalsIgnoreCase("true") || bool.equalsIgnoreCase("false")) {
-                entries.put(key, bool.equalsIgnoreCase("true"));
-            }
+            entries.put(key, bool);
         }
 
         return new KeyValueData(entries);

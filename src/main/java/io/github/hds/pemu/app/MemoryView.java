@@ -108,9 +108,9 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
                 if (Character.isISOControl(number)) {
                     // If it's a special character convert it
                     if (StringUtils.SpecialCharacters.isSpecialCharacter(number))
-                        return StringUtils.SpecialCharacters.toString((char) number);
+                        return StringUtils.SpecialCharacters.escapeAll((char) number);
                         // Else put it as a number with a backslash in front of it (That's done to differentiate between '0' and 0)
-                    else return StringUtils.SpecialCharacters.ESCAPE_CHARACTER + number;
+                    else return StringUtils.SpecialCharacters.ESCAPE_CHARACTER_STR + number;
                     // Else if the character can be typed then show it
                 } else return String.valueOf((char) number);
             }

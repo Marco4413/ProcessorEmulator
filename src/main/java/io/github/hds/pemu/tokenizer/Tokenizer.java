@@ -4,158 +4,221 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class Tokenizer {
 
-    private final String[] TOKENS;
-    private int nextTokenIndex = 0;
-    private int consumedCharacters = 0;
-    private int consumedLineChars = 0;
-    private int consumedLines = 0;
+    public static final ITokenDefinition UNKNOWN = new TokenDefinition("Unknown", ".*");
 
-    public Tokenizer(@NotNull String str, @NotNull Token... tokens) {
-        if (tokens.length == 0) {
-            TOKENS = new String[0];
-            return;
-        }
+    private int nextIndex = 0;
+    private final ArrayList<Token> TOKENS;
 
-        StringBuilder ruleBuilder = new StringBuilder();
-        for (int i = 0; i < tokens.length - 1; i++)
-            ruleBuilder.append("(").append(tokens[i].getPattern()).append(")|");
-        ruleBuilder.append("(").append(tokens[tokens.length - 1].getPattern()).append(")");
-
-        Pattern pattern = Pattern.compile(ruleBuilder.toString());
-        TOKENS = splitString(str, pattern);
+    public Tokenizer(@NotNull String source, @NotNull ITokenDefinition... tokenDefinitions) {
+        List<ITokenDefinition> definitionsList = new ArrayList<>();
+        Collections.addAll(definitionsList, tokenDefinitions);
+        this.TOKENS = Tokenizer.tokenize(source, definitionsList);
     }
 
-    public Tokenizer(@NotNull String str, @NotNull TokenGroup tokenGroup) {
-        this(str, tokenGroup.getGroup());
+    public Tokenizer(@NotNull String source, @NotNull List<ITokenDefinition> tokenDefinitions) {
+        this.TOKENS = Tokenizer.tokenize(source, tokenDefinitions);
     }
 
-    private static @NotNull String[] splitString(@NotNull String str, @NotNull Pattern pattern) {
-        ArrayList<String> tokens = new ArrayList<>();
+    public boolean canGoForward() {
+        return this.isValidIndex(nextIndex);
+    }
 
-        Matcher patternMatcher = pattern.matcher(str);
-        int lastIndex = 0;
-        while (patternMatcher.find()) {
-            int matchStart = patternMatcher.start();
-            int matchEnd   = patternMatcher.end();
+    public @Nullable Token goForward() {
+        return canGoForward() ? TOKENS.get(nextIndex++) : null;
+    }
 
-            if (lastIndex < matchStart)
-                tokens.add(str.substring(lastIndex, matchStart));
+    public @Nullable Token peekForward() {
+        return canGoForward() ? TOKENS.get(nextIndex) : null;
+    }
 
-            tokens.add(
-                    str.substring(matchStart, matchEnd)
-            );
+    public @Nullable Token goForward(@NotNull ITokenDefinition... definitionsBlacklist) {
+        return goForward(false, definitionsBlacklist);
+    }
 
-            lastIndex = matchEnd;
+    public @Nullable Token peekForward(@NotNull ITokenDefinition... definitionsBlacklist) {
+        return peekForward(false, definitionsBlacklist);
+    }
+
+    public @Nullable Token goForward(boolean doWhitelist, @NotNull ITokenDefinition... definitionsFilter) {
+        while (true) {
+            Token nextToken = goForward();
+            if (nextToken == null) return null;
+
+            if (Tokenizer.isTokenCompatible(nextToken, doWhitelist, definitionsFilter))
+                return nextToken;
         }
+    }
 
-        if (lastIndex < str.length())
-            tokens.add(str.substring(lastIndex));
+    public @Nullable Token peekForward(boolean doWhitelist, @NotNull ITokenDefinition... definitionsFilter) {
+        for (int i = nextIndex; i < TOKENS.size(); i++) {
+            Token currentToken = TOKENS.get(i);
+            if (Tokenizer.isTokenCompatible(currentToken, doWhitelist, definitionsFilter))
+                return currentToken;
+        }
+        return null;
+    }
 
-        return tokens.toArray(new String[0]);
+    public @Nullable Token getCurrentToken() {
+        return this.isValidIndex(nextIndex - 1) ? TOKENS.get(nextIndex - 1) : null;
+    }
+
+    public int getCurrentLine() {
+        Token currentToken = getCurrentToken();
+        if (currentToken == null) return -1;
+        return currentToken.getLine();
+    }
+
+    public int getCurrentLineChar() {
+        Token currentToken = getCurrentToken();
+        if (currentToken == null) return -1;
+        return currentToken.getLineChar();
+    }
+
+    public int removeTokensByDefinition(@NotNull ITokenDefinition... definitions) {
+        int removedTokens = 0;
+        for (int i = 0; i < TOKENS.size(); i++) {
+            if (Tokenizer.isTokenCompatible(TOKENS.get(i), true, definitions)) {
+                if (i < nextIndex) nextIndex--;
+                TOKENS.remove(i--);
+                removedTokens++;
+            }
+        }
+        return removedTokens;
+    }
+
+    public @NotNull Token[] getTokens() {
+        return this.TOKENS.toArray(new Token[0]);
     }
 
     private boolean isValidIndex(int index) {
-        return index >= 0 && index < TOKENS.length;
+        return index >= 0 && index < TOKENS.size();
     }
 
-    public boolean hasNext() {
-        return isValidIndex(nextTokenIndex);
-    }
-
-    public @Nullable String getLast() {
-        int lastIndex = nextTokenIndex - 1;
-        return isValidIndex(lastIndex) ? TOKENS[lastIndex] : null;
-    }
-
-    public @Nullable String peekNext() {
-        return hasNext() ? TOKENS[nextTokenIndex] : null;
-    }
-
-    public @Nullable String peekNext(Token... blacklist) {
-        return peekNext(false, blacklist);
-    }
-
-    public @Nullable String peekNext(boolean whitelist, Token... filter) {
-        int offset = 0;
-        while (offset + nextTokenIndex < TOKENS.length) {
-            String token = TOKENS[offset++ + nextTokenIndex];
-            if (token == null) return null;
-
-            boolean isValid = true;
-            for (Token filtered : filter) {
-                if (!isValid) break;
-                if (whitelist)
-                    isValid = filtered.matches(token);
-                else isValid = !filtered.matches(token);
+    private static boolean isTokenCompatible(@NotNull Token token, boolean doWhitelist, @NotNull ITokenDefinition... definitionsFilter) {
+        for (ITokenDefinition definition : definitionsFilter) {
+            if (token.isOfDefinition(definition)) {
+                return doWhitelist;
             }
-            if (isValid) return token;
         }
-        return null;
+
+        return !doWhitelist;
     }
 
-    public @Nullable String consumeNext() {
-        if (hasNext()) {
-            String nextToken = TOKENS[this.nextTokenIndex];
-            consumedCharacters += nextToken.length();
+    private static @NotNull ArrayList<Token> tokenize(@NotNull String source, @NotNull List<ITokenDefinition> tokenDefinitions) {
+        // remainingSource is what remains of source to be Tokenized
+        StringBuilder remainingSource = new StringBuilder(source);
+        // This List will contain all found Tokens
+        ArrayList<Token> tokens = new ArrayList<>();
 
-            // This shouldn't impact performance too much
-            //  also we'll probably never tokenize REALLY long strings
-            // Oh nice, I wrote this before the change which
-            //  Tokenizes the whole program at once, life is full of surprises
-            //  though still, Java should be fast enough and programs can't be that long
-            int lastNewline = -1;
-            for (int i = 0; i < nextToken.length(); i++) {
-                if (nextToken.charAt(i) == '\n') {
-                    lastNewline = i;
-                    consumedLines++;
-                }
+        // Putting all the specified tokenDefinitions into this ArrayList
+        //  This is used for optimization as seen in the for loop below
+        ArrayList<ITokenDefinition> definitions = new ArrayList<>(tokenDefinitions.size());
+        definitions.addAll(tokenDefinitions);
+
+        // These Integers are Updated with the latest line and line's char
+        //  Basically these keep track of where we are in the file
+        AtomicInteger currentLine     = new AtomicInteger(1);
+        AtomicInteger currentLineChar = new AtomicInteger(1);
+
+        while (remainingSource.length() > 0) {
+            // This is the result of the best run of a Matcher on remainingSource
+            //  ( "Best Run" means the one that's the closest to index 0 )
+            MatchResult bestMatchResult = null;
+            // This is the ITokenDefinition that produced bestMatchResult
+            ITokenDefinition bestMatchDef = null;
+
+            // Here we convert remainingSource to a String, this should improve performance
+            //  Because we're not asking StringBuilder to create a new String for each iteration
+            String srcToMatch = remainingSource.toString();
+            for (int i = 0; i < definitions.size(); i++) {
+                // Current Definition, Definition's Pattern and Pattern's Matcher against srcToMatch ( remainingSource )
+                ITokenDefinition def = definitions.get(i);
+                Pattern pattern = def.getPattern();
+                Matcher matcher = pattern.matcher(srcToMatch);
+
+                // If any Match was found in srcToMatch
+                if (matcher.find()) {
+                    // Get the Match's Start
+                    int start = matcher.start();
+                    // If either this was the first Match or this Match is better than the last one
+                    if (bestMatchResult == null || start < bestMatchResult.start()) {
+                        // Store Match result and ITokenDefinition
+                        bestMatchResult = matcher.toMatchResult();
+                        bestMatchDef    = def;
+
+                        // If this Match was at the start of srcToMatch
+                        //  then this is the absolute Best Match and we break
+                        if (start == 0) break;
+                    }
+                // If no Match was found then remove the definition from the ArrayList,
+                //  so that we won't try to Match it again
+                } else definitions.remove(i--);
+
             }
 
-            if (lastNewline == -1)
-                consumedLineChars += nextToken.length();
-            else consumedLineChars = nextToken.length() - lastNewline;
+            // If we didn't get any Match
+            if (bestMatchResult == null) {
+                // Add a Token equal to the srcToMatch
+                //  ( This is a very small Optimization to not call remainingSource#toString )
+                //  And Break because nothing else can be found
+                tokens.add(new Token(
+                        srcToMatch, UNKNOWN, currentLine.get(), currentLineChar.get()
+                ));
+                break;
+            // If the Best Match is not at the start of the remainingSource
+            } else if (bestMatchResult.start() > 0) {
+                // Get the Unknown part of the remainingSource and
+                //  add it to the Tokens as an Unknown Token
+                String unknownString = remainingSource.substring(0, bestMatchResult.start());
+                tokens.add(new Token(
+                        unknownString, UNKNOWN, currentLine.get(), currentLineChar.get()
+                ));
 
-            return TOKENS[this.nextTokenIndex++];
-        }
-        return null;
-    }
-
-    public @Nullable String consumeNext(Token... blacklist) {
-        return consumeNext(false, blacklist);
-    }
-
-    public @Nullable String consumeNext(boolean whitelist, Token... filter) {
-        while (hasNext()) {
-            String token = consumeNext();
-            if (token == null) return null;
-
-            boolean isValid = true;
-            for (Token filtered : filter) {
-                if (!isValid) break;
-                if (whitelist)
-                    isValid = filtered.matches(token);
-                else isValid = !filtered.matches(token);
+                // This is an helper function that moves the cursor based on the specified String
+                //  To do that it iterates through each character of the String:
+                //   This is not a concern because Regex is the most expensive
+                //    Operation here so we don't really care about the performance of this
+                Tokenizer.countLinesNChars(unknownString, currentLine, currentLineChar);
             }
-            if (isValid) return token;
+
+            // Here we put the Matched String into a Token with its Groups ( Starting from Group 1 )
+            String matchedString = bestMatchResult.group();
+            tokens.add(new Token(
+                    bestMatchResult.group(), Tokenizer.getGroups(bestMatchResult), bestMatchDef, currentLine.get(), currentLineChar.get()
+            ));
+            Tokenizer.countLinesNChars(matchedString, currentLine, currentLineChar);
+
+            // Deleting Characters in remainingSource from 0 to the End of the Match
+            remainingSource.delete(0, bestMatchResult.end());
         }
-        return null;
+
+        return tokens;
     }
 
-    public int getConsumedCharacters() {
-        return consumedCharacters;
+    private static @NotNull String[] getGroups(@NotNull MatchResult matchResult) {
+        String[] res = new String[matchResult.groupCount()];
+        for (int i = 0; i < res.length; i++)
+            res[i] = matchResult.group(i + 1);
+        return res;
     }
 
-    public int getConsumedLineCharacters() {
-        return consumedLineChars;
-    }
-
-    public int getConsumedLines() {
-        return consumedLines;
+    private static void countLinesNChars(@NotNull String str, @NotNull AtomicInteger currentLine, @NotNull AtomicInteger currentChar) {
+        for (int i = 0; i < str.length(); i++) {
+            currentChar.incrementAndGet();
+            if (str.charAt(i) == '\n') {
+                currentLine.incrementAndGet();
+                currentChar.set(1);
+            }
+        }
     }
 
 }

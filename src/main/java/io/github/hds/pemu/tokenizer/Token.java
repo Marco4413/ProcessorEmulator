@@ -3,40 +3,49 @@ package io.github.hds.pemu.tokenizer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.regex.Pattern;
-
 public final class Token {
 
-    private final char CHARACTER;
-    private final @NotNull String PATTERN;
+    private final String MATCH;
+    private final String[] GROUPS;
+    private final ITokenDefinition DEFINITION;
 
-    public Token(char character) {
-        this(character, false);
+    private final int LINE;
+    private final int LINE_CHAR;
+
+    public Token(@NotNull String match, @NotNull ITokenDefinition definition, int line, int character) {
+        this(match, new String[0], definition, line, character);
     }
 
-    public Token(char character, boolean quoteCharacter) {
-        this(character, String.valueOf(character), quoteCharacter);
+    public Token(@NotNull String match, @NotNull String[] groups, @NotNull ITokenDefinition definition, int line, int lineChar) {
+        this.MATCH = match;
+        this.GROUPS = groups;
+        this.DEFINITION = definition;
+        this.LINE = line;
+        this.LINE_CHAR = lineChar;
     }
 
-    public Token(char character, @NotNull String pattern, boolean quotePattern) {
-        CHARACTER = character;
-        // Compiling the pattern so that we're sure it's valid
-        PATTERN = Pattern.compile(
-                quotePattern ? Pattern.quote(pattern) : pattern
-        ).pattern();
+    public @NotNull String getMatch() {
+        return this.MATCH;
     }
 
-    public char getCharacter() {
-        return CHARACTER;
+    public @NotNull String[] getGroups() {
+        return this.GROUPS;
     }
 
-    public @NotNull String getPattern() {
-        return PATTERN;
+    public @NotNull ITokenDefinition getDefinition() {
+        return this.DEFINITION;
     }
 
-    public boolean matches(@Nullable String str) {
-        if (str == null) return false;
-        return str.matches(PATTERN);
+    public boolean isOfDefinition(@Nullable ITokenDefinition definition) {
+        return DEFINITION.equals(definition);
+    }
+
+    public int getLine() {
+        return this.LINE;
+    }
+
+    public int getLineChar() {
+        return this.LINE_CHAR;
     }
 
 }

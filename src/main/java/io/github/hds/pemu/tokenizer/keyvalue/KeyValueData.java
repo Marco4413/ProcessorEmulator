@@ -64,12 +64,21 @@ public final class KeyValueData {
         return ENTRIES.containsKey(key);
     }
 
+    private static @NotNull String escapeString(@NotNull String str, char quote, char escapeChar) {
+        String escapedStr = StringUtils.SpecialCharacters.escapeAll(str, escapeChar).replace(
+                String.valueOf(quote),
+                String.valueOf(escapeChar) + quote
+        );
+
+        return quote + escapedStr + quote;
+    }
+
     protected @NotNull String objectToString(@Nullable Object object) {
         if (object == null) return "";
         if (object instanceof String)
-            return "\"" + StringUtils.SpecialCharacters.escapeAll((String) object).replaceAll("\"", "\\\\\"") + "\"";
+            return escapeString((String) object, KeyValueParser.STRING_QUOTE, KeyValueParser.ESCAPE_CHARACTER);
         else if (object instanceof Character)
-            return "'" + StringUtils.SpecialCharacters.escapeAll((Character) object).replaceAll("'", "\\\\'") + "'";
+            return escapeString(String.valueOf((Character) object), KeyValueParser.CHAR_QUOTE, KeyValueParser.ESCAPE_CHARACTER);
         else if (object instanceof Number || object instanceof Boolean)
             return object.toString();
         return "";
@@ -77,14 +86,15 @@ public final class KeyValueData {
 
     @Override
     public String toString() {
-        StringBuilder thisAsString = new StringBuilder();
+        StringBuilder strBuilder = new StringBuilder();
         ENTRIES.forEach(
                 (k, v) -> {
-                    thisAsString.append('"').append(
-                            StringUtils.SpecialCharacters.escapeAll(k).replaceAll("\"", "\\\\\"")
-                    ).append("\" = ").append(objectToString(v)).append('\n');
+                    strBuilder.append('"').append(
+                            escapeString(k, KeyValueParser.STRING_QUOTE, KeyValueParser.ESCAPE_CHARACTER)
+                    ).append(" = ").append(objectToString(v)).append('\n');
                 }
         );
-        return thisAsString.toString();
+
+        return strBuilder.toString();
     }
 }

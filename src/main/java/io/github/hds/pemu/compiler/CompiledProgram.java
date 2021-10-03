@@ -1,24 +1,22 @@
 package io.github.hds.pemu.compiler;
 
-import io.github.hds.pemu.compiler.labels.OffsetLabel;
+import io.github.hds.pemu.compiler.parser.INode;
 import io.github.hds.pemu.processor.IProcessor;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public final class CompiledProgram {
     public static final long NO_COMPILE_TIME = -1;
 
     private final @NotNull IProcessor PROCESSOR;
-    private final @NotNull LabelData<OffsetLabel> LABELS;
-    private final @NotNull RegisterData REGISTERS;
-    private final @NotNull OffsetsData OFFSETS;
+    private final INode[] NODES;
     private final int[] PROGRAM;
     private final long COMPILE_TIME;
 
-    protected CompiledProgram(@NotNull IProcessor processor, @NotNull LabelData<OffsetLabel> labels, @NotNull RegisterData registers, @NotNull OffsetsData offsets, int[] program, long compileTime) {
+    protected CompiledProgram(@NotNull IProcessor processor, @NotNull List<INode> nodes, int[] program, long compileTime) {
         PROCESSOR = processor;
-        LABELS = labels;
-        REGISTERS = registers;
-        OFFSETS = offsets;
+        NODES = nodes.toArray(new INode[0]);
         PROGRAM = program;
         COMPILE_TIME = compileTime < 0 ? NO_COMPILE_TIME : compileTime;
     }
@@ -27,16 +25,8 @@ public final class CompiledProgram {
         return PROCESSOR;
     }
 
-    public @NotNull LabelData<OffsetLabel> getLabels() {
-        return LABELS;
-    }
-
-    public @NotNull RegisterData getRegisters() {
-        return REGISTERS;
-    }
-
-    public @NotNull OffsetsData getOffsets() {
-        return OFFSETS;
+    public @NotNull INode[] getNodes() {
+        return NODES;
     }
 
     public int[] getProgram() {

@@ -1,5 +1,15 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @8ff7ec6
+
+Completely reworked both the Compiler and Tokenizer
+**NOTE**: Program Obfuscation isn't yet implemented
+
+Removed static method StringUtils.SpecialCharacters.toString
+Changed type of static field StringUtils.SpecialCharacters.ESCAPE_CHARACTER from String to char
+Added static field StringUtils.SpecialCharacters.ESCAPE_CHARACTER_STR
+Custom Escape Characters can now be specified in static methods StringUtils.SpecialCharacters.escapeAll
+
 -- Changes from commit @cb87f89
 
 Added to MemoryView "Show As" ComboBox, this gives more options to the user to visualize Memory
