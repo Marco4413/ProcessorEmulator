@@ -1,1 +1,1 @@
-JMP _a #DA { _b: [1] 72 101 108 108 111 32 87 111 114 108 100 33 10 0 _c: 0 _d: 0 _e: } POP _c POP _f PUSH _c #DA { _g: } CMP _f: 0 _d JE _h MOV _i _f OUTC _i: 0 INC _f JMP _g #DA { _h: } RET #DA { _a: } PUSH _b CALL _e HLT
+CALL _a HLT _b: #DA { [1] 72 101 108 108 111 32 87 111 114 108 100 33 10 0 _c: 0 _d: 0 _e: } POP _c POP _f PUSH _c _g: CMP _f: 0 _d JE _h MOV _i _f OUTC _i: 0 INC _f JMP _g _h: RET _a: PUSH _b CALL _e RET

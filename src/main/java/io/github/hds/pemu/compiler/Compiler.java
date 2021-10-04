@@ -156,11 +156,25 @@ public final class Compiler {
         int argsCount = 0;
 
         for (INode node : nodes) {
-            // If we're not already in an array, this node isn't an InstructionNode and we don't need to parse arguments
-            if (!isInArray && node.getType() != NodeType.INSTRUCTION && argsCount <= 0) {
+            if (
+                    // If we're not in an array
+                    !isInArray &&
+                    // (and) We're not parsing Instruction arguments
+                    argsCount <= 0 &&
+                    // (and) The current Node isn't an Instruction
+                    node.getType() != NodeType.INSTRUCTION &&
+                    // (and) The current Node isn't a Label Declaration
+                    !(node.getType() == NodeType.LABEL && ((LabelNode) node).isDeclaration())
+            ) {
                 // Set that we're in an Array and start defining one
                 isInArray = true;
                 obfProgram.append("#DA { ");
+
+                // This whole thing should make sure to produce the following PEMU code:
+                // `l0: #DA { l1 l2: 0 l1: } MOV l2 l1 l3: HLT #DA { 0 0 0 }`
+                // The Label declaration check is just to make sure that we're not defining an Array
+                //  just for a single label declaration after an Instruction or at the start of a program:
+                //  e.g. `... MOV l2 l1 #DA { l3: } HLT ...`
             }
 
             switch (node.getType()) {

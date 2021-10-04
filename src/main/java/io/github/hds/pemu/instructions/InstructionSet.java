@@ -8,10 +8,12 @@ import java.util.IntSummaryStatistics;
 
 public final class InstructionSet {
 
+    private int INSTRUCTIONS_COUNT;
     private Instruction[] INSTRUCTIONS;
 
     public InstructionSet(@NotNull Instruction[] instructions) {
         INSTRUCTIONS = Arrays.copyOf(instructions, instructions.length);
+        INSTRUCTIONS_COUNT = instructions.length;
     }
 
     public InstructionSet(int[] opcodes, @NotNull Instruction[] instructions) {
@@ -39,9 +41,12 @@ public final class InstructionSet {
 
             INSTRUCTIONS[opcode] = instructions[i];
         }
+
+        INSTRUCTIONS_COUNT = instructions.length;
     }
 
     public int getOpcode(@NotNull String keyword) {
+        // FIXME: Try using an HashMap if this becomes too slow with big Sets
         for (int i = 0; i < INSTRUCTIONS.length; i++) {
             Instruction instruction = INSTRUCTIONS[i];
             if (instruction != null && instruction.getKeyword().equals(keyword)) return i;
@@ -61,7 +66,7 @@ public final class InstructionSet {
     }
 
     public int getSize() {
-        return INSTRUCTIONS.length;
+        return INSTRUCTIONS_COUNT;
     }
 
 }

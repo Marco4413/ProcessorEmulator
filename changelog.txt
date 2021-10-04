@@ -1,5 +1,10 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @5d9c67e
+
+Now Compiler.obfuscateProgram won't define arrays just to declare labels after Instructions
+Fixed method InstructionSet#getSize not returning the right value
+
 -- Changes from commit @eeac51a
 
 Fixed typo KeyValueParser's Float TokenDefinition's Pattern

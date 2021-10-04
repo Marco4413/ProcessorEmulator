@@ -1,5 +1,6 @@
 
-JMP start
+CALL f_main
+HLT
 
 str: #DW [1] #DS "Hello World!\n\0"
 
@@ -25,7 +26,7 @@ f_print:
 _print_end:
     RET
 
-start:
+f_main:
     PUSH str
     CALL f_print
-    HLT
+    RET
