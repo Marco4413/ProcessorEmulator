@@ -30,6 +30,7 @@
    * [Registers and Flags](#registers-and-flags)
  - [Instructions](#instructions)
    * [NULL](#null)
+   * [HLT](#hlt)
    * [BRK](#brk)
    * [DATA](#data)
    * [MOV](#mov)
@@ -49,15 +50,15 @@
    * [MUL](#mul)
    * [DIV](#div)
    * [MOD](#mod)
+   * [SHL](#shl)
+   * [SHR](#shr)
+   * [CMP](#cmp)
    * [AND](#and)
    * [OR](#or)
    * [NOT](#not)
    * [XOR](#xor)
-   * [SHL](#shl)
-   * [SHR](#shr)
    * [ROL](#rol)
    * [ROR](#ror)
-   * [CMP](#cmp)
    * [JMP](#jmp)
    * [JC](#jc)
    * [JNC](#jnc)
@@ -73,12 +74,12 @@
    * [JNA](#jna)
    * [JAE](#jae)
    * [JNAE](#jnae)
+   * [LOOP](#loop)
    * [CALL](#call)
    * [RET](#ret)
    * [PUSH](#push)
+   * [PUSHD](#pushd)
    * [POP](#pop)
-   * [LOOP](#loop)
-   * [HLT](#hlt)
 
 # Command Line Arguments
 
@@ -463,6 +464,24 @@ unless you're certain about the bit that represents the Flag you want to get.
 ## NULL
 
 This instruction doesn't do anything and its code is 0, this is used to ignore empty memory.
+
+## HLT
+
+`HLT`
+
+Tells the processor to stop the execution of the program.
+
+**Example:**
+
+```Assembly
+start:
+; Tells the processor to stop the execution
+;  of this program
+HLT
+
+; This instruction will never get executed
+JMP start
+```
 
 ## BRK
 
@@ -956,6 +975,117 @@ modulo_sign: #DW '%'
 equal_sign: #DW '='
 ```
 
+## SHL
+
+`SHL a b`
+
+Shifts left `a` by `b` and stores the result in `a`.
+Sets Carry flag to the last bit that fell off (Zero flag doesn't change).
+
+```Assembly
+; Given an 8 bit Processor
+; And the binary num:
+;  0b11010010
+; The result will be (If shifted by 1):
+;  0b10100100
+; With CF = 1
+; If no shift occurs CF = 0
+SHL num shift
+HLT
+
+num: #DW 0b11010010
+shift: #DW 1
+```
+
+## SHR
+
+`SHR a b`
+
+Shifts right `a` by `b` and stores the result in `a`.
+Sets Carry flag to the last bit that fell off (Zero flag doesn't change).
+
+```Assembly
+; Given an 8 bit Processor
+; And the binary num:
+;  0b01000100
+; The result will be (If shifted by 1):
+;  0b00100010
+; With CF = 0
+; If no shift occurs CF = 0
+SHR num shift
+HLT
+
+num: #DW 0b01000100
+shift: #DW 1
+```
+
+## CMP
+
+`CMP a b`
+
+Compares `a` and `b` and sets Carry and Zero flags as follows:
+- Carry: `a < b`
+- Zero: `a == b`
+
+**Example:**
+
+```Assembly
+; Jump to the start of the program
+JMP start
+
+; Temp registry, used to store temp values
+_temp: #DW 0
+
+; Function's arguments
+_are_eq_a: #DW 0
+_are_eq_b: #DW 0
+; Function that prints if two numbers are equal
+f_are_eq:
+    ; Getting arguments
+    ; (When calling a function the first thing on the stack is the
+    ;  return pointer, so we need to POP it and PUSH it again)
+    POP _temp
+    POP _are_eq_a
+    POP _are_eq_b
+    PUSH _temp
+
+    ; Compare the two arguments and set
+    ;  Zero and Carry flags accordingly
+    ;  (Zero = 1 -> a == b; Carry = 1 -> a < b)
+    CMP _are_eq_a _are_eq_b
+    ; If Zero flag is off (not equal), jump to the
+    ;  part of the function that prints that
+    JNZ _are_eq_not
+
+    ; If they are equal print that and return
+    OUTI _are_eq_a OUTC equal_sign OUTC equal_sign OUTI _are_eq_b
+    RET
+
+    _are_eq_not:
+    OUTI _are_eq_a OUTC not_sign OUTC equal_sign OUTI _are_eq_b
+    RET
+
+start:
+    ; Pushing arguments to the stack
+    ;  and calling the function
+    PUSH _v1 PUSH _v2
+    CALL f_are_eq
+
+    OUTC newline
+
+    PUSH _v1 PUSH _v3
+    CALL f_are_eq
+    HLT
+
+_v1: #DW 11
+_v2: #DW 10
+_v3: #DW 11
+
+equal_sign: #DW '='
+not_sign: #DW '!'
+newline: #DW '\n'
+```
+
 ## AND
 
 `AND a b`
@@ -1055,50 +1185,6 @@ xor_sign: #DW '^'
 equal_sign: #DW '='
 ```
 
-## SHL
-
-`SHL a b`
-
-Shifts left `a` by `b` and stores the result in `a`.
-Sets Carry flag to the last bit that fell off (Zero flag doesn't change).
-
-```Assembly
-; Given an 8 bit Processor
-; And the binary num:
-;  0b11010010
-; The result will be (If shifted by 1):
-;  0b10100100
-; With CF = 1
-; If no shift occurs CF = 0
-SHL num shift
-HLT
-
-num: #DW 0b11010010
-shift: #DW 1
-```
-
-## SHR
-
-`SHR a b`
-
-Shifts right `a` by `b` and stores the result in `a`.
-Sets Carry flag to the last bit that fell off (Zero flag doesn't change).
-
-```Assembly
-; Given an 8 bit Processor
-; And the binary num:
-;  0b01000100
-; The result will be (If shifted by 1):
-;  0b00100010
-; With CF = 0
-; If no shift occurs CF = 0
-SHR num shift
-HLT
-
-num: #DW 0b01000100
-shift: #DW 1
-```
-
 ## ROL
 
 `ROL a b`
@@ -1141,73 +1227,6 @@ HLT
 
 num: #DW 0b10010011
 rot: #DW 1
-```
-
-## CMP
-
-`CMP a b`
-
-Compares `a` and `b` and sets Carry and Zero flags as follows:
- - Carry: `a < b`
- - Zero: `a == b`
-
-**Example:**
-
-```Assembly
-; Jump to the start of the program
-JMP start
-
-; Temp registry, used to store temp values
-_temp: #DW 0
-
-; Function's arguments
-_are_eq_a: #DW 0
-_are_eq_b: #DW 0
-; Function that prints if two numbers are equal
-f_are_eq:
-    ; Getting arguments
-    ; (When calling a function the first thing on the stack is the
-    ;  return pointer, so we need to POP it and PUSH it again)
-    POP _temp
-    POP _are_eq_a
-    POP _are_eq_b
-    PUSH _temp
-
-    ; Compare the two arguments and set
-    ;  Zero and Carry flags accordingly
-    ;  (Zero = 1 -> a == b; Carry = 1 -> a < b)
-    CMP _are_eq_a _are_eq_b
-    ; If Zero flag is off (not equal), jump to the
-    ;  part of the function that prints that
-    JNZ _are_eq_not
-
-    ; If they are equal print that and return
-    OUTI _are_eq_a OUTC equal_sign OUTC equal_sign OUTI _are_eq_b
-    RET
-
-    _are_eq_not:
-    OUTI _are_eq_a OUTC not_sign OUTC equal_sign OUTI _are_eq_b
-    RET
-
-start:
-    ; Pushing arguments to the stack
-    ;  and calling the function
-    PUSH _v1 PUSH _v2
-    CALL f_are_eq
-
-    OUTC newline
-
-    PUSH _v1 PUSH _v3
-    CALL f_are_eq
-    HLT
-
-_v1: #DW 11
-_v2: #DW 10
-_v3: #DW 11
-
-equal_sign: #DW '='
-not_sign: #DW '!'
-newline: #DW '\n'
 ```
 
 ## JMP
@@ -1298,6 +1317,42 @@ the second one.
 The same as [JMP](#jmp) but gets executed only if the first of the last two compared numbers wasn't above or equal to
 the second one.
 
+## LOOP
+
+`LOOP jmpdst countaddr`
+
+Decrements by 1 the number at `countaddr` and jumps to `jmpdst` if it's not equal to 0.
+
+**NOTE**: If the value at `countaddr` is 0 then it will wrap around to `2^WordSize`.
+
+**Example:**
+
+```Assembly
+; Setting the contents of _count to 10
+DATA _count 10
+; Declaring the label that points to the body
+;  of the loop
+loop:
+   ; Printing out the count
+   OUTI _count
+   OUTC newline
+; Looping if _count - 1 isn't equal to 0
+LOOP loop _count
+HLT
+
+_count: #DW 0
+newline: #DW '\n'
+```
+
+The example above can be seen as the following Java code:
+
+```Java
+int _count = 10;
+do {
+    System.out.println(_count);
+} while (--_count != 0);
+```
+
 ## CALL
 
 `CALL addr`
@@ -1371,9 +1426,9 @@ This is used with [CALL](#call), see its example.
 
 ## PUSH
 
-`PUSH val`
+`PUSH addr`
 
-Pushes `val` to the stack.
+Pushes the contents of `addr` to the stack.
 This is used with [POP](#pop).
 
 **Example:**
@@ -1399,63 +1454,39 @@ _v2: #DW 46
 newline: #DW '\n'
 ```
 
+## PUSHD
+
+`PUSHD val`
+
+Pushes `val` to the stack.
+This is used with [POP](#pop).
+
+**Example:**
+
+```Assembly
+; Printing the value of _v1 to the console
+OUTI _v1
+OUTC newline
+
+; Pushing 68 to the stack
+PUSH 68
+; Popping the last value on the stack to
+;  the variable _v2
+POP _v2
+
+; Printing the value of _v2 to the console
+;  (Should be 68)
+OUTI _v2
+HLT
+
+_v1: #DW 33
+_v2: #DW 46
+newline: #DW '\n'
+```
+
 ## POP
 
 `POP dst`
 
 Pops the last value on the stack and stores it into `dst`.
 This is used with [PUSH](#push), see its example.
-
-## LOOP
-
-`LOOP jmpdst countaddr`
-
-Decrements by 1 the number at `countaddr` and jumps to `jmpdst` if it's not equal to 0.
-
-**NOTE**: If the value at `countaddr` is 0 then it will wrap around to `2^WordSize`.
-
-**Example:**
-
-```Assembly
-; Setting the contents of _count to 10
-DATA _count 10
-; Declaring the label that points to the body
-;  of the loop
-loop:
-   ; Printing out the count
-   OUTI _count
-   OUTC newline
-; Looping if _count - 1 isn't equal to 0
-LOOP loop _count
-HLT
-
-_count: #DW 0
-newline: #DW '\n'
-```
-
-The example above can be seen as the following Java code:
-
-```Java
-int _count = 10;
-do {
-    System.out.println(_count);
-} while (--_count != 0);
-```
-
-## HLT
-
-`HLT`
-
-Tells the processor to stop the execution of the program.
-
-**Example:**
-
-```Assembly
-start:
-; Tells the processor to stop the execution
-;  of this program
-HLT
-
-; This instruction will never get executed
-JMP start
-```

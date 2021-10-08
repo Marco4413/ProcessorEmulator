@@ -251,6 +251,14 @@ public final class Compiler {
                     if (labelNode.isDeclaration())
                         obfProgram.append(": ");
                     else {
+                        int offset = labelNode.getOffset();
+                        if (offset != 0) {
+                            obfProgram
+                                    .append('[')
+                                    .append(offset)
+                                    .append(']');
+                        }
+
                         obfProgram.append(' ');
                         if (argsCount > 0) argsCount--;
                     }

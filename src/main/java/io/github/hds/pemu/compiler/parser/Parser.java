@@ -36,12 +36,15 @@ public final class Parser {
     private static final String ARGUMENT_TYPES = "Label, Offset, Register, " + STATIC_TYPES;
     private static final String GENERIC_TYPES = "Instruction, Compiler Instruction, Compiler Variable or Label";
 
+    private static final String NUMBER_DIGIT_SEP = "_";
+    private static final String GENERIC_NUMBER_PATTERN = "{1}[{0}]+(?:[{0}" + NUMBER_DIGIT_SEP + "]*[{0}]+)*{2}";
+
     private static final TokenDefinition COMMENT    = new TokenDefinition("Comment", ";[^\\v]*\\v?");
     private static final TokenDefinition LABEL_DECL = new TokenDefinition("Label Declaration", ":", true);
-    private static final TokenDefinition HEX_NUMBER = new TokenDefinition("Hex Number", "0x[0-9a-fA-F]+");
-    private static final TokenDefinition OCT_NUMBER = new TokenDefinition("Octal Number", "0o[0-7]+");
-    private static final TokenDefinition BIN_NUMBER = new TokenDefinition("Binary Number", "0b[01]+");
-    private static final TokenDefinition DEC_NUMBER = new TokenDefinition("Decimal Number", "[+\\-]?[0-9]+");
+    private static final TokenDefinition HEX_NUMBER = new TokenDefinition("Hex Number", StringUtils.format(GENERIC_NUMBER_PATTERN, "0-9A-F", "0x", ""), false, true);
+    private static final TokenDefinition OCT_NUMBER = new TokenDefinition("Octal Number", StringUtils.format(GENERIC_NUMBER_PATTERN, "0-7", "0o", ""));
+    private static final TokenDefinition BIN_NUMBER = new TokenDefinition("Binary Number", StringUtils.format(GENERIC_NUMBER_PATTERN, "01", "0b", ""));
+    private static final TokenDefinition DEC_NUMBER = new TokenDefinition("Decimal Number", StringUtils.format(GENERIC_NUMBER_PATTERN, "0-9", "[+\\-]?", ""));
     private static final TokenDefinition STRING     = new TokenDefinition("String", "\"((?:[^\\\\\"]|(?:\\\\[0-9]+;?|\\\\.))*)\"");
     private static final TokenDefinition CHARACTER  = new TokenDefinition("Character", "'(\\\\.|\\\\[0-9]+;?|[^\\\\])'");
     private static final TokenDefinition C_VAR      = new TokenDefinition("Compiler Variable", "@([_A-Z][_A-Z0-9]*)", false, true);
@@ -50,6 +53,7 @@ public final class Parser {
     private static final TokenDefinition R_BRACE    = new TokenDefinition("Right Brace", "}", true);
     private static final TokenDefinition L_BRACKET  = new TokenDefinition("Left Bracket", "[", true);
     private static final TokenDefinition R_BRACKET  = new TokenDefinition("Right Bracket", "]", true);
+    private static final TokenDefinition LABEL_OFF  = new TokenDefinition("Label with Offset", "([_A-Z][_A-Z0-9]*)\\[", false, true);
     private static final TokenDefinition IDENTIFIER = new TokenDefinition("Identifier", "[_A-Z][_A-Z0-9]*", false, true);
     private static final TokenDefinition SPACE      = new TokenDefinition("Space", "\\h+");
     private static final TokenDefinition NEWLINE    = new TokenDefinition("New Line", "\\v+");
@@ -61,7 +65,7 @@ public final class Parser {
             C_VAR, C_INSTR,
             L_BRACE, R_BRACE,
             L_BRACKET, R_BRACKET,
-            IDENTIFIER,
+            LABEL_OFF, IDENTIFIER,
             SPACE, NEWLINE
     };
 
@@ -94,7 +98,9 @@ public final class Parser {
                 DEC_NUMBER.isDefinitionOf(currentToken)
         ) {
             assert currentToken != null;
-            value = StringUtils.parseInt(currentToken.getMatch());
+            value = StringUtils.parseInt(
+                    currentToken.getMatch().replace(NUMBER_DIGIT_SEP, "")
+            );
         } else return new ParseResult<>();
 
         IValueProvider valueProvider = () -> value;
@@ -321,38 +327,52 @@ public final class Parser {
      * @return -1 if parsing failed, 0 if a Label was Declared, 1 if it was used
      */
     private static int parseLabel(@NotNull ParserContext ctx, boolean canDeclare, boolean canUse) {
-        Token currentToken = ctx.tokenizer.getCurrentToken();
-        if (!IDENTIFIER.isDefinitionOf(currentToken))
-            return -1;
-        assert currentToken != null;
+        Token labelToken = ctx.tokenizer.getCurrentToken();
+        if (IDENTIFIER.isDefinitionOf(labelToken)) {
+            assert labelToken != null;
 
-        String labelName = currentToken.getMatch();
-        boolean isDeclaration =
-                LABEL_DECL.isDefinitionOf(ctx.tokenizer.peekForward());
-        IValueProvider offset = () -> 0;
+            String labelName = labelToken.getMatch();
+            boolean isDeclaration =
+                    LABEL_DECL.isDefinitionOf(ctx.tokenizer.peekForward());
 
-        if (isDeclaration) {
-            ctx.tokenizer.goForward();
-            if (!canDeclare)
-                throw new ParserError.TypeError(ctx, "Label Declaration isn't allowed here.");
-        } else if (!canUse) {
-            throw new ParserError.TypeError(ctx, "Label Usage isn't allowed here.");
-        } else if (L_BRACKET.isDefinitionOf(ctx.tokenizer.peekForward())) {
+            if (isDeclaration) {
+                ctx.tokenizer.goForward();
+                if (!canDeclare)
+                    throw new ParserError.TypeError(ctx, "Label Declaration isn't allowed here.");
+            } else if (!canUse) {
+                throw new ParserError.TypeError(ctx, "Label Usage isn't allowed here.");
+            }
+
+            ctx.addNode(
+                    new LabelNode(ctx, labelName, 0, isDeclaration)
+            );
+
+            return isDeclaration ? 0 : 1;
+        } else if (LABEL_OFF.isDefinitionOf(labelToken)) {
+            assert labelToken != null;
+
+            if (!canUse)
+                throw new ParserError.TypeError(ctx, "Label Usage isn't allowed here.");
+
+
             Token offsetToken = ctx.tokenizer.goForward();
-            ParseResult<IValueProvider> result = parseOffset(ctx, false);
+            ParseResult<IValueProvider> offset = parseStaticValue(ctx, false);
+            if (!offset.SUCCESS)
+                throw new ParserError.SyntaxError(ctx, STATIC_TYPES, formatToken(offsetToken));
 
-            // This should never throw
-            if (!result.SUCCESS)
-                throw new ParserError.SyntaxError(ctx, "Offset", formatToken(offsetToken));
+            Token endBracket = ctx.tokenizer.goForward();
+            if (!R_BRACKET.isDefinitionOf(endBracket))
+                throw new ParserError.SyntaxError(ctx, R_BRACKET.getName(), formatToken(endBracket));
 
-            offset = result.VALUE;
+            String labelName = labelToken.getGroups()[0];
+            ctx.addNode(
+                    new LabelNode(ctx, labelName, offset.VALUE, false)
+            );
+
+            return 1;
         }
 
-        ctx.addNode(
-                new LabelNode(ctx, labelName, offset, isDeclaration)
-        );
-
-        return isDeclaration ? 0 : 1;
+        return -1;
     }
 
     private static @NotNull ParseResult<Instruction> parseInstruction(@NotNull ParserContext ctx) {

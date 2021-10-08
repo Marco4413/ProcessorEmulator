@@ -504,6 +504,17 @@ public final class Instructions {
         }
     };
 
+    public static final Instruction PUSHD = new Instruction("PUSHD", 1) {
+        @Override
+        public void execute(@NotNull IProcessor p, int[] args) {
+            IRegister SP = p.getRegister("SP");
+            if (SP == null) throw new NullPointerException("Stack Pointer Register isn't present on the Processor.");
+
+            IMemory memory = p.getMemory();
+            memory.setValueAt(SP.setValue(SP.getValue() - 1), args[0]);
+        }
+    };
+
     public static final Instruction POP = new Instruction("POP", 1) {
         @Override
         public void execute(@NotNull IProcessor p, int[] args) {
@@ -559,7 +570,7 @@ public final class Instructions {
                     // Calls
                     0xC0, 0xC1,
                     // Stack Manipulation
-                    0xE0, 0xE1
+                    0xE0, 0xE1, 0xE2
             },
             new Instruction[] {
                     NULL, HLT,
@@ -584,7 +595,7 @@ public final class Instructions {
                     // 0xC0-0xDF Calls
                     CALL, RET,
                     // 0xE0-0xEF Stack Manipulation
-                    PUSH, POP
+                    PUSH, POP, PUSHD
             }
     );
 

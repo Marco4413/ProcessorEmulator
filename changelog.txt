@@ -1,5 +1,13 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @6519e43
+
+Added PUSHD Instruction
+Now underscores can be put inside numbers like in Java, e.g. 1_000_000, 0x00_ff, ...
+
+Fixed Issues with Label Offsets, now only `label[off]` is valid, not `label [off]`
+Fixed Code Obfuscator not keeping Label Offsets
+
 -- Changes from commit @5d9c67e
 
 Now Compiler.obfuscateProgram won't define arrays just to declare labels after Instructions
