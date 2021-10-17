@@ -1,20 +1,26 @@
 package io.github.hds.pemu.plugins;
 
+import io.github.hds.pemu.Main;
 import io.github.hds.pemu.app.*;
 import io.github.hds.pemu.files.FileManager;
 import io.github.hds.pemu.files.FileUtils;
-import io.github.hds.pemu.keyvalue.KeyValueData;
-import io.github.hds.pemu.keyvalue.KeyValueParser;
+import io.github.hds.pemu.localization.Translation;
+import io.github.hds.pemu.localization.TranslationManager;
+import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.io.*;
-import java.util.HashMap;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.*;
 
 public final class PluginManager {
 
-    protected static final String PLUGIN_INFO_FILE_NAME = "plugin.info";
-
+    protected static final String PLUGIN_EXT = "jar";
     private static final HashMap<String, IPlugin> PLUGINS = new HashMap<>();
 
     /**
@@ -34,50 +40,79 @@ public final class PluginManager {
         return plugin;
     }
 
-    private static @Nullable IPlugin getPluginInstance(@NotNull File file, @NotNull KeyValueData pluginInfo) {
-        String pluginID = pluginInfo.get(String.class, "plugin.id");
-        String pluginName = pluginInfo.get(String.class, "plugin.name");
-        String pluginVersion = pluginInfo.get(String.class, "plugin.version");
+    private static void registerPlugin(@NotNull Class<?> pluginClass) {
+        Translation currentTranslation = TranslationManager.getCurrentTranslation();
+        String errorMessage;
 
-        switch (FileUtils.getFileExtension(file).toLowerCase()) {
-            case "jar": {
-                String classPath = pluginInfo.get(String.class, "plugin.classPath");
-                if (classPath == null) return null;
-                return new NativePlugin(
-                        file, pluginID, pluginName, pluginVersion, classPath
+        if (IPlugin.class.isAssignableFrom(pluginClass)) {
+            try {
+                registerPlugin((IPlugin) pluginClass.newInstance());
+                return;
+            } catch (Exception err) {
+                errorMessage = StringUtils.format(
+                        currentTranslation.getOrDefault("messages.pluginRegistrationFailed"),
+                        err.toString()
                 );
             }
-            case "rb":
-                return new RubyPlugin(
-                        file, pluginID, pluginName, pluginVersion
-                );
-            default:
-                return null;
-        }
+        } else errorMessage = StringUtils.format(
+                currentTranslation.getOrDefault("messages.pluginInvalidType"),
+                IPlugin.class.getSimpleName()
+        );
+
+        Plugin pluginAnnotation = pluginClass.getAnnotation(Plugin.class);
+        assert pluginAnnotation != null;
+
+        System.err.println(StringUtils.format(
+                currentTranslation.getOrDefault("messages.pluginRegistrationFailed"),
+                pluginAnnotation.name()
+        ));
+        System.err.println(errorMessage);
+        System.err.println();
     }
 
     /**
      * Registers all external plugins which can be found at {@link FileManager#getPluginDirectory}.
      * This function doesn't compile any Plugin, Plugins should only be compiled when loaded by {@link Application}
      */
-    public static void registerExternalPlugins() {
+    public static void registerPlugins() {
         File pluginsDir = FileManager.getPluginDirectory();
         if (!pluginsDir.isDirectory()) return;
 
-        for (File pluginDirectory : pluginsDir.listFiles()) {
-            if (!pluginDirectory.isDirectory()) continue;
-
-            String pluginBaseName = pluginDirectory.getName();
-            File pluginFile = FileUtils.getFileFromDirectory(pluginDirectory, "init.rb", pluginBaseName + ".rb", pluginBaseName + ".jar");
-            File pluginInfo = FileUtils.getFileFromDirectory(pluginDirectory, PLUGIN_INFO_FILE_NAME);
-
-            if (pluginFile == null || pluginInfo == null) continue;
-
+        ArrayList<URL> classURLs = new ArrayList<>();
+        for (File file : pluginsDir.listFiles()) {
+            if (!file.isFile() || !FileUtils.getFileExtension(file).equalsIgnoreCase(PLUGIN_EXT)) continue;
             try {
-                KeyValueData infoData = KeyValueParser.parseKeyValuePairs(new FileReader(pluginInfo));
-                registerPlugin(
-                        getPluginInstance(pluginFile, infoData)
-                );
+                classURLs.add(file.toURI().toURL());
+            } catch (Exception ignored) { }
+        }
+
+        URLClassLoader classLoader = null;
+        try {
+            classLoader = new URLClassLoader(
+                    classURLs.toArray(new URL[0]), Main.class.getClassLoader()
+            );
+
+            Reflections reflections = new Reflections(
+                    new ConfigurationBuilder()
+                            // Setting search path of this Jar
+                            .forPackage(Main.class.getPackage().getName(), classLoader.getParent())
+                            // Setting search path of external Jars
+                            .addClassLoaders(classLoader).addUrls(classLoader.getURLs())
+                            // Only Scanning Annotated Types
+                            .setScanners(Scanners.TypesAnnotated)
+            );
+
+            Set<Class<?>> pluginClasses = reflections.getTypesAnnotatedWith(Plugin.class, false);
+            pluginClasses.forEach(PluginManager::registerPlugin);
+        } catch (Exception err) {
+            System.err.println("Error while Registering all Plugins:");
+            System.err.println(StringUtils.stackTraceAsString(err));
+            System.err.println();
+        }
+
+        if (classLoader != null) {
+            try {
+                classLoader.close();
             } catch (Exception ignored) { }
         }
     }

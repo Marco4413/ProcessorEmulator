@@ -1,6 +1,6 @@
 # Processor Emulator
 
-![](./logo.png)
+![](logo.png)
 
 [![Gradle Build](https://github.com/hds536jhmk/ProcessorEmulator/actions/workflows/gradle.yml/badge.svg)](https://github.com/hds536jhmk/ProcessorEmulator/actions/workflows/gradle.yml)
 
@@ -16,8 +16,10 @@ Don't expect much from this emulator, it's made just for learning purposes.
 
 From version `1.12.0` this program creates a folder named `PEMU` in the user's home dir to store all program's data.
 
- - Windows: `%USERPROFILE%/PEMU/`
- - Linux: `$HOME/PEMU/`
+On version `1.13.0` the config folder was renamed to `.pemu`.
+
+ - Windows: `%USERPROFILE%/.pemu/`
+ - Linux: `$HOME/.pemu/`
 
 ## How to run:
 
@@ -49,16 +51,16 @@ You can download the above linked folder and start using it yourself to make you
 
 ## Documentation:
 
-Can be found in the file [DOCUMENTATION.md](https://github.com/hds536jhmk/ProcessorEmulator/blob/master/DOCUMENTATION.md)
+Can be found in the file [DOCUMENTATION.md](DOCUMENTATION.md)
 
 ## Plugins:
 
-On version `1.12.0` plugin support was added, and since then you can write your own implementation of a Processor using
-the Ruby Programming Language (This added support also increased PEMU's size by ~25MB).
+~~On version `1.12.0` plugin support was added, and since then you can write your own implementation of a Processor using
+the Ruby Programming Language (This added support also increased PEMU's size by ~25MB).~~
 
-On version `1.13.0` Native Plugin support was added, so now Plugins written in Java can be used.
+On version `1.13.0` Ruby Plugin support was dropped in favour of Native (Java) Plugins.
 
-You can learn more about plugins in the [plugins](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/plugins)
+You can learn more about plugins in the [plugins](plugins/README.md)
 folder.
 
 ## Utilities:
@@ -78,22 +80,22 @@ utilities to be used with the PEMU Programming Language:
 
 ## Dependencies:
 
-There are 2 main dependencies:
-1. [JRuby](https://www.jruby.org) (Used to add support for Plugins written in Ruby)
-2. [JetBrains Annotations](https://github.com/JetBrains/java-annotations)
+There's only 2 dependencies:
+ - [Reflections](https://github.com/ronmamo/reflections) (Used to find classes implementing `IPlugin` that are using the `@Plugin` annotation)
+ - [JetBrains Annotations](https://github.com/JetBrains/java-annotations)
 
 ## Screenshots:
 
 The Main Window that contains the Debugging Console (the one on the bottom), and the Processor Console (where the
 processor can print to on the top) and other info/settings:
 
-![](./preview_main_window.png)
+![](preview_main_window.png)
 
 The Processor Config Panel where you can change your Processor's settings
 (Clock can be changed while the Processor's running):
 
-![](./preview_processor_config.png)
+![](preview_processor_config.png)
 
 The Memory View window where the Processor's Memory is shown to the user, this has also some visual settings:
 
-![](./preview_memory_view.png)
+![](preview_memory_view.png)

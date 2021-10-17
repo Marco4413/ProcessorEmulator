@@ -81,7 +81,7 @@ public final class Main {
                 String userChoice;
 
                 // This filters Yes and No
-                Pattern optionFilter = Pattern.compile("(Y(es)?)|(No?)", Pattern.CASE_INSENSITIVE);
+                Pattern optionFilter = Pattern.compile("Y(?:es)?|No?", Pattern.CASE_INSENSITIVE);
 
                 while (true) {
                     // Get the user's choice
@@ -114,9 +114,10 @@ public final class Main {
         ConfigManager.setDefaultOnLoadError(true);
         Application app = Application.getInstance();
 
-        // Registering and Loading Base Plugin
-        app.loadPlugin(PluginManager.registerPlugin(DefaultPlugin.getInstance()));
-        PluginManager.registerExternalPlugins();
+        // Registering and Loading Default Plugin
+        app.loadPlugin(
+                PluginManager.registerPlugin(DefaultPlugin.getInstance())
+        );
 
         // Loading config after all managers are set-up
         ConfigManager.loadOrCreate();

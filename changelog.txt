@@ -1,5 +1,15 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @5b08eca
+
+Removed support for Ruby Plugins in favour of Native Plugins
+Reworked most of the pemu.plugins package
+
+Removed JRuby Dependency
+Added Reflections Dependency
+
+Renamed PEMU Dir from "PEMU" to ".pemu"
+
 -- Changes from commit @6fddf3d
 
 Added Native Plugins!

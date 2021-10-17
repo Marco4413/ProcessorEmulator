@@ -2,7 +2,6 @@ package io.github.hds.pemu.app;
 
 import io.github.hds.pemu.console.Console;
 import io.github.hds.pemu.console.ConsoleComponent;
-import io.github.hds.pemu.console.ConsoleContextualMenu;
 import io.github.hds.pemu.compiler.CompiledProgram;
 import io.github.hds.pemu.compiler.Compiler;
 import io.github.hds.pemu.config.ConfigEvent;
@@ -228,7 +227,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         return loadPlugin(PluginManager.getPlugin(pluginID));
     }
 
-    private boolean internalLoadPlugin(@NotNull IPlugin plugin) {
+    private boolean setPlugin(@NotNull IPlugin plugin) {
         try {
             if (plugin.onLoad()) {
                 loadedPlugin = plugin;
@@ -260,7 +259,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         if (loadedPlugin != null)
             loadedPlugin.onUnload();
 
-        boolean pluginLoaded = internalLoadPlugin(plugin);
+        boolean pluginLoaded = setPlugin(plugin);
 
         if (!pluginLoaded) {
             Console.Debug.println(
@@ -273,7 +272,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
             Console.Debug.println();
 
             if (loadedPlugin != null) {
-                if (!internalLoadPlugin(loadedPlugin))
+                if (!setPlugin(loadedPlugin))
                     loadedPlugin = null;
             }
 
@@ -300,7 +299,8 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     public void setProcessorConfig(@NotNull ProcessorConfig config) {
         processorConfig = config;
-        if (currentProcessor != null) currentProcessor.getClock().setFrequency(processorConfig.getClockFrequency());
+        if (currentProcessor != null)
+            currentProcessor.getClock().setFrequency(processorConfig.getClockFrequency());
     }
 
     public @NotNull ProcessorConfig getProcessorConfig() {

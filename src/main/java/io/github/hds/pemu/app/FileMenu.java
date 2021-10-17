@@ -122,6 +122,9 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
                 e.config.get(String.class, "selectedLanguage")
         );
 
+        // FIXME: This shouldn't really be here, but PluginManager uses localization to print errors so we need to load
+        //  it before calling it and it should also be called before the plugin from the config file is loaded
+        PluginManager.registerPlugins();
         app.loadPlugin(PluginManager.getPlugin(
                 e.config.get(String.class, "loadedPlugin")
         ));

@@ -49,6 +49,7 @@ jar {
 }
 
 dependencies {
-    compile 'org.jruby:jruby-complete:9.2.19.0'
-    compile 'org.jetbrains:annotations:20.1.0'
+    implementation 'org.jetbrains:annotations:20.1.0'
+    implementation 'org.reflections:reflections:0.10.1'
+    implementation 'org.slf4j:slf4j-nop:1.7.9'
 }
