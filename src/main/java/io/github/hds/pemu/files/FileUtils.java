@@ -46,6 +46,13 @@ public final class FileUtils {
         return new String[0];
     }
 
+    public static @NotNull String getFileExtension(@NotNull File file) {
+        String fileName = file.getName();
+        int extIndex = fileName.lastIndexOf('.');
+        if (extIndex <= 0) return "";
+        return fileName.substring(extIndex + 1);
+    }
+
     public static @NotNull File getFileWithExtension(@NotNull File file, @NotNull String... extensions) {
         return new File(getPathWithExtension(file.getAbsolutePath(), extensions));
     }

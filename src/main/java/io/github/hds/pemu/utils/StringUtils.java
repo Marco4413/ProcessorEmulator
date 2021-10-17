@@ -8,7 +8,6 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.regex.Matcher;
 
 public final class StringUtils {
 
@@ -96,10 +95,58 @@ public final class StringUtils {
 
     public static @NotNull String format(@Nullable String str, @Nullable Object... formats) {
         if (str == null) return "";
-        for (int i = 0; i < formats.length; i++) {
-            str = str.replaceAll("\\{" + i + "}", Matcher.quoteReplacement(String.valueOf(formats[i])));
+
+        final char BEGIN_FORMAT = '{';
+        final char END_FORMAT = '}';
+
+        StringBuilder result = new StringBuilder(str.length());
+        boolean isGettingIndex = false;
+        int formatIndex = -1;
+
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+
+            // If we're getting a format Index
+            if (isGettingIndex) {
+                // If we've got to the end of the format Index
+                if (c == END_FORMAT) {
+                    // We're not getting the index anymore
+                    isGettingIndex = false;
+                    // If the Index is within the specified formats
+                    if (formatIndex >= 0 && formatIndex < formats.length)
+                        // Append the Format
+                        result.append(formats[formatIndex]);
+                    else {
+                        // Else if it's not a valid Format we put the index back in the String
+                        result
+                            .append(BEGIN_FORMAT)
+                            .append(formatIndex >= 0 ? formatIndex : "")
+                            .append(END_FORMAT);
+                    }
+                // If the current char is a digit
+                } else if (Character.isDigit(c)) {
+                    // Update the Index
+                    if (formatIndex < 0)
+                        formatIndex = 0;
+                    else formatIndex *= 10;
+                    formatIndex += c - '0';
+                } else {
+                    // If it's not a valid digit and the format didn't end put everything back
+                    isGettingIndex = false;
+                    result
+                        .append(BEGIN_FORMAT)
+                        .append(formatIndex >= 0 ? formatIndex : "")
+                        .append(c);
+                }
+            // If we're starting to get an Index
+            } else if (c == BEGIN_FORMAT) {
+                formatIndex = -1;
+                isGettingIndex = true;
+            // Else put the char in the String
+            } else result.append(c);
         }
-        return str;
+
+        return result.toString();
     }
 
     public static @NotNull String toShortName(@NotNull String name) {
@@ -112,7 +159,7 @@ public final class StringUtils {
         return shortName.toString().toUpperCase();
     }
 
-    public static @NotNull String stackTraceAsString(@NotNull Exception err) {
+    public static @NotNull String stackTraceAsString(@NotNull Throwable err) {
         StringWriter str = new StringWriter();
         err.printStackTrace(new PrintWriter(str));
         return str.toString().trim();

@@ -1,47 +1,19 @@
 package io.github.hds.pemu.plugins;
 
-import io.github.hds.pemu.Main;
 import io.github.hds.pemu.app.*;
 import io.github.hds.pemu.files.FileManager;
 import io.github.hds.pemu.files.FileUtils;
-import io.github.hds.pemu.localization.Translation;
-import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.keyvalue.KeyValueData;
 import io.github.hds.pemu.keyvalue.KeyValueParser;
-import io.github.hds.pemu.console.IConsole;
-import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jruby.Profile;
-import org.jruby.RubyInstanceConfig;
-import org.jruby.embed.*;
 
 import java.io.*;
-import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
 
 public final class PluginManager {
 
     protected static final String PLUGIN_INFO_FILE_NAME = "plugin.info";
-    private static final URL RESOURCE_PATH_URL = Main.class.getClassLoader().getResource(".");
-    private static @NotNull ScriptingContainer getScriptingContainer(@NotNull Writer stdout, @NotNull Writer stderr) {
-        ScriptingContainer container = new ScriptingContainer(LocalContextScope.THREADSAFE, LocalVariableBehavior.TRANSIENT);
-        if (RESOURCE_PATH_URL != null) {
-            container.setLoadPaths(
-                    Collections.singletonList(RESOURCE_PATH_URL.getPath())
-            );
-        }
-
-        container.setOutput(stdout);
-        container.setError(stderr);
-        container.setProfile(Profile.ALL);
-        container.setAttribute(AttributeName.SHARING_VARIABLES, false);
-        container.setCompileMode(RubyInstanceConfig.CompileMode.JIT);
-        container.put("$stdin", null);
-
-        return container;
-    }
 
     private static final HashMap<String, IPlugin> PLUGINS = new HashMap<>();
 
@@ -62,6 +34,28 @@ public final class PluginManager {
         return plugin;
     }
 
+    private static @Nullable IPlugin getPluginInstance(@NotNull File file, @NotNull KeyValueData pluginInfo) {
+        String pluginID = pluginInfo.get(String.class, "plugin.id");
+        String pluginName = pluginInfo.get(String.class, "plugin.name");
+        String pluginVersion = pluginInfo.get(String.class, "plugin.version");
+
+        switch (FileUtils.getFileExtension(file).toLowerCase()) {
+            case "jar": {
+                String classPath = pluginInfo.get(String.class, "plugin.classPath");
+                if (classPath == null) return null;
+                return new NativePlugin(
+                        file, pluginID, pluginName, pluginVersion, classPath
+                );
+            }
+            case "rb":
+                return new RubyPlugin(
+                        file, pluginID, pluginName, pluginVersion
+                );
+            default:
+                return null;
+        }
+    }
+
     /**
      * Registers all external plugins which can be found at {@link FileManager#getPluginDirectory}.
      * This function doesn't compile any Plugin, Plugins should only be compiled when loaded by {@link Application}
@@ -72,19 +66,17 @@ public final class PluginManager {
 
         for (File pluginDirectory : pluginsDir.listFiles()) {
             if (!pluginDirectory.isDirectory()) continue;
-            File pluginFile = FileUtils.getFileFromDirectory(pluginDirectory, "init.rb", pluginDirectory.getName() + ".rb");
+
+            String pluginBaseName = pluginDirectory.getName();
+            File pluginFile = FileUtils.getFileFromDirectory(pluginDirectory, "init.rb", pluginBaseName + ".rb", pluginBaseName + ".jar");
             File pluginInfo = FileUtils.getFileFromDirectory(pluginDirectory, PLUGIN_INFO_FILE_NAME);
+
             if (pluginFile == null || pluginInfo == null) continue;
 
             try {
                 KeyValueData infoData = KeyValueParser.parseKeyValuePairs(new FileReader(pluginInfo));
                 registerPlugin(
-                        new ExternalPlugin(
-                                pluginFile, PluginType.RUBY,
-                                infoData.get(String.class, "plugin.id"),
-                                infoData.get(String.class, "plugin.name"),
-                                infoData.get(String.class, "plugin.version")
-                        )
+                        getPluginInstance(pluginFile, infoData)
                 );
             } catch (Exception ignored) { }
         }
@@ -120,70 +112,11 @@ public final class PluginManager {
         return null;
     }
 
+    /**
+     * Returns all registered plugins
+     * @return All registered plugins
+     */
     public static @NotNull IPlugin[] getRegisteredPlugins() {
         return PLUGINS.values().toArray(new IPlugin[0]);
-    }
-
-    private static @Nullable IPlugin compileRubyPlugin(@Nullable IConsole outputConsole, @NotNull File file) {
-        if (!file.canRead()) return null;
-
-        Translation currentTranslation = TranslationManager.getCurrentTranslation();
-        Writer stdout, stderr;
-        if (outputConsole == null) {
-            stdout = new StringWriter();
-            stderr = stdout;
-        } else {
-            stdout = outputConsole.toWriter();
-            stderr = outputConsole.toWriter();
-
-            String relativePluginPath = FileManager.getPluginDirectory().toPath().relativize(file.toPath()).toString();
-            try {
-                stderr.write(StringUtils.format(currentTranslation.getOrDefault("messages.pluginCompilationFailed"), relativePluginPath));
-                stderr.write('\n');
-            } catch (Exception ignored) { }
-        }
-
-        try {
-            // Creating Scripting container and setting stdout to the given IConsole
-            ScriptingContainer container = getScriptingContainer(stdout, stderr);
-
-            // Getting the return value from the script
-            Object rubyPlugin = container.runScriptlet(PathType.ABSOLUTE, file.getAbsolutePath());
-
-            // If it's not null and is assignable to IPlugin then return it casted to IPlugin
-            if (rubyPlugin != null && IPlugin.class.isAssignableFrom(rubyPlugin.getClass()))
-                return (IPlugin) rubyPlugin;
-
-            // Else write to stderr the description of the error
-            stderr.write(
-                    StringUtils.format(
-                            currentTranslation.getOrDefault("messages.pluginInvalidType"),
-                            "IPlugin"
-                    )
-            );
-            stderr.write('\n');
-        } catch (Exception ignored) { }
-
-        try {
-            stderr.write('\n');
-            stderr.flush();
-        } catch (Exception ignored) { }
-
-        return null;
-    }
-
-    /**
-     * Compiles and returns an instance of the specified plugin main file
-     * NOTE: This doesn't register the compiled plugin, see {@link PluginManager#registerPlugin} instead
-     * @param outputConsole The console to print stdout and stderr to
-     * @param file The main file of the plugin to compile
-     * @param pluginType The type of the plugin, for now only {@link PluginType#RUBY} is supported
-     * @return An instance of the compiled plugin or null if it failed to load
-     */
-    public static @Nullable IPlugin compilePlugin(@Nullable IConsole outputConsole, @Nullable File file, @NotNull PluginType pluginType) {
-        if (file == null) return null;
-        if (pluginType == PluginType.RUBY)
-            return compileRubyPlugin(outputConsole, file);
-        return null;
     }
 }

@@ -8,16 +8,11 @@ Though plugins have access to all of Java 1.8's Standard Library and also to the
 so **they might be able to do a lot of stuff and could also harm your computer, so it's recommended to pick plugins
 with care**.
 
-## How can I write a plugin for PEMU?
+## What types of PEMU Plugins exist?
 
-There are 2 ways to add plugins to PEMU, a safe one and a risky one:
- 1. The safe one (Written in Java), obviously, is the more complicated one because you need to modify the source code
-    of the program.
- 2. The risky one (Written in Ruby). You might be asking, Why is it risky? Well, it's because it's as simple as dropping
-    a folder into another one, which is pretty easy and malicious programs could add plugins without you knowing.
-
-**NOTE: Ruby plugins aren't loaded until applied to the Application (Confirmed the selection on the plugin selection
-menu).**
+There are 2 types of PEMU Plugins:
+ 1. [Native Plugins](#writing-plugins-using-java) (Written in Java).
+ 2. [Ruby Plugins](#writing-plugins-using-ruby).
 
 ## How do I load a different Plugin?
 
@@ -30,6 +25,24 @@ Plugins can be added by going into `User's Home Dir -> PEMU -> plugins` and drop
 
  - Windows: `%USERPROFILE%/PEMU/plugins/`
  - Linux: `$HOME/PEMU/plugins/`
+
+## Writing plugins using Java:
+
+### Folder layout
+
+```
+[Plugin Folder]
+   |
+   |--> plugin.info // Plugin info (ID, Name, Version, ClassPath)
+   |
+   |--> <Plugin's Folder Name>.jar
+   |
+   <Other Plugin Data>
+```
+
+### Example
+
+**WORK IN PROGRESS**
 
 ## Writing plugins using Ruby:
 

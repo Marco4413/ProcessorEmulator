@@ -5,13 +5,13 @@ import io.github.hds.pemu.app.Application;
 import io.github.hds.pemu.processor.*;
 import org.jetbrains.annotations.NotNull;
 
-public final class BasePlugin extends Plugin {
-    private static BasePlugin instance;
+public final class DefaultPlugin extends AbstractPlugin {
+    private static DefaultPlugin instance;
 
-    private BasePlugin() { }
+    private DefaultPlugin() { }
 
-    public static @NotNull BasePlugin getInstance() {
-        if (instance == null) instance = new BasePlugin();
+    public static @NotNull DefaultPlugin getInstance() {
+        if (instance == null) instance = new DefaultPlugin();
         return instance;
     }
 

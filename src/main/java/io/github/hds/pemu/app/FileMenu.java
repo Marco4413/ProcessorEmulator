@@ -6,7 +6,7 @@ import io.github.hds.pemu.config.IConfigurable;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
-import io.github.hds.pemu.plugins.BasePlugin;
+import io.github.hds.pemu.plugins.DefaultPlugin;
 import io.github.hds.pemu.plugins.IPlugin;
 import io.github.hds.pemu.plugins.PluginManager;
 import io.github.hds.pemu.utils.*;
@@ -140,6 +140,6 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
     @Override
     public void setDefaults(@NotNull ConfigEvent e) {
         e.config.put("selectedLanguage", "en-us");
-        e.config.put("loadedPlugin", BasePlugin.getInstance().getID());
+        e.config.put("loadedPlugin", DefaultPlugin.getInstance().getID());
     }
 }

@@ -1,5 +1,20 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @6fddf3d
+
+Added Native Plugins!
+
+Renamed class Plugin to AbstractPlugin
+Renamed class BasePlugin to DefaultPlugin
+
+Added class RubyPlugin
+Replaced class ExternalPlugin by AbstractExternalPlugin
+Removed static method PluginManager.compilePlugin
+
+Added static method FileUtils.getFileExtension
+Improved performance of StringUtils.format
+Made StringUtils.stackTraceAsString accept a Throwable
+
 -- Changes from commit @6519e43
 
 Added PUSHD Instruction

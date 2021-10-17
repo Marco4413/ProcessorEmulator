@@ -34,7 +34,7 @@ module PEMU
     java_import     Java::IoGithubHdsPemuApp::Application
     java_import     Java::IoGithubHdsPemuConsole::Console
     java_import     Java::IoGithubHdsPemuPlugins::IPlugin
-    java_import     Java::IoGithubHdsPemuPlugins::Plugin
+    java_import     Java::IoGithubHdsPemuPlugins::AbstractPlugin
     java_import     Java::IoGithubHdsPemuUtils::MathUtils
     java_import     Java::IoGithubHdsPemuUtils::StringUtils
     java_import     Java::JavaAwtEvent::KeyEvent

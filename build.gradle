@@ -27,9 +27,28 @@ jar {
                 'Main-Class': 'io.github.hds.pemu.Main'
         )
     }
+
+    from({
+        configurations['runtime'].collect { it.isDirectory() ? it : zipTree(it) }
+    }) {
+        exclude 'META-INF/*.SF'
+        exclude 'META-INF/*.DSA'
+        exclude 'META-INF/*.RSA'
+    }
+
+    from('.') {
+        include 'LICENSE.md'
+        include 'README.md'
+        include 'changelog.txt'
+        include 'logo.png'
+        include 'DOCUMENTATION.md'
+        include 'preview_main_window.png'
+        include 'preview_memory_view.png'
+        include 'preview_processor_config.png'
+    }
 }
 
 dependencies {
     compile 'org.jruby:jruby-complete:9.2.19.0'
-    compileOnly 'org.jetbrains:annotations:20.1.0'
+    compile 'org.jetbrains:annotations:20.1.0'
 }

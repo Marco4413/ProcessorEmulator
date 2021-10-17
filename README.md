@@ -56,6 +56,8 @@ Can be found in the file [DOCUMENTATION.md](https://github.com/hds536jhmk/Proces
 On version `1.12.0` plugin support was added, and since then you can write your own implementation of a Processor using
 the Ruby Programming Language (This added support also increased PEMU's size by ~25MB).
 
+On version `1.13.0` Native Plugin support was added, so now Plugins written in Java can be used.
+
 You can learn more about plugins in the [plugins](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/plugins)
 folder.
 

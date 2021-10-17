@@ -22,22 +22,27 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public final class Parser {
     private static final char ESCAPE_CHAR = '\\';
     private static final char ESCAPE_TERM = ';';
 
-    private static final String CI_DEFINE_WORD   = "DW";
-    private static final String CI_DEFINE_STRING = "DS";
-    private static final String CI_DEFINE_ARRAY  = "DA";
-    private static final String CI_INCLUDE       = "INCLUDE";
-
     private static final String STATIC_TYPES = "Number, Character or Compiler Variable";
     private static final String ARGUMENT_TYPES = "Label, Offset, Register, " + STATIC_TYPES;
     private static final String GENERIC_TYPES = "Instruction, Compiler Instruction, Compiler Variable or Label";
 
+    private static final String C_INSTR_DEFINE_WORD   = "DW";
+    private static final String C_INSTR_DEFINE_STRING = "DS";
+    private static final String C_INSTR_DEFINE_ARRAY  = "DA";
+    private static final String C_INSTR_INCLUDE = "INCLUDE";
+    private static final String[] ALL_C_INSTR = new String[] {
+            C_INSTR_DEFINE_WORD, C_INSTR_DEFINE_STRING, C_INSTR_DEFINE_ARRAY, C_INSTR_INCLUDE
+    };
+
     private static final String NUMBER_DIGIT_SEP = "_";
-    private static final String GENERIC_NUMBER_PATTERN = "{1}[{0}]+(?:[{0}" + NUMBER_DIGIT_SEP + "]*[{0}]+)*{2}";
+    private static final String GENERIC_NUMBER_PATTERN =
+            StringUtils.format("{1}[{0}]+(?:(?:{3})*[{0}]+)*{2}", "{0}", "{1}", "{2}", Pattern.quote(NUMBER_DIGIT_SEP));
 
     private static final TokenDefinition COMMENT    = new TokenDefinition("Comment", ";[^\\v]*\\v?");
     private static final TokenDefinition LABEL_DECL = new TokenDefinition("Label Declaration", ":", true);
@@ -48,7 +53,7 @@ public final class Parser {
     private static final TokenDefinition STRING     = new TokenDefinition("String", "\"((?:[^\\\\\"]|(?:\\\\[0-9]+;?|\\\\.))*)\"");
     private static final TokenDefinition CHARACTER  = new TokenDefinition("Character", "'(\\\\.|\\\\[0-9]+;?|[^\\\\])'");
     private static final TokenDefinition C_VAR      = new TokenDefinition("Compiler Variable", "@([_A-Z][_A-Z0-9]*)", false, true);
-    private static final TokenDefinition C_INSTR    = new TokenDefinition("Compiler Instruction", "#(DW|DS|DA|INCLUDE)");
+    private static final TokenDefinition C_INSTR    = new TokenDefinition("Compiler Instruction", StringUtils.format("#({0})", String.join("|", ALL_C_INSTR)));
     private static final TokenDefinition L_BRACE    = new TokenDefinition("Left Brace", "{", true);
     private static final TokenDefinition R_BRACE    = new TokenDefinition("Right Brace", "}", true);
     private static final TokenDefinition L_BRACKET  = new TokenDefinition("Left Bracket", "[", true);
@@ -438,19 +443,19 @@ public final class Parser {
 
                 Token instrArg = ctx.tokenizer.goForward();
                 switch (instrName) {
-                    case CI_DEFINE_WORD:
+                    case C_INSTR_DEFINE_WORD:
                         if (parseArgument(ctx, false) <= 0)
                             throw new ParserError.SyntaxError(ctx, ARGUMENT_TYPES, formatToken(instrArg));
                         break;
-                    case CI_DEFINE_STRING:
+                    case C_INSTR_DEFINE_STRING:
                         if (!parseString(ctx, true).SUCCESS)
                             throw new ParserError.SyntaxError(ctx, STRING.getName(), formatToken(instrArg));
                         break;
-                    case CI_DEFINE_ARRAY:
+                    case C_INSTR_DEFINE_ARRAY:
                         if (!parseArray(ctx))
                             throw new ParserError.SyntaxError(ctx, "Array", formatToken(instrArg));
                         break;
-                    case CI_INCLUDE:
+                    case C_INSTR_INCLUDE:
                         ParseResult<String> parsedPath = parseString(ctx, false);
                         if (!parsedPath.SUCCESS)
                             throw new ParserError.SyntaxError(ctx, "Include File Path", formatToken(instrArg));

@@ -1,6 +1,7 @@
 package io.github.hds.pemu.plugins;
 
 import io.github.hds.pemu.console.Console;
+import io.github.hds.pemu.console.IConsole;
 import io.github.hds.pemu.files.FileManager;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
@@ -14,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.Objects;
 
-public final class ExternalPlugin extends Plugin {
+public abstract class AbstractExternalPlugin extends AbstractPlugin {
 
     private final File PLUGIN_FILE;
     private final PluginType PLUGIN_TYPE;
@@ -24,12 +25,26 @@ public final class ExternalPlugin extends Plugin {
     private final String NAME;
     private final String VERSION;
 
-    protected ExternalPlugin(@NotNull File file, @NotNull PluginType pluginType, @Nullable String id, @Nullable String name, @Nullable String version) {
+    protected AbstractExternalPlugin(@NotNull File file, @NotNull PluginType pluginType, @Nullable String id, @Nullable String name, @Nullable String version) {
         PLUGIN_FILE = file;
         PLUGIN_TYPE = pluginType;
         ID      = id;
         NAME    = name;
         VERSION = version;
+    }
+
+    protected abstract @Nullable IPlugin compile(@NotNull IConsole outputConsole);
+
+    protected @NotNull File getFile() {
+        return PLUGIN_FILE;
+    }
+
+    protected @NotNull PluginType getType() {
+        return PLUGIN_TYPE;
+    }
+
+    protected @Nullable IPlugin getInstance() {
+        return pluginInstance;
     }
 
     @Override
@@ -59,7 +74,7 @@ public final class ExternalPlugin extends Plugin {
 
     @Override
     public boolean onLoad() throws Exception {
-        pluginInstance = PluginManager.compilePlugin(Console.Debug, PLUGIN_FILE, PLUGIN_TYPE);
+        pluginInstance = compile(Console.Debug);
         if (pluginInstance == null) return false;
 
         Translation currentTranslation = TranslationManager.getCurrentTranslation();

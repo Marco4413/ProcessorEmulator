@@ -3,7 +3,7 @@ package io.github.hds.pemu;
 import io.github.hds.pemu.app.Application;
 import io.github.hds.pemu.console.Console;
 import io.github.hds.pemu.localization.TranslationManager;
-import io.github.hds.pemu.plugins.BasePlugin;
+import io.github.hds.pemu.plugins.DefaultPlugin;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.arguments.ArgumentsParser;
 import io.github.hds.pemu.plugins.PluginManager;
@@ -115,7 +115,7 @@ public final class Main {
         Application app = Application.getInstance();
 
         // Registering and Loading Base Plugin
-        app.loadPlugin(PluginManager.registerPlugin(BasePlugin.getInstance()));
+        app.loadPlugin(PluginManager.registerPlugin(DefaultPlugin.getInstance()));
         PluginManager.registerExternalPlugins();
 
         // Loading config after all managers are set-up
