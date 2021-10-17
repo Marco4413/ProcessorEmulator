@@ -13,7 +13,6 @@ import java.util.List;
 
 public final class DummyProcessor implements IDummyProcessor {
 
-
     private final RegisterHolder<IRegister> REGISTER_HOLDER;
     private final FlagHolder<IFlag> FLAG_HOLDER;
 
@@ -23,35 +22,38 @@ public final class DummyProcessor implements IDummyProcessor {
 
     /**
      * Creates a new {@link DummyProcessor}'s instance
+     * @param instructionSet The {@link InstructionSet} to be used by the new instance
      * @param config The {@link ProcessorConfig} to create the new instance with
      */
-    public DummyProcessor(@NotNull ProcessorConfig config) {
-        this(config, new IDummyRegister[0], new IDummyFlag[0]);
+    public DummyProcessor(@NotNull ProcessorConfig config, @NotNull InstructionSet instructionSet) {
+        this(config, instructionSet, new IDummyRegister[0], new IDummyFlag[0]);
     }
 
     /**
      * Creates a new {@link DummyProcessor}'s instance
      * @param config The {@link ProcessorConfig} to create the new instance with
+     * @param instructionSet The {@link InstructionSet} to be used by the new instance
      * @param registers The {@link IRegister}s to add to this {@link IProcessor}
      * @param flags The {@link IFlag}s to add to this {@link IProcessor}
      */
-    public DummyProcessor(@NotNull ProcessorConfig config, @NotNull IDummyRegister[] registers, @NotNull IDummyFlag[] flags) {
+    public DummyProcessor(@NotNull ProcessorConfig config, @NotNull InstructionSet instructionSet, @NotNull IDummyRegister[] registers, @NotNull IDummyFlag[] flags) {
         REGISTER_HOLDER = new RegisterHolder<>(registers);
         FLAG_HOLDER = new FlagHolder<>(flags);
 
         MEMORY = new DummyMemory(Word.getClosestWord(config.getBits()));
         CLOCK = new Clock(config.getClockFrequency());
-        INSTRUCTIONSET = config.getInstructionSet();
+        INSTRUCTIONSET = instructionSet;
     }
 
     /**
      * Creates a new {@link DummyProcessor}'s instance
      * @param config The {@link ProcessorConfig} to create the new instance with
+     * @param instructionSet The {@link InstructionSet} to be used by the new instance
      * @param registers The {@link IRegister}s to add to this {@link IProcessor}
      * @param flags The {@link IFlag}s to add to this {@link IProcessor}
      */
-    public DummyProcessor(@NotNull ProcessorConfig config, @NotNull List<IDummyRegister> registers, @NotNull List<IDummyFlag> flags) {
-        this(config, registers.toArray(new IDummyRegister[0]), flags.toArray(new IDummyFlag[0]));
+    public DummyProcessor(@NotNull ProcessorConfig config, @NotNull InstructionSet instructionSet, @NotNull List<IDummyRegister> registers, @NotNull List<IDummyFlag> flags) {
+        this(config, instructionSet, registers.toArray(new IDummyRegister[0]), flags.toArray(new IDummyFlag[0]));
     }
 
     @Override

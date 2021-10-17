@@ -1,6 +1,5 @@
 package io.github.hds.pemu.app;
 
-import io.github.hds.pemu.instructions.Instructions;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
@@ -56,7 +55,6 @@ public final class ProcessorConfigPanel extends JPanel implements ITranslatable 
 
     public @NotNull ProcessorConfig getConfig() {
         return new ProcessorConfig(
-                Instructions.SET,
                 (int) BITS_SPINNER.getValue(),
                 (int) MEMORY_SPINNER.getValue(),
                 (int) CLOCK_SPINNER.getValue()

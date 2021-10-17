@@ -42,14 +42,14 @@ public final class Processor implements IProcessor {
     private volatile boolean isPaused = false;
     private volatile boolean stepping = false;
 
-    public Processor(@NotNull ProcessorConfig config) {
+    public Processor(@NotNull ProcessorConfig config, @NotNull InstructionSet instructionSet) {
         MEMORY = new Memory(
                 config.getMemorySize(),
                 Word.getClosestWord(config.getBits())
         );
         CLOCK = new Clock(config.getClockFrequency());
 
-        INSTRUCTIONSET = config.getInstructionSet();
+        INSTRUCTIONSET = instructionSet;
         HISTORY = new InstructionHistory();
 
         REGISTERS = new RegisterHolder<>(
@@ -63,9 +63,9 @@ public final class Processor implements IProcessor {
         );
     }
 
-    public static @NotNull DummyProcessor getDummyProcessor(@NotNull ProcessorConfig config) {
+    public static @NotNull DummyProcessor getDummyProcessor(@NotNull ProcessorConfig config, @NotNull InstructionSet instructionSet) {
         return new DummyProcessor(
-                config,
+                config, instructionSet,
                 new IDummyRegister[] {
                         new DummyMemoryRegister("Instruction Pointer"),
                         new DummyMemoryRegister("Stack Pointer")

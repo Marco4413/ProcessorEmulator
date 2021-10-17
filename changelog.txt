@@ -1,5 +1,10 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @be1da30
+
+Removed InstructionSet from class ProcessorConfig
+Changed constructors of both Processor and DummyProcessor classes to take an instance of InstructionSet
+
 -- Changes from commit @5b08eca
 
 Removed support for Ruby Plugins in favour of Native Plugins

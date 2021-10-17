@@ -1,6 +1,5 @@
 package io.github.hds.pemu.processor;
 
-import io.github.hds.pemu.instructions.InstructionSet;
 import io.github.hds.pemu.memory.Word;
 import io.github.hds.pemu.utils.MathUtils;
 import org.jetbrains.annotations.NotNull;
@@ -25,29 +24,23 @@ public final class ProcessorConfig {
     private int bits;
     private int memorySize;
     private int clockFrequency;
-    private @NotNull InstructionSet instructionSet;
 
-    public ProcessorConfig(@NotNull InstructionSet instructionSet) {
-        this(instructionSet, DEFAULT_BITS);
+    public ProcessorConfig(int bits) {
+        this(bits, DEFAULT_MEMORY_SIZE);
     }
 
-    public ProcessorConfig(@NotNull InstructionSet instructionSet, int bits) {
-        this(instructionSet, bits, DEFAULT_MEMORY_SIZE);
+    public ProcessorConfig(int bits, int memorySize) {
+        this(bits, memorySize, DEFAULT_FREQUENCY);
     }
 
-    public ProcessorConfig(@NotNull InstructionSet instructionSet, int bits, int memorySize) {
-        this(instructionSet, bits, memorySize, DEFAULT_FREQUENCY);
-    }
-
-    public ProcessorConfig(@NotNull InstructionSet instructionSet, int bits, int memorySize, int clockFrequency) {
-        this.instructionSet = instructionSet;
+    public ProcessorConfig(int bits, int memorySize, int clockFrequency) {
         setBits(bits);
         setMemorySize(memorySize);
         setClockFrequency(clockFrequency);
     }
 
     public ProcessorConfig(@NotNull ProcessorConfig config) {
-        this(config.instructionSet, config.bits, config.memorySize, config.clockFrequency);
+        this(config.bits, config.memorySize, config.clockFrequency);
     }
 
     public @NotNull ProcessorConfig setBits(int bits) {
@@ -65,11 +58,6 @@ public final class ProcessorConfig {
         return this;
     }
 
-    public @NotNull ProcessorConfig setInstructionSet(@NotNull InstructionSet instructionSet) {
-        this.instructionSet = instructionSet;
-        return this;
-    }
-
     public int getBits() {
         return bits;
     }
@@ -80,9 +68,5 @@ public final class ProcessorConfig {
 
     public int getClockFrequency() {
         return clockFrequency;
-    }
-
-    public @NotNull InstructionSet getInstructionSet() {
-        return instructionSet;
     }
 }

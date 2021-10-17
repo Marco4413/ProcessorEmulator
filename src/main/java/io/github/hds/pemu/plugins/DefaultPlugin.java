@@ -1,6 +1,7 @@
 package io.github.hds.pemu.plugins;
 
 import io.github.hds.pemu.app.Application;
+import io.github.hds.pemu.instructions.Instructions;
 import io.github.hds.pemu.processor.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,12 +22,12 @@ public final class DefaultPlugin extends AbstractPlugin {
 
     @Override
     public IProcessor onCreateProcessor(@NotNull ProcessorConfig config) {
-        return new Processor(config);
+        return new Processor(config, Instructions.SET);
     }
 
     @Override
     public IDummyProcessor onCreateDummyProcessor(@NotNull ProcessorConfig config) {
-        return Processor.getDummyProcessor(config);
+        return Processor.getDummyProcessor(config, Instructions.SET);
     }
 
     @Override
