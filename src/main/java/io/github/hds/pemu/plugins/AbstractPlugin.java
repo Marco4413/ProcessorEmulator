@@ -29,6 +29,7 @@ public abstract class AbstractPlugin implements IPlugin {
     }
 
     protected AbstractPlugin(@Nullable String id, @Nullable String name, @Nullable String version) {
+        assert this.getClass().getAnnotation(Plugin.class) == null;
         ID = id;
         NAME = name;
         VERSION = version;

@@ -19,9 +19,6 @@ test {
 }
 
 jar {
-    archiveBaseName = 'PEMU'
-    archiveVersion =  version
-
     manifest {
         attributes(
                 'Main-Class': 'io.github.hds.pemu.Main'

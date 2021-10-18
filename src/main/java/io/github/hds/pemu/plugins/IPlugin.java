@@ -6,34 +6,32 @@ import io.github.hds.pemu.processor.ProcessorConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.StringWriter;
-
 public interface IPlugin {
     /**
      * Returns the ID of this plugin
      * If null or another Plugin with the same ID is present then this Plugin won't be registered
      * @return The ID of this plugin
      */
-    default @Nullable String getID() { return null; }
+    @Nullable String getID();
 
     /**
      * Returns the Name of this plugin
      * @return The Name of this plugin
      */
-    default @Nullable String getName() { return null; }
+    @Nullable String getName();
 
     /**
      * Returns the Version of this plugin
      * @return The Version of this plugin
      */
-    default @Nullable String getVersion() { return null; }
+    @Nullable String getVersion();
 
     /**
      * Method called when a new {@link IProcessor} needs to be created
      * @param config The config for the {@link IProcessor}
      * @return A new {@link IProcessor}
      */
-    default @Nullable IProcessor onCreateProcessor(@NotNull ProcessorConfig config) { return null; }
+    @Nullable IProcessor onCreateProcessor(@NotNull ProcessorConfig config);
 
     /**
      * Method called when a new {@link IDummyProcessor} needs to be created
@@ -41,16 +39,22 @@ public interface IPlugin {
      * @param config The config for the {@link IDummyProcessor}
      * @return A new {@link IDummyProcessor}
      */
-    default @Nullable IDummyProcessor onCreateDummyProcessor(@NotNull ProcessorConfig config) { return null; }
+    @Nullable IDummyProcessor onCreateDummyProcessor(@NotNull ProcessorConfig config);
 
+    /**
+     * Called before this plugin is registered
+     * @return An error message or null if none
+     */
+    default @Nullable String onRegister() {
+        // You can do your Version Check business here
+        return null;
+    }
 
     /**
      * Called when this plugin is being loaded
      * The old one is unloaded
-     * @return Whether or not an error was encountered, if false then this plugin won't be fully loaded
-     * @throws Exception This method may throw exceptions if any error occurred
      */
-    default boolean onLoad() throws Exception { return true; }
+    default void onLoad() { }
 
     /**
      * Called when this plugin is being unloaded

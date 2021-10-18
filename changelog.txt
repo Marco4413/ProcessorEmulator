@@ -1,5 +1,18 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @dfd67c7
+
+Now PluginManager logs errors if a duplicate Plugin is being registered
+Added assertion for AbstractPlugin's constructor that specifies
+ ID, Name, ... to make sure that there's no Plugin annotation
+
+Removed defaults from most of IPlugin's methods
+Added method IPlugin#onRegister
+Now method IPlugin#onLoad can't throw and doesn't return boolean anymore
+ (onRegister should now be used instead)
+
+Renamed Gradle Project to "PEMU"
+
 -- Changes from commit @be1da30
 
 Removed InstructionSet from class ProcessorConfig

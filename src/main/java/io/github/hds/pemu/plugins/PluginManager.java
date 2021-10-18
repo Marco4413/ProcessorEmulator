@@ -32,9 +32,31 @@ public final class PluginManager {
     public static <T extends IPlugin> @Nullable T registerPlugin(@Nullable T plugin) {
         if (plugin == null) return null;
 
+        Translation currentTranslation = TranslationManager.getCurrentTranslation();
+        String errorMessage;
+
         String pluginID = plugin.getID();
-        if (pluginID == null || PLUGINS.containsKey(pluginID))
+        if (pluginID == null)
             return null;
+        else if (PLUGINS.containsKey(pluginID)) {
+            errorMessage = StringUtils.format(
+                    currentTranslation.getOrDefault("messages.pluginDuplicateID"),
+                    plugin.getID()
+            );
+        } else errorMessage = plugin.onRegister();
+
+        if (errorMessage != null) {
+            System.err.println(StringUtils.format(
+                    currentTranslation.getOrDefault("messages.pluginRegistrationFailed"),
+                    plugin.getName()
+            ));
+            System.err.println(StringUtils.format(
+                    currentTranslation.getOrDefault("messages.pluginErrorMessage"),
+                    errorMessage
+            ));
+            System.err.println();
+            return null;
+        }
 
         PLUGINS.put(plugin.getID(), plugin);
         return plugin;
@@ -44,29 +66,44 @@ public final class PluginManager {
         Translation currentTranslation = TranslationManager.getCurrentTranslation();
         String errorMessage;
 
-        if (IPlugin.class.isAssignableFrom(pluginClass)) {
+        // A Plugin Annotation must be present if this method is called
+        Plugin pluginAnnotation = pluginClass.getAnnotation(Plugin.class);
+        assert pluginAnnotation != null;
+
+        // Checking using the ID on the Annotation if this Plugin has already been registered
+        //  This is done so that no new instance is created uselessly
+        if (hasPlugin(pluginAnnotation.id())) {
+            // Unlike the other registerPlugin overload this has an error message for duplicate
+            //  Plugins because these are registered automatically so it's nice to know if it failed
+            errorMessage = StringUtils.format(
+                    currentTranslation.getOrDefault("messages.pluginDuplicateID"),
+                    pluginAnnotation.id()
+            );
+        // If the given class is an instance of IPlugin
+        } else if (IPlugin.class.isAssignableFrom(pluginClass)) {
             try {
+                // Register a new Instance of this class
                 registerPlugin((IPlugin) pluginClass.newInstance());
                 return;
             } catch (Exception err) {
-                errorMessage = StringUtils.format(
-                        currentTranslation.getOrDefault("messages.pluginRegistrationFailed"),
-                        err.toString()
-                );
+                // Errors caught here are for example if the Constructor is protected,
+                //  throws or there isn't one that takes no arguments
+                errorMessage = err.toString();
             }
         } else errorMessage = StringUtils.format(
                 currentTranslation.getOrDefault("messages.pluginInvalidType"),
                 IPlugin.class.getSimpleName()
         );
 
-        Plugin pluginAnnotation = pluginClass.getAnnotation(Plugin.class);
-        assert pluginAnnotation != null;
-
+        // If we get here then the Plugin couldn't be registered
         System.err.println(StringUtils.format(
                 currentTranslation.getOrDefault("messages.pluginRegistrationFailed"),
                 pluginAnnotation.name()
         ));
-        System.err.println(errorMessage);
+        System.err.println(StringUtils.format(
+                currentTranslation.getOrDefault("messages.pluginErrorMessage"),
+                errorMessage
+        ));
         System.err.println();
     }
 
@@ -105,6 +142,7 @@ public final class PluginManager {
             Set<Class<?>> pluginClasses = reflections.getTypesAnnotatedWith(Plugin.class, false);
             pluginClasses.forEach(PluginManager::registerPlugin);
         } catch (Exception err) {
+            // This is very unlikely so it's not translated
             System.err.println("Error while Registering all Plugins:");
             System.err.println(StringUtils.stackTraceAsString(err));
             System.err.println();

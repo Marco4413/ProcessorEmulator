@@ -227,26 +227,6 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         return loadPlugin(PluginManager.getPlugin(pluginID));
     }
 
-    private boolean setPlugin(@NotNull IPlugin plugin) {
-        try {
-            if (plugin.onLoad()) {
-                loadedPlugin = plugin;
-                return true;
-            }
-        } catch (Exception err) {
-            Console.Debug.println(
-                    StringUtils.format(
-                            currentTranslation.getOrDefault("messages.pluginLoadFailed"),
-                            plugin.getName()
-                    )
-            );
-            Console.Debug.println(err.getMessage());
-            Console.Debug.printStackTrace(err);
-            Console.Debug.println();
-        }
-        return false;
-    }
-
     public boolean loadPlugin(@Nullable IPlugin plugin) {
         // Load the Plugin only if it was registered in the PluginManager
         //  or if it's not the same as the currently loaded one
@@ -259,25 +239,8 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         if (loadedPlugin != null)
             loadedPlugin.onUnload();
 
-        boolean pluginLoaded = setPlugin(plugin);
-
-        if (!pluginLoaded) {
-            Console.Debug.println(
-                    StringUtils.format(
-                            currentTranslation.getOrDefault("messages.revertingPlugin"),
-                            plugin.toString(),
-                            loadedPlugin == null ? currentTranslation.getOrDefault("messages.noPlugin") : loadedPlugin.toString()
-                    )
-            );
-            Console.Debug.println();
-
-            if (loadedPlugin != null) {
-                if (!setPlugin(loadedPlugin))
-                    loadedPlugin = null;
-            }
-
-            return false;
-        }
+        loadedPlugin = plugin;
+        plugin.onLoad();
 
         return true;
     }

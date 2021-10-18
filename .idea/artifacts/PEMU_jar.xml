@@ -2,7 +2,7 @@
   <artifact type="jar" name="PEMU:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/PEMU_jar</output-path>
     <root id="archive" name="PEMU.jar">
-      <element id="module-output" name="Processor_Emulator.main" />
+      <element id="module-output" name="PEMU.main" />
       <element id="file-copy" path="$PROJECT_DIR$/LICENSE.md" />
       <element id="file-copy" path="$PROJECT_DIR$/README.md" />
       <element id="file-copy" path="$PROJECT_DIR$/changelog.txt" />
