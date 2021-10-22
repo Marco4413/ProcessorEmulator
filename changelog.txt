@@ -1,5 +1,15 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @3c62002
+
+Added static method PluginManager.queueForRegister
+Removed static method PluginManager.registerPlugin
+
+Config that was previously loaded by FileMenu is now loaded by Application
+
+Changed method IPrintable#printStackTrace to accept a Throwable instead
+Added class to package utils: CThread
+
 -- Changes from commit @dfd67c7
 
 Now PluginManager logs errors if a duplicate Plugin is being registered

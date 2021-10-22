@@ -1,7 +1,6 @@
 package io.github.hds.pemu.plugins;
 
 import io.github.hds.pemu.Main;
-import io.github.hds.pemu.app.*;
 import io.github.hds.pemu.files.FileManager;
 import io.github.hds.pemu.files.FileUtils;
 import io.github.hds.pemu.localization.Translation;
@@ -21,23 +20,24 @@ import java.util.*;
 public final class PluginManager {
 
     protected static final String PLUGIN_EXT = "jar";
+    private static final ArrayList<IPlugin> REGISTER_QUEUE = new ArrayList<>();
     private static final HashMap<String, IPlugin> PLUGINS = new HashMap<>();
 
     /**
-     * Registers the specified plugin
-     * @param plugin The plugin to register
-     * @param <T> The type of plugin (Must implement {@link IPlugin}), it's used to return the same type as the given plugin
-     * @return The registered plugin
+     * Queues the specified plugin for register when {@link PluginManager#registerPlugins} is called
+     * @param plugin The plugin to queue for register
      */
-    public static <T extends IPlugin> @Nullable T registerPlugin(@Nullable T plugin) {
-        if (plugin == null) return null;
+    public static void queueForRegister(@Nullable IPlugin plugin) {
+        if (plugin != null) REGISTER_QUEUE.add(plugin);
+    }
 
+    private static void registerPlugin(@NotNull IPlugin plugin) {
         Translation currentTranslation = TranslationManager.getCurrentTranslation();
         String errorMessage;
 
         String pluginID = plugin.getID();
         if (pluginID == null)
-            return null;
+            return;
         else if (PLUGINS.containsKey(pluginID)) {
             errorMessage = StringUtils.format(
                     currentTranslation.getOrDefault("messages.pluginDuplicateID"),
@@ -55,11 +55,10 @@ public final class PluginManager {
                     errorMessage
             ));
             System.err.println();
-            return null;
+            return;
         }
 
         PLUGINS.put(plugin.getID(), plugin);
-        return plugin;
     }
 
     private static void registerPlugin(@NotNull Class<?> pluginClass) {
@@ -108,10 +107,15 @@ public final class PluginManager {
     }
 
     /**
-     * Registers all external plugins which can be found at {@link FileManager#getPluginDirectory}.
-     * This function doesn't compile any Plugin, Plugins should only be compiled when loaded by {@link Application}
+     * Registers all external and queued ( by {@link PluginManager#queueForRegister} ) plugins which can be found at
+     * {@link FileManager#getPluginDirectory}, external Plugins are loaded each time while queued Plugins only once.
      */
     public static void registerPlugins() {
+        if (REGISTER_QUEUE.size() > 0) {
+            REGISTER_QUEUE.forEach(PluginManager::registerPlugin);
+            REGISTER_QUEUE.clear();
+        }
+
         File pluginsDir = FileManager.getPluginDirectory();
         if (!pluginsDir.isDirectory()) return;
 

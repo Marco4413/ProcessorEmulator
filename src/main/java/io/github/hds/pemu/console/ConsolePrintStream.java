@@ -59,7 +59,7 @@ public final class ConsolePrintStream implements IConsole {
     }
 
     @Override
-    public synchronized void printStackTrace(@NotNull Exception err) {
+    public synchronized void printStackTrace(@NotNull Throwable err) {
         err.printStackTrace(STREAM);
     }
 

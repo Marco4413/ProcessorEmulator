@@ -11,6 +11,7 @@ import io.github.hds.pemu.files.FileUtils;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
+import io.github.hds.pemu.plugins.DefaultPlugin;
 import io.github.hds.pemu.plugins.IPlugin;
 import io.github.hds.pemu.plugins.PluginManager;
 import io.github.hds.pemu.processor.Clock;
@@ -169,48 +170,6 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         disableConfigAutoSave = (flags & DISABLE_CONFIG_AUTO_SAVE ) == DISABLE_CONFIG_AUTO_SAVE ;
     }
 
-    @Override
-    public void updateTranslations(@NotNull Translation translation) {
-        currentTranslation = translation;
-        localeNoProgramSelected = translation.getOrDefault("application.noProgramSelected");
-        localeProgramSelected = translation.getOrDefault("application.programSelected");
-
-        localePerformanceLabel = translation.getOrDefault("application.performanceLabel");
-        localeNoProcessorRunning = translation.getOrDefault("application.noProcessorRunning");
-        updateTitle();
-    }
-
-    @Override
-    @SuppressWarnings("ConstantConditions")
-    public void loadConfig(@NotNull ConfigEvent e) {
-        // Check if the config is on the right version, if not reset it to defaults
-        String configVersion = e.config.get(String.class, "version");
-        if (configVersion == null || StringUtils.compareVersions(configVersion, APP_VERSION) != 0) {
-            e.stop();
-            ConfigManager.resetToDefault();
-        } else {
-            // We let the app crash if config couldn't be loaded successfully
-            processorConfig.setBits(e.config.get(Integer.class, "processorConfig.bits"));
-            processorConfig.setMemorySize(e.config.get(Integer.class, "processorConfig.memorySize"));
-            processorConfig.setClockFrequency(e.config.get(Integer.class, "processorConfig.clockFrequency"));
-        }
-    }
-
-    @Override
-    public void saveConfig(@NotNull ConfigEvent e) {
-        e.config.put("processorConfig.bits", processorConfig.getBits());
-        e.config.put("processorConfig.memorySize", processorConfig.getMemorySize());
-        e.config.put("processorConfig.clockFrequency", processorConfig.getClockFrequency());
-    }
-
-    @Override
-    public void setDefaults(@NotNull ConfigEvent e) {
-        e.config.put("version", APP_VERSION);
-        e.config.put("processorConfig.bits", ProcessorConfig.DEFAULT_BITS);
-        e.config.put("processorConfig.memorySize", ProcessorConfig.DEFAULT_MEMORY_SIZE);
-        e.config.put("processorConfig.clockFrequency", ProcessorConfig.DEFAULT_FREQUENCY);
-    }
-
     public void updateTitle() {
         setTitle(
                 StringUtils.format(
@@ -324,7 +283,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
                 ));
                 Console.Debug.println();
             } else return processor;
-        } catch (Exception err) {
+        } catch (Throwable err) {
             Console.Debug.println(currentTranslation.getOrDefault("messages.processorCreationError"));
             Console.Debug.printStackTrace(err, false);
             Console.Debug.println();
@@ -352,7 +311,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
                 ));
                 Console.Debug.println();
             } else return dummyProcessor;
-        } catch (Exception err) {
+        } catch (Throwable err) {
             Console.Debug.println(currentTranslation.getOrDefault("messages.dummyProcessorCreationError"));
             Console.Debug.printStackTrace(err, false);
             Console.Debug.println();
@@ -468,23 +427,20 @@ public final class Application extends JFrame implements KeyListener, ITranslata
                 ((IClearable) Console.ProgramOutput).clear();
 
             // We want to make sure that if the Processor fails, details about the error show on the Console
-            Thread processorThread = new Thread(currentProcessor) {
-                @Override
-                public void run() {
-                    try {
-                        super.run();
-                    } catch (Exception err) {
+            CThread.runThread(
+                    currentProcessor,
+                    () -> {
+                        Console.Debug.println(currentTranslation.getOrDefault("messages.processorStopped"));
+                        Console.Debug.println();
+
+                        if (closeOnProcessorStop) Application.this.close(null);
+                    },
+                    err -> {
                         currentProcessor.stop(); // Make sure to stop the processor if it fails
                         Console.Debug.println(currentTranslation.getOrDefault("messages.programRunningError"));
                         Console.Debug.printStackTrace(err, false);
                     }
-                    Console.Debug.println(currentTranslation.getOrDefault("messages.processorStopped"));
-                    Console.Debug.println();
-
-                    if (closeOnProcessorStop) Application.this.close(null);
-                }
-            };
-            processorThread.start();
+            );
 
             return true;
         } catch (Exception err) {
@@ -537,5 +493,69 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     public void close(ActionEvent e) {
         if (!disableConfigAutoSave) ConfigManager.saveConfig();
         System.exit(0);
+    }
+
+    @Override
+    public void updateTranslations(@NotNull Translation translation) {
+        currentTranslation = translation;
+        localeNoProgramSelected = translation.getOrDefault("application.noProgramSelected");
+        localeProgramSelected = translation.getOrDefault("application.programSelected");
+
+        localePerformanceLabel = translation.getOrDefault("application.performanceLabel");
+        localeNoProcessorRunning = translation.getOrDefault("application.noProcessorRunning");
+        updateTitle();
+    }
+
+    @Override
+    @SuppressWarnings("ConstantConditions")
+    public void loadConfig(@NotNull ConfigEvent e) {
+        // Check if the config is on the right version, if not reset it to defaults
+        String configVersion = e.config.get(String.class, "version");
+        if (configVersion == null || StringUtils.compareVersions(configVersion, APP_VERSION) != 0) {
+            e.stop();
+            ConfigManager.resetToDefault();
+            return;
+        }
+
+        // We let the app crash if config couldn't be loaded successfully
+        processorConfig.setBits(e.config.get(Integer.class, "processorConfig.bits"));
+        processorConfig.setMemorySize(e.config.get(Integer.class, "processorConfig.memorySize"));
+        processorConfig.setClockFrequency(e.config.get(Integer.class, "processorConfig.clockFrequency"));
+
+        TranslationManager.setCurrentTranslation(
+                e.config.get(String.class, "selectedLanguage")
+        );
+
+        PluginManager.registerPlugins();
+        this.loadPlugin(PluginManager.getPlugin(
+                e.config.get(String.class, "loadedPlugin")
+        ));
+    }
+
+    @Override
+    public void saveConfig(@NotNull ConfigEvent e) {
+        e.config.put("processorConfig.bits", processorConfig.getBits());
+        e.config.put("processorConfig.memorySize", processorConfig.getMemorySize());
+        e.config.put("processorConfig.clockFrequency", processorConfig.getClockFrequency());
+
+        String selectedLanguage = TranslationManager.getCurrentTranslation().getShortName();
+        e.config.put("selectedLanguage", selectedLanguage);
+
+        IPlugin loadedPlugin = this.getLoadedPlugin();
+        if (loadedPlugin != null && loadedPlugin.getID() != null)
+            e.config.put("loadedPlugin", loadedPlugin.getID());
+    }
+
+    @Override
+    public void setDefaults(@NotNull ConfigEvent e) {
+        e.config.put("version", APP_VERSION);
+        e.config.put("processorConfig.bits", ProcessorConfig.DEFAULT_BITS);
+        e.config.put("processorConfig.memorySize", ProcessorConfig.DEFAULT_MEMORY_SIZE);
+        e.config.put("processorConfig.clockFrequency", ProcessorConfig.DEFAULT_FREQUENCY);
+
+        e.config.put("selectedLanguage", "en-us");
+        String defaultPluginID = DefaultPlugin.getInstance().getID();
+        assert defaultPluginID != null;
+        e.config.put("loadedPlugin", defaultPluginID);
     }
 }

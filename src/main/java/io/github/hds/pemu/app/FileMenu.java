@@ -1,12 +1,8 @@
 package io.github.hds.pemu.app;
 
-import io.github.hds.pemu.config.ConfigEvent;
-import io.github.hds.pemu.config.ConfigManager;
-import io.github.hds.pemu.config.IConfigurable;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
-import io.github.hds.pemu.plugins.DefaultPlugin;
 import io.github.hds.pemu.plugins.IPlugin;
 import io.github.hds.pemu.plugins.PluginManager;
 import io.github.hds.pemu.utils.*;
@@ -16,7 +12,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-public final class FileMenu extends JMenu implements ITranslatable, IConfigurable {
+public final class FileMenu extends JMenu implements ITranslatable {
 
     private final Application app;
 
@@ -38,7 +34,6 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
         super();
         app = parentApp;
 
-        ConfigManager.addConfigListener(this);
         TranslationManager.addTranslationListener(this);
 
         OPEN_PROGRAM = new JMenuItem();
@@ -113,36 +108,5 @@ public final class FileMenu extends JMenu implements ITranslatable, IConfigurabl
         TranslationManager.setCurrentTranslation(
                 selectedTranslation.getShortName()
         );
-    }
-
-    @Override
-    @SuppressWarnings("ConstantConditions")
-    public void loadConfig(@NotNull ConfigEvent e) {
-        TranslationManager.setCurrentTranslation(
-                e.config.get(String.class, "selectedLanguage")
-        );
-
-        // FIXME: This shouldn't really be here, but PluginManager uses localization to print errors so we need to load
-        //  it before calling it and it should also be called before the plugin from the config file is loaded
-        PluginManager.registerPlugins();
-        app.loadPlugin(PluginManager.getPlugin(
-                e.config.get(String.class, "loadedPlugin")
-        ));
-    }
-
-    @Override
-    public void saveConfig(@NotNull ConfigEvent e) {
-        String selectedLanguage = TranslationManager.getCurrentTranslation().getShortName();
-        e.config.put("selectedLanguage", selectedLanguage);
-
-        IPlugin loadedPlugin = app.getLoadedPlugin();
-        if (loadedPlugin != null && loadedPlugin.getID() != null)
-            e.config.put("loadedPlugin", loadedPlugin.getID());
-    }
-
-    @Override
-    public void setDefaults(@NotNull ConfigEvent e) {
-        e.config.put("selectedLanguage", "en-us");
-        e.config.put("loadedPlugin", DefaultPlugin.getInstance().getID());
     }
 }

@@ -35,11 +35,11 @@ public interface IPrintable {
     default void println(double... numbers) { print(numbers); println(); }
     default void println(@Nullable Object... objects) { print(objects); println(); }
 
-    default void printStackTrace(@NotNull Exception err) {
+    default void printStackTrace(@NotNull Throwable err) {
         println(StringUtils.stackTraceAsString(err));
     }
 
-    default void printStackTrace(@NotNull Exception err, boolean printBacktraceForKnownExceptions) {
+    default void printStackTrace(@NotNull Throwable err, boolean printBacktraceForKnownExceptions) {
         if (printBacktraceForKnownExceptions)
             printStackTrace(err);
         else {

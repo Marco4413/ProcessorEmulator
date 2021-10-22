@@ -114,12 +114,11 @@ public final class Main {
         ConfigManager.setDefaultOnLoadError(true);
         Application app = Application.getInstance();
 
-        // Registering and Loading Default Plugin
-        app.loadPlugin(
-                PluginManager.registerPlugin(DefaultPlugin.getInstance())
-        );
+        // Queuing DefaultPlugin for register
+        PluginManager.queueForRegister(DefaultPlugin.getInstance());
 
-        // Loading config after all managers are set-up
+        // Loading Config after the Application was created and the
+        //  DefaultPlugin queued for registration
         ConfigManager.loadOrCreate();
 
         // Console Arguments override config settings
