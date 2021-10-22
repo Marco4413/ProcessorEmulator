@@ -90,6 +90,10 @@ public final class ConfigManager {
         defaultOnLoadError = value;
     }
 
+    // They ARE NOT replaceable, do you understand that the Array MIGHT change? IDEA, please don't make me hate you
+    // It can change because Plugins ( which are registered while loading the config ) might register themselves to
+    //  listen for Config events and using foreach this method would throw
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     private static void sendEvent(ConfigEvent.EVENT_TYPE type) {
         switch (type) {
             case LOAD: {
@@ -99,8 +103,8 @@ public final class ConfigManager {
                     ConfigEvent event = new ConfigEvent(type, config);
                     try {
                         // Send the event to all listeners
-                        for (IConfigurable listener : LISTENERS) {
-                            listener.loadConfig(event);
+                        for (int i = 0; i < LISTENERS.size(); i++) {
+                            LISTENERS.get(i).loadConfig(event);
                             if (event.isStopping()) break;
                         }
                         // If all events were successfully sent then break
@@ -116,16 +120,18 @@ public final class ConfigManager {
             }
             case SAVE: {
                 ConfigEvent event = new ConfigEvent(type, config);
-                for (IConfigurable listener : LISTENERS) {
-                    listener.saveConfig(event);
+                for (int i = 0; i < LISTENERS.size(); i++) {
+                    LISTENERS.get(i).saveConfig(event);
                     if (event.isStopping()) break;
                 }
                 break;
             }
             case DEFAULTS: {
-                LISTENERS.forEach(listener -> listener.setDefaults(
-                        new ConfigEvent(type, defaultConfig)
-                ));
+                for (int i = 0; i < LISTENERS.size(); i++) {
+                    LISTENERS.get(i).setDefaults(
+                            new ConfigEvent(type, defaultConfig)
+                    );
+                }
                 break;
             }
         }

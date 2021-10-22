@@ -1,5 +1,9 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @44d1a29
+
+It's now safe for Plugins to register themselves to listen for Config events
+
 -- Changes from commit @3c62002
 
 Added static method PluginManager.queueForRegister
