@@ -1,6 +1,6 @@
 # Processor Emulator
 
-![](logo.png)
+![PEMU Logo](logo.png)
 
 [![Gradle Build](https://github.com/hds536jhmk/ProcessorEmulator/actions/workflows/gradle.yml/badge.svg)](https://github.com/hds536jhmk/ProcessorEmulator/actions/workflows/gradle.yml)
 
@@ -27,18 +27,18 @@ This project is built using [**Adopt OpenJDK 8**](https://adoptopenjdk.net/?vari
 though any newer JRE should be able to run this properly.
 
 There are four main ways to run it:
- 1. By downloading the jar file from [Releases](https://github.com/hds536jhmk/ProcessorEmulator/releases).
+ 1. By downloading the jar file from [GitHub Releases](https://github.com/hds536jhmk/ProcessorEmulator/releases).
  2. By opening the project using **IntelliJ IDEA** and building the **project's artifact**.
  3. By opening the project using **IntelliJ IDEA** and creating a new **Run Config**:
     - Java Version: `1.8` (Adopt OpenJDK)
-    - Class Path: `Processor_Emulator.main`
+    - Class Path: `PEMU.main`
     - Main Class: `io.github.hds.pemu.Main`
- 4. By building the source with gradle. Pull the latest version from the repo and run `gradlew build`,
+ 4. By building the source with gradle. Pull the latest version from the repo and run `gradlew shadowJar`,
     the jar file should be located in `./build/libs/PEMU-version.jar`.
 
 ## Examples:
 
-PEMU Program Examples can be found in the [examples](https://github.com/hds536jhmk/ProcessorEmulator/tree/master/examples)
+PEMU Program Examples can be found in the [examples](examples)
 folder.
 
 ## PEMU Libraries:

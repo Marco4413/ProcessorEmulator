@@ -1,4 +1,5 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
     id 'java'
 }
 
@@ -10,8 +11,8 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
 test {
@@ -19,20 +20,16 @@ test {
 }
 
 jar {
+    //noinspection GroovyAssignabilityCheck
     manifest {
         attributes(
                 'Main-Class': 'io.github.hds.pemu.Main'
         )
     }
+}
 
-    from({
-        configurations['runtime'].collect { it.isDirectory() ? it : zipTree(it) }
-    }) {
-        exclude 'META-INF/*.SF'
-        exclude 'META-INF/*.DSA'
-        exclude 'META-INF/*.RSA'
-    }
-
+shadowJar {
+    archiveClassifier.set ''
     from('.') {
         include 'LICENSE.md'
         include 'README.md'
@@ -46,7 +43,7 @@ jar {
 }
 
 dependencies {
-    implementation 'org.jetbrains:annotations:20.1.0'
+    implementation 'org.jetbrains:annotations:22.0.0'
     implementation 'org.reflections:reflections:0.10.1'
-    implementation 'org.slf4j:slf4j-nop:1.7.9'
+    implementation 'org.slf4j:slf4j-nop:1.7.32'
 }
