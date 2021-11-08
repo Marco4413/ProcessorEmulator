@@ -1,4 +1,4 @@
-package io.github.hds.pemu.utils;
+package io.github.hds.pemu.math;
 
 public final class MathUtils {
 

@@ -4,6 +4,7 @@ import io.github.hds.pemu.compiler.CompilerVars;
 import io.github.hds.pemu.files.FileUtils;
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionSet;
+import io.github.hds.pemu.math.parser.MathParser;
 import io.github.hds.pemu.memory.flags.IFlag;
 import io.github.hds.pemu.memory.flags.IMemoryFlag;
 import io.github.hds.pemu.memory.registers.IMemoryRegister;
@@ -28,7 +29,7 @@ public final class Parser {
     private static final char ESCAPE_CHAR = '\\';
     private static final char ESCAPE_TERM = ';';
 
-    private static final String STATIC_TYPES = "Number, Character or Compiler Variable";
+    private static final String STATIC_TYPES = "Number, Math Expression, Character or Compiler Variable";
     private static final String ARGUMENT_TYPES = "Label, Offset, Register, " + STATIC_TYPES;
     private static final String GENERIC_TYPES = "Instruction, Compiler Instruction, Compiler Variable or Label";
 
@@ -59,6 +60,7 @@ public final class Parser {
     private static final TokenDefinition L_BRACKET  = new TokenDefinition("Left Bracket", "[", true);
     private static final TokenDefinition R_BRACKET  = new TokenDefinition("Right Bracket", "]", true);
     private static final TokenDefinition LABEL_OFF  = new TokenDefinition("Label with Offset", "([_A-Z][_A-Z0-9]*)\\[", false, true);
+    private static final TokenDefinition MATH_EXPR  = new TokenDefinition("Math Expression", "(%\\{)([^}]*)}");
     private static final TokenDefinition IDENTIFIER = new TokenDefinition("Identifier", "[_A-Z][_A-Z0-9]*", false, true);
     private static final TokenDefinition SPACE      = new TokenDefinition("Space", "\\h+");
     private static final TokenDefinition NEWLINE    = new TokenDefinition("New Line", "\\v+");
@@ -70,7 +72,7 @@ public final class Parser {
             C_VAR, C_INSTR,
             L_BRACE, R_BRACE,
             L_BRACKET, R_BRACKET,
-            LABEL_OFF, IDENTIFIER,
+            LABEL_OFF, MATH_EXPR, IDENTIFIER,
             SPACE, NEWLINE
     };
 
@@ -111,6 +113,28 @@ public final class Parser {
         IValueProvider valueProvider = () -> value;
         if (addNodes) ctx.addNode(new ValueNode(valueProvider));
 
+        return new ParseResult<>(true, valueProvider);
+    }
+
+    private static @NotNull ParseResult<IValueProvider> parseMathExpr(@NotNull ParserContext ctx, boolean addNodes) {
+        Token currentToken = ctx.tokenizer.getCurrentToken();
+
+        IValueProvider valueProvider;
+        if (MATH_EXPR.isDefinitionOf(currentToken)) {
+            assert currentToken != null;
+            String[] tokenGroups = currentToken.getGroups();
+            int value = MathParser.parseMath(
+                    tokenGroups[1],
+                    C_VAR, token -> {
+                        String varName = token.getGroups()[0];
+                        return ctx.hasCompilerVar(varName) ? (double) ctx.getCompilerVar(token.getGroups()[0]) : null;
+                    },
+                    ctx.getCurrentFile(), currentToken.getLine(), currentToken.getLineChar() + tokenGroups[0].length()
+            ).get().intValue();
+            valueProvider = () -> value;
+        } else return new ParseResult<>();
+
+        if (addNodes) ctx.addNode(new ValueNode(valueProvider));
         return new ParseResult<>(true, valueProvider);
     }
 
@@ -264,6 +288,7 @@ public final class Parser {
         ParseResult<IValueProvider> result;
 
         result = parseNumber(ctx, addNodes);
+        if (!result.SUCCESS) result = parseMathExpr(ctx, addNodes);
         if (!result.SUCCESS) result = parseCharacter(ctx, addNodes);
         if (!result.SUCCESS) result = parseCompilerVar(ctx, true, addNodes);
 

@@ -1,7 +1,7 @@
 package io.github.hds.pemu.processor;
 
 import io.github.hds.pemu.memory.Word;
-import io.github.hds.pemu.utils.MathUtils;
+import io.github.hds.pemu.math.MathUtils;
 import org.jetbrains.annotations.NotNull;
 
 public final class ProcessorConfig {

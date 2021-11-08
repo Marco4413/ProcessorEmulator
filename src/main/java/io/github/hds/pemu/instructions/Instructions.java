@@ -7,7 +7,7 @@ import io.github.hds.pemu.memory.flags.IFlag;
 import io.github.hds.pemu.memory.registers.IRegister;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.utils.IClearable;
-import io.github.hds.pemu.utils.MathUtils;
+import io.github.hds.pemu.math.MathUtils;
 import org.jetbrains.annotations.NotNull;
 
 public final class Instructions {

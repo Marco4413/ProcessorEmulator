@@ -1,5 +1,11 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @d60325d
+
+Added Math Expressions to the PEMU Language
+Added MathParser class
+Moved MathUtils class from package pemu.utils to pemu.math
+
 -- Changes from commit @44d1a29
 
 It's now safe for Plugins to register themselves to listen for Config events

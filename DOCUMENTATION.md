@@ -25,6 +25,7 @@
    * [Setting the clock too high](#setting-the-clock-too-high)
  - [Compiler Basics](#compiler-basics)
    * [Compiler Variables](#compiler-variables)
+   * [Math Expressions](#math-expressions)
    * [Labels](#labels)
    * [Compiler Instructions](#compiler-instructions)
    * [Registers and Flags](#registers-and-flags)
@@ -335,6 +336,39 @@ you want to use:
 VK_ENTER: #DW @VK_ENTER
 ; Then I can use the declared variable to check if the key was pressed
 ```
+
+## Math Expressions
+
+A Math Expression looks something like this:
+
+```Assembly
+; The Math Expression is defined within "%{ }"
+; Parenthesis can be used to group operations
+#DW %{ 2 pow ( @MY_CVAR - @MY_OTHER_CVAR ) / 10 }
+```
+
+Constants can be used as variables in Math Expressions.
+Math Expressions are static, so Compiler Variables used in Math Expressions will use the last value assigned to them
+before being used in the Expression ( This was also done to prevent circular references ) and they can be used in all
+places where numbers can.
+
+In Math Expressions there are Operators which are separated into two categories:
+ 1. Mono-Operators (e.g. `abs x`):
+    * Absolute Value: `abs`
+    * Square Root: `sqrt`
+    * Percentage: `%` ( Divides the following number by 100, `%10 = 0.1` )
+    * Bitwise NOT: `~` **This operator floors the given Number**
+ 2. Bi-Operators (e.g. `2 pow 4`):
+    * Multiply: `*`
+    * Divide: `/`
+    * Power: `pow`
+    * Shift Left: `<<` **Bitwise operators floor the given Numbers**
+    * Shift Right: `>>`
+    * Bitwise OR: `|`
+    * Bitwise AND: `&`
+    * Bitwise XOR: `^`
+
+The above-mentioned operators have the same priority as multiplication and division.
 
 ## Labels
 
