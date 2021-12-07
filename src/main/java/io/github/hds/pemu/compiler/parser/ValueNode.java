@@ -1,21 +1,22 @@
 package io.github.hds.pemu.compiler.parser;
 
+import io.github.hds.pemu.utils.IPIntSupplier;
 import org.jetbrains.annotations.NotNull;
 
 public class ValueNode implements INode {
 
-    private final IValueProvider VALUE_PROVIDER;
+    private final IPIntSupplier VALUE_SUPPLIER;
 
     protected ValueNode(int value) {
-        this(() -> value);
+        this(data -> value);
     }
 
-    protected ValueNode(@NotNull IValueProvider valueProvider) {
-        VALUE_PROVIDER = valueProvider;
+    protected ValueNode(@NotNull IPIntSupplier valueSupplier) {
+        VALUE_SUPPLIER = valueSupplier;
     }
 
     public int getValue() {
-        return VALUE_PROVIDER.getValue();
+        return VALUE_SUPPLIER.get();
     }
 
     @Override

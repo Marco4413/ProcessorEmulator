@@ -1,25 +1,23 @@
 package io.github.hds.pemu.math.parser;
 
 import io.github.hds.pemu.tokenizer.ITokenDefinition;
-import io.github.hds.pemu.tokenizer.Token;
 import io.github.hds.pemu.tokenizer.Tokenizer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.function.Function;
 
 public final class ParserContext {
     public final Tokenizer tokenizer;
     public final ITokenDefinition VAR_DEFINITION;
-    public final Function<Token, Double> VAR_PROCESSOR;
+    public final IVarProcessor VAR_PROCESSOR;
     public final File SOURCE_FILE;
     public final int SOURCE_LINE;
     public final int SOURCE_LINE_CHAR;
 
     protected ParserContext(
             @NotNull Tokenizer tokenizer,
-            @NotNull ITokenDefinition varDef, @NotNull Function<Token, Double> varProcessor,
+            @NotNull ITokenDefinition varDef, @NotNull IVarProcessor varProcessor,
             @Nullable File sourceFile, int sourceLine, int sourceLineChar
     ) {
         this.tokenizer = tokenizer;

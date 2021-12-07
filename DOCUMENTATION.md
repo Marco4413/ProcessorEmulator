@@ -314,12 +314,14 @@ HLT
 @MY_LIB_SETTING @VK_ENTER
 ```
 
-Values that can be assigned to Compiler Variables are: Previously Declared Compiler Variables, Characters or Numbers
+Values that can be assigned to Compiler Variables are: Previously Declared Compiler Variables, Characters,
+Math Expressions or Numbers.
 
 ```Assembly
 @key_confirm @VK_ENTER
 @char_comma ','
 @n_delay 500
+@half_n_delay %{ @n_delay / 2 }
 ```
 
 A Compiler Variable's value is the very last one that was assigned to it.
@@ -347,10 +349,10 @@ A Math Expression looks something like this:
 #DW %{ 2 pow ( @MY_CVAR - @MY_OTHER_CVAR ) / 10 }
 ```
 
-Constants can be used as variables in Math Expressions.
-Math Expressions are static, so Compiler Variables used in Math Expressions will use the last value assigned to them
-before being used in the Expression ( This was also done to prevent circular references ) and they can be used in all
-places where numbers can.
+Compiler Variables can be used in Math Expressions.
+
+Math Expressions can be used in all places where numbers can.
+Math Expressions are the only "Dynamic" value that can be assigned to Compiler Variables.
 
 In Math Expressions there are Operators which are separated into two categories:
  1. Mono-Operators (e.g. `abs x`):
@@ -358,6 +360,8 @@ In Math Expressions there are Operators which are separated into two categories:
     * Square Root: `sqrt`
     * Percentage: `%` ( Divides the following number by 100, `%10 = 0.1` )
     * Bitwise NOT: `~` **This operator floors the given Number**
+    * Logarithm Base 2: `log2`
+    * Logarithm Base 10: `log`
  2. Bi-Operators (e.g. `2 pow 4`):
     * Multiply: `*`
     * Divide: `/`

@@ -1,5 +1,6 @@
 package io.github.hds.pemu.compiler.parser;
 
+import io.github.hds.pemu.utils.IPIntSupplier;
 import org.jetbrains.annotations.NotNull;
 
 public final class OffsetNode extends ValueNode {
@@ -7,8 +8,8 @@ public final class OffsetNode extends ValueNode {
         super(value);
     }
 
-    protected OffsetNode(@NotNull IValueProvider valueProvider) {
-        super(valueProvider);
+    protected OffsetNode(@NotNull IPIntSupplier valueSupplier) {
+        super(valueSupplier);
     }
 
     @Override

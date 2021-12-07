@@ -4,6 +4,7 @@ import io.github.hds.pemu.compiler.CompilerVars;
 import io.github.hds.pemu.files.FileUtils;
 import io.github.hds.pemu.instructions.Instruction;
 import io.github.hds.pemu.instructions.InstructionSet;
+import io.github.hds.pemu.utils.IDoubleSupplier;
 import io.github.hds.pemu.math.parser.MathParser;
 import io.github.hds.pemu.memory.flags.IFlag;
 import io.github.hds.pemu.memory.flags.IMemoryFlag;
@@ -13,6 +14,7 @@ import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.tokenizer.Token;
 import io.github.hds.pemu.tokenizer.TokenDefinition;
 import io.github.hds.pemu.tokenizer.Tokenizer;
+import io.github.hds.pemu.utils.IPIntSupplier;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,8 +31,8 @@ public final class Parser {
     private static final char ESCAPE_CHAR = '\\';
     private static final char ESCAPE_TERM = ';';
 
-    private static final String STATIC_TYPES = "Number, Math Expression, Character or Compiler Variable";
-    private static final String ARGUMENT_TYPES = "Label, Offset, Register, " + STATIC_TYPES;
+    private static final String BASIC_TYPES = "Number, Math Expression, Character or Compiler Variable";
+    private static final String ARGUMENT_TYPES = "Label, Offset, Register, " + BASIC_TYPES;
     private static final String GENERIC_TYPES = "Instruction, Compiler Instruction, Compiler Variable or Label";
 
     private static final String C_INSTR_DEFINE_WORD   = "DW";
@@ -94,7 +96,7 @@ public final class Parser {
         }
     }
 
-    private static @NotNull ParseResult<IValueProvider> parseNumber(@NotNull ParserContext ctx, boolean addNodes) {
+    private static @NotNull ParseResult<IPIntSupplier> parseNumber(@NotNull ParserContext ctx, boolean addNodes) {
         Token currentToken = ctx.tokenizer.getCurrentToken();
 
         int value;
@@ -110,32 +112,57 @@ public final class Parser {
             );
         } else return new ParseResult<>();
 
-        IValueProvider valueProvider = () -> value;
-        if (addNodes) ctx.addNode(new ValueNode(valueProvider));
+        IPIntSupplier valueSupplier = data -> value;
+        if (addNodes) ctx.addNode(new ValueNode(valueSupplier));
 
-        return new ParseResult<>(true, valueProvider);
+        return new ParseResult<>(true, valueSupplier);
     }
 
-    private static @NotNull ParseResult<IValueProvider> parseMathExpr(@NotNull ParserContext ctx, boolean addNodes) {
+    private static @NotNull ParseResult<IPIntSupplier> parseMathExpr(@NotNull ParserContext ctx, boolean addNodes) {
         Token currentToken = ctx.tokenizer.getCurrentToken();
 
-        IValueProvider valueProvider;
+        IPIntSupplier valueSupplier;
         if (MATH_EXPR.isDefinitionOf(currentToken)) {
             assert currentToken != null;
             String[] tokenGroups = currentToken.getGroups();
-            int value = MathParser.parseMath(
+
+            IDoubleSupplier mathSupplier = MathParser.parseMath(
                     tokenGroups[1],
-                    C_VAR, token -> {
+                    C_VAR, (token, data) -> {
+                        // Getting var name from groups ( '@(.*)', there's only 1 group which has the name )
                         String varName = token.getGroups()[0];
-                        return ctx.hasCompilerVar(varName) ? (double) ctx.getCompilerVar(token.getGroups()[0]) : null;
+                        // If no CVar was found return null
+                        if (!ctx.hasCompilerVar(varName))
+                            return null;
+
+                        // If data is null return the value of the CVar
+                        if (data == null)
+                            return (double) ctx.getCompilerVar(varName).get();
+
+                        // If data is not null then it must be an instance of CompilerVarStack
+                        assert data instanceof CompilerVarStack;
+                        CompilerVarStack varStack = (CompilerVarStack) data;
+                        // If this var is in the stack then it's a circular reference because eventually we'll get back to here
+                        if (varStack.isInStack(varName)) {
+                            Token varDeclarationToken = varStack.pop().getToken();
+                            throw new RuntimeException(StringUtils.format(
+                                    "'{0}' produces Circular Reference to '{1}' declared at ({2}:{3})",
+                                    token.getMatch(), varDeclarationToken.getMatch(),
+                                    varDeclarationToken.getLine(), varDeclarationToken.getLineChar()
+                            ));
+                        }
+
+                        // Return the value of the CVar using the current Var Stack
+                        return (double) ctx.getCompilerVar(varName).get(varStack);
                     },
                     ctx.getCurrentFile(), currentToken.getLine(), currentToken.getLineChar() + tokenGroups[0].length()
-            ).get().intValue();
-            valueProvider = () -> value;
+            );
+
+            valueSupplier = data -> mathSupplier.get(data).intValue();
         } else return new ParseResult<>();
 
-        if (addNodes) ctx.addNode(new ValueNode(valueProvider));
-        return new ParseResult<>(true, valueProvider);
+        if (addNodes) ctx.addNode(new ValueNode(valueSupplier));
+        return new ParseResult<>(true, valueSupplier);
     }
 
     private static char strCodePointToChar(@NotNull ParserContext ctx, @NotNull String str) {
@@ -193,7 +220,7 @@ public final class Parser {
         return strBuilder.toString();
     }
 
-    private static @NotNull ParseResult<IValueProvider> parseCharacter(@NotNull ParserContext ctx, boolean addNodes) {
+    private static @NotNull ParseResult<IPIntSupplier> parseCharacter(@NotNull ParserContext ctx, boolean addNodes) {
         Token currentToken = ctx.tokenizer.getCurrentToken();
 
         int value;
@@ -208,10 +235,10 @@ public final class Parser {
             value = character.charAt(0);
         } else return new ParseResult<>();
 
-        IValueProvider valueProvider = () -> value;
-        if (addNodes) ctx.addNode(new ValueNode(valueProvider));
+        IPIntSupplier valueSupplier = data -> value;
+        if (addNodes) ctx.addNode(new ValueNode(valueSupplier));
 
-        return new ParseResult<>(true, valueProvider);
+        return new ParseResult<>(true, valueSupplier);
     }
 
     private static @NotNull ParseResult<String> parseString(@NotNull ParserContext ctx, boolean addNodes) {
@@ -226,7 +253,7 @@ public final class Parser {
         return new ParseResult<>(true, str);
     }
 
-    private static @NotNull ParseResult<IValueProvider> parseRegister(@NotNull ParserContext ctx, boolean addNodes) {
+    private static @NotNull ParseResult<IPIntSupplier> parseRegister(@NotNull ParserContext ctx, boolean addNodes) {
         Token currentToken = ctx.tokenizer.getCurrentToken();
         if (!IDENTIFIER.isDefinitionOf(currentToken))
             return new ParseResult<>();
@@ -255,10 +282,10 @@ public final class Parser {
             ctx.addNode(new RegisterNode(address, regName));
 
         int finalAddress = address; // IntelliJ would get mad at me if I didn't put this here, don't know why tho
-        return new ParseResult<>(true, () -> finalAddress);
+        return new ParseResult<>(true, data -> finalAddress);
     }
 
-    private static @NotNull ParseResult<IValueProvider> parseCompilerVar(@NotNull ParserContext ctx, boolean isGetting, boolean addNodes) {
+    private static @NotNull ParseResult<IPIntSupplier> parseCompilerVar(@NotNull ParserContext ctx, boolean isGetting, boolean addNodes) {
         Token currentToken = ctx.tokenizer.getCurrentToken();
         if (!C_VAR.isDefinitionOf(currentToken))
             return new ParseResult<>();
@@ -269,23 +296,38 @@ public final class Parser {
             if (!ctx.hasCompilerVar(varName))
                 throw new ParserError.ReferenceError(ctx, C_VAR.getName(), varName, "was not declared.");
 
-            IValueProvider valueProvider = () -> ctx.getCompilerVar(varName);
-            if (addNodes) ctx.addNode(new ValueNode(valueProvider));
-            return new ParseResult<>(true, valueProvider);
+            IPIntSupplier valueSupplier = data -> ctx.getCompilerVar(varName).get(data);
+            if (addNodes) ctx.addNode(new ValueNode(valueSupplier));
+            return new ParseResult<>(true, valueSupplier);
         }
 
         Token staticValToken = ctx.tokenizer.goForward();
 
-        ParseResult<IValueProvider> staticValue = parseStaticValue(ctx, false);
+        ParseResult<IPIntSupplier> staticValue = parseBasicValue(ctx, false);
         if (!staticValue.SUCCESS)
-            throw new ParserError.SyntaxError(ctx, STATIC_TYPES, formatToken(staticValToken));
+            throw new ParserError.SyntaxError(ctx, BASIC_TYPES, formatToken(staticValToken));
 
-        ctx.putCompilerVar(varName, staticValue.VALUE.getValue());
-        return new ParseResult<>(true, staticValue.VALUE);
+        CompilerVarDeclaration varDeclaration = new CompilerVarDeclaration(varName, currentToken);
+        IPIntSupplier valueSupplier = data -> {
+            if (data == null) {
+                CompilerVarStack varStack = new CompilerVarStack(varDeclaration);
+                return staticValue.VALUE.get(varStack);
+            }
+
+            assert data instanceof CompilerVarStack;
+            CompilerVarStack varStack = (CompilerVarStack) data;
+            varStack.push(varDeclaration);
+            int value = staticValue.VALUE.get(data);
+            varStack.pop();
+            return value;
+        };
+
+        ctx.putCompilerVar(varName, valueSupplier);
+        return new ParseResult<>(true, valueSupplier);
     }
 
-    private static @NotNull ParseResult<IValueProvider> parseStaticValue(@NotNull ParserContext ctx, boolean addNodes) {
-        ParseResult<IValueProvider> result;
+    private static @NotNull ParseResult<IPIntSupplier> parseBasicValue(@NotNull ParserContext ctx, boolean addNodes) {
+        ParseResult<IPIntSupplier> result;
 
         result = parseNumber(ctx, addNodes);
         if (!result.SUCCESS) result = parseMathExpr(ctx, addNodes);
@@ -299,7 +341,7 @@ public final class Parser {
         if (
                 parseOffset(ctx, true).SUCCESS ||
                 parseRegister(ctx, true).SUCCESS ||
-                parseStaticValue(ctx, true).SUCCESS
+                parseBasicValue(ctx, true).SUCCESS
         ) return 1;
 
         int labelParseResult = parseLabel(ctx, allowLabelDeclaration, true);
@@ -309,15 +351,15 @@ public final class Parser {
         return -1;
     }
 
-    private static @NotNull ParseResult<IValueProvider> parseOffset(@NotNull ParserContext ctx, boolean addNodes) {
+    private static @NotNull ParseResult<IPIntSupplier> parseOffset(@NotNull ParserContext ctx, boolean addNodes) {
         Token currentToken = ctx.tokenizer.getCurrentToken();
         if (!L_BRACKET.isDefinitionOf(currentToken))
             return new ParseResult<>();
 
         Token staticValToken = ctx.tokenizer.goForward();
-        ParseResult<IValueProvider> staticValue = parseStaticValue(ctx, false);
+        ParseResult<IPIntSupplier> staticValue = parseBasicValue(ctx, false);
         if (!staticValue.SUCCESS)
-            throw new ParserError.SyntaxError(ctx, STATIC_TYPES, formatToken(staticValToken));
+            throw new ParserError.SyntaxError(ctx, BASIC_TYPES, formatToken(staticValToken));
         if (addNodes) ctx.addNode(new OffsetNode(staticValue.VALUE));
 
         currentToken = ctx.tokenizer.goForward();
@@ -328,7 +370,7 @@ public final class Parser {
     }
 
     private static boolean parseArray(@NotNull ParserContext ctx) {
-        ParseResult<IValueProvider> arraySize = parseOffset(ctx, false);
+        ParseResult<IPIntSupplier> arraySize = parseOffset(ctx, false);
         if (arraySize.SUCCESS) {
             ctx.addNode(new ArrayNode(arraySize.VALUE));
             return true;
@@ -386,9 +428,9 @@ public final class Parser {
 
 
             Token offsetToken = ctx.tokenizer.goForward();
-            ParseResult<IValueProvider> offset = parseStaticValue(ctx, false);
+            ParseResult<IPIntSupplier> offset = parseBasicValue(ctx, false);
             if (!offset.SUCCESS)
-                throw new ParserError.SyntaxError(ctx, STATIC_TYPES, formatToken(offsetToken));
+                throw new ParserError.SyntaxError(ctx, BASIC_TYPES, formatToken(offsetToken));
 
             Token endBracket = ctx.tokenizer.goForward();
             if (!R_BRACKET.isDefinitionOf(endBracket))

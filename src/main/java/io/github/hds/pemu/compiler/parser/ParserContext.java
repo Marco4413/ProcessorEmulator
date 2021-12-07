@@ -3,6 +3,7 @@ package io.github.hds.pemu.compiler.parser;
 import io.github.hds.pemu.compiler.CompilerVars;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.tokenizer.Tokenizer;
+import io.github.hds.pemu.utils.IPIntSupplier;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -36,15 +37,11 @@ public final class ParserContext {
         return COMPILER_VARS.containsKey(name);
     }
 
-    public int getCompilerVarOrDefault(@NotNull String name, int defaultValue) {
-        return COMPILER_VARS.getOrDefault(name, defaultValue);
+    public IPIntSupplier getCompilerVar(@NotNull String name) {
+        return COMPILER_VARS.get(name);
     }
 
-    public int getCompilerVar(@NotNull String name) {
-        return getCompilerVarOrDefault(name, -1);
-    }
-
-    public void putCompilerVar(@NotNull String name, int value) {
+    public void putCompilerVar(@NotNull String name, IPIntSupplier value) {
         COMPILER_VARS.put(name, value);
     }
 

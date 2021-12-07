@@ -1,5 +1,6 @@
 package io.github.hds.pemu.compiler.parser;
 
+import io.github.hds.pemu.utils.IPIntSupplier;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -11,7 +12,7 @@ public final class LabelNode implements INode {
     private final int LINE_CHAR;
 
     private final @NotNull String NAME;
-    private final @NotNull IValueProvider OFFSET;
+    private final @NotNull IPIntSupplier OFFSET;
     private final boolean IS_DECLARATION;
 
 
@@ -20,10 +21,10 @@ public final class LabelNode implements INode {
     }
 
     protected LabelNode(@NotNull ParserContext ctx, @NotNull String name, int offset, boolean isDeclaration) {
-        this(ctx, name, () -> offset, isDeclaration);
+        this(ctx, name, data -> offset, isDeclaration);
     }
 
-    protected LabelNode(@NotNull ParserContext ctx, @NotNull String name, @NotNull IValueProvider offset, boolean isDeclaration) {
+    protected LabelNode(@NotNull ParserContext ctx, @NotNull String name, @NotNull IPIntSupplier offset, boolean isDeclaration) {
         FILE = ctx.getCurrentFile();
         LINE = ctx.getCurrentLine();
         LINE_CHAR = ctx.getCurrentLineChar();
@@ -38,7 +39,7 @@ public final class LabelNode implements INode {
     }
 
     public int getOffset() {
-        return OFFSET.getValue();
+        return OFFSET.get();
     }
 
     public boolean isDeclaration() {

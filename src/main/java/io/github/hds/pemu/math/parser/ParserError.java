@@ -39,6 +39,12 @@ public class ParserError extends RuntimeException {
         }
     }
 
+    public static class VariableError extends ParserError {
+        protected VariableError(@Nullable File file, int line, int lineChar, @NotNull String message) {
+            super(file, line, lineChar, "Variable", message);
+        }
+    }
+
     // Actual Error Implementation
 
     protected ParserError(@NotNull ParserContext ctx, @NotNull String errorName, @NotNull String message) {

@@ -4,6 +4,7 @@ import io.github.hds.pemu.tokenizer.ITokenDefinition;
 import io.github.hds.pemu.tokenizer.Token;
 import io.github.hds.pemu.tokenizer.TokenDefinition;
 import io.github.hds.pemu.tokenizer.Tokenizer;
+import io.github.hds.pemu.utils.IDoubleSupplier;
 import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,8 +13,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public final class MathParser {
 
@@ -102,6 +101,8 @@ public final class MathParser {
             createMonoOperator("Square Root"   , "sqrt", Math::sqrt, true),
             createMonoOperator("Percentage"    , "%", x -> x / 100.0d),
             createMonoOperator("Bitwise NOT"   , "~", x -> (double) (~x.longValue())),
+            createMonoOperator("Logarithm Base 2" , "log2", x -> Math.log10(x) / Math.log10(2)),
+            createMonoOperator("Logarithm Base 10", "log", Math::log10),
             createBiOperator("Multiply", "*" , (a, b) -> a * b),
             createBiOperator("Divide"  , "/" , (a, b) -> {
                 if (b == 0.0d) throw new Exception("Division by 0");
@@ -138,7 +139,7 @@ public final class MathParser {
         throw new IllegalStateException("Use isNumber to check if Token is NaN before calling toNumber");
     }
 
-    private static @Nullable NumberSupplier parseNumber(@NotNull ParserContext ctx, boolean requireSign) {
+    private static @Nullable IDoubleSupplier parseNumber(@NotNull ParserContext ctx, boolean requireSign) {
         Token signToken = ctx.tokenizer.getCurrentToken();
         if (signToken == null) return null;
 
@@ -152,16 +153,25 @@ public final class MathParser {
             throw new ParserError.SyntaxError(ctx, "Number", ctx.tokenizer.getCurrentToken().getMatch());
 
         if (L_PARENTHESIS.isDefinitionOf(numberToken)) {
-            NumberSupplier scopeNumber = parseScope(ctx, false);
-            return () -> scopeNumber.get() * signFactor;
+            IDoubleSupplier scopeNumber = parseScope(ctx, false);
+            return (data) -> scopeNumber.get(data) * signFactor;
         } else if (isNumber(numberToken)) {
             double number = toNumber(numberToken) * signFactor;
-            return () -> number;
+            return (data) -> number;
         } else if (ctx.VAR_DEFINITION.isDefinitionOf(numberToken)) {
             int currentLine = ctx.getCurrentLine();
             int currentLineChar = ctx.getCurrentLineChar();
-            return () -> {
-                Double varValue = ctx.VAR_PROCESSOR.apply(numberToken);
+            return (data) -> {
+                Double varValue;
+
+                try {
+                    varValue = ctx.VAR_PROCESSOR.apply(numberToken, data);
+                } catch (ParserError err) {
+                    throw err;
+                } catch (Exception err) {
+                    throw new ParserError.VariableError(ctx.SOURCE_FILE, currentLine, currentLineChar, err.getMessage());
+                }
+
                 if (varValue == null)
                     throw new ParserError.ReferenceError(ctx.SOURCE_FILE, currentLine, currentLineChar, "Variable", numberToken.getMatch(), "is not declared");
                 return varValue * signFactor;
@@ -169,7 +179,7 @@ public final class MathParser {
         } else throw new ParserError.SyntaxError(ctx, "Number", numberToken.getMatch());
     }
 
-    private static @Nullable NumberSupplier parseMonoOperator(@NotNull ParserContext ctx, boolean requireSign) {
+    private static @Nullable IDoubleSupplier parseMonoOperator(@NotNull ParserContext ctx, boolean requireSign) {
         Token signToken = ctx.tokenizer.getCurrentToken();
         if (signToken == null) return null;
 
@@ -187,7 +197,7 @@ public final class MathParser {
 
         // Consuming the Operator Token to make parseNumber able to get the number after it
         ctx.tokenizer.goForward();
-        NumberSupplier number = parseNumber(ctx, false);
+        IDoubleSupplier number = parseNumber(ctx, false);
         if (number == null)
             throw new ParserError.SyntaxError(ctx, "Number", ctx.tokenizer.getCurrentToken().getMatch());
 
@@ -196,9 +206,9 @@ public final class MathParser {
 
         int currentLine = ctx.getCurrentLine();
         int currentLineChar = ctx.getCurrentLineChar();
-        return () -> {
+        return (data) -> {
             try {
-                return operator.apply(number.get()) * signFactor;
+                return operator.apply(number.get(data)) * signFactor;
             } catch (ParserError err) {
                 throw err;
             } catch (Exception err) {
@@ -207,8 +217,8 @@ public final class MathParser {
         };
     }
 
-    private static @NotNull NumberSupplier parseScope(@NotNull ParserContext ctx, boolean isRoot) {
-        ArrayList<NumberSupplier> numbers = new ArrayList<>();
+    private static @NotNull IDoubleSupplier parseScope(@NotNull ParserContext ctx, boolean isRoot) {
+        ArrayList<IDoubleSupplier> numbers = new ArrayList<>();
 
         for (int i = 0; ctx.tokenizer.goForward() != null; i++) {
             Token currentToken = ctx.tokenizer.getCurrentToken();
@@ -220,17 +230,17 @@ public final class MathParser {
                 break;
             } else if (BI_OPERATORS.containsKey(currentToken.getDefinition())) {
                 ctx.tokenizer.goForward();
-                NumberSupplier lastOperand = parseNumber(ctx, false);
+                IDoubleSupplier lastOperand = parseNumber(ctx, false);
                 if (lastOperand == null)
                     throw new ParserError.SyntaxError(ctx, "Second Operand", currentToken.getMatch());
-                NumberSupplier firstOperand = numbers.remove(numbers.size() - 1);
+                IDoubleSupplier firstOperand = numbers.remove(numbers.size() - 1);
 
                 BiOperator operator = BI_OPERATORS.get(currentToken.getDefinition());
                 int currentLine = ctx.getCurrentLine();
                 int currentLineChar = ctx.getCurrentLineChar();
-                numbers.add(() -> {
+                numbers.add((data) -> {
                     try {
-                        return operator.apply(firstOperand.get(), lastOperand.get());
+                        return operator.apply(firstOperand.get(data), lastOperand.get(data));
                     } catch (ParserError err) {
                         throw err;
                     } catch (Exception err) {
@@ -239,7 +249,7 @@ public final class MathParser {
                 });
             } else {
                 boolean signRequired = i > 0;
-                NumberSupplier number = parseMonoOperator(ctx, signRequired);
+                IDoubleSupplier number = parseMonoOperator(ctx, signRequired);
                 if (number == null) number = parseNumber(ctx, signRequired);
                 if (number == null) throw new ParserError.SyntaxError(ctx, "Operator, Variable or Number", currentToken.getMatch());
                 numbers.add(number);
@@ -249,16 +259,16 @@ public final class MathParser {
         if (numbers.size() == 0)
             throw new ParserError.SyntaxError(ctx, "Expression", "Empty Scope");
 
-        return () -> {
+        return (data) -> {
             double result = 0;
-            for (NumberSupplier number : numbers)
-                result += number.get();
+            for (IDoubleSupplier number : numbers)
+                result += number.get(data);
             return result;
         };
     }
 
-    public static @NotNull Supplier<Double> parseMath(
-            @NotNull String source, @NotNull ITokenDefinition varDef, @NotNull Function<Token, Double> varProcessor,
+    public static @NotNull IDoubleSupplier parseMath(
+            @NotNull String source, @NotNull ITokenDefinition varDef, @NotNull IVarProcessor varProcessor,
             @Nullable File sourceFile, int sourceLine, int sourceLineChar
     ) {
         ITokenDefinition[] definitions = Arrays.copyOf(ALL_TOKENS, ALL_TOKENS.length + 1);
@@ -274,11 +284,11 @@ public final class MathParser {
         );
     }
 
-    public static @NotNull Supplier<Double> parseMath(@NotNull String source, @NotNull ITokenDefinition varDef, @NotNull Function<Token, Double> varProcessor, @Nullable File sourceFile) {
+    public static @NotNull IDoubleSupplier parseMath(@NotNull String source, @NotNull ITokenDefinition varDef, @NotNull IVarProcessor varProcessor, @Nullable File sourceFile) {
         return parseMath(source, varDef, varProcessor, sourceFile, 1, 1);
     }
 
-    public static @NotNull Supplier<Double> parseMath(@NotNull String source, @NotNull ITokenDefinition varDef, @NotNull Function<Token, Double> varProcessor) {
+    public static @NotNull IDoubleSupplier parseMath(@NotNull String source, @NotNull ITokenDefinition varDef, @NotNull IVarProcessor varProcessor) {
         return parseMath(source, varDef, varProcessor, null);
     }
 

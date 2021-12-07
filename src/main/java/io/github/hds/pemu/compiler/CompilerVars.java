@@ -1,12 +1,14 @@
 package io.github.hds.pemu.compiler;
 
+import io.github.hds.pemu.utils.IPIntSupplier;
+import io.github.hds.pemu.console.Console;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.KeyEvent;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
-public final class CompilerVars extends HashMap<String, Integer> {
+public final class CompilerVars extends HashMap<String, IPIntSupplier> {
 
     private static final CompilerVars C_VARS = new CompilerVars();
 
@@ -15,15 +17,18 @@ public final class CompilerVars extends HashMap<String, Integer> {
             String fieldName = field.getName();
             if (fieldName.startsWith("VK_")) {
                 try {
-                    C_VARS.put(fieldName, field.getInt(null));
-                } catch (Exception ignored) { }
+                    int value = field.getInt(null);
+                    C_VARS.put(fieldName, data -> value);
+                } catch (IllegalAccessException e) {
+                    Console.Debug.printStackTrace(e);
+                }
             }
         }
     }
 
     public static @NotNull CompilerVars getDefaultVars() {
         CompilerVars defaultVars = new CompilerVars();
-        C_VARS.forEach(defaultVars::put);
+        defaultVars.putAll(C_VARS);
         return defaultVars;
     }
 

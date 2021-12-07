@@ -1,5 +1,18 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @244d736
+
+Now Math Expressions assigned to Compiler Variables are evaluated when Compiling
+Added class CompilerVarStack to track Circular References in Math Expressions
+Added class CompilerVarDeclaration to give better error messages with Circular References
+
+Replaced interface IValueProvider with pemu.utils.IPIntSupplier
+Replaced interface NumberSupplier with pemu.utils.IDoubleSupplier
+Both interfaces specified above have a new method which takes an Object as an argument
+
+Added interface pemu.math.parser.IVarProcessor
+Added Exception math.parser.ParserError.VariableError which is thrown when IVarProcessor throws a generic Exception
+
 -- Changes from commit @d60325d
 
 Added Math Expressions to the PEMU Language
