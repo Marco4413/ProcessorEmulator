@@ -56,7 +56,7 @@ Can be found in the file [DOCUMENTATION.md](DOCUMENTATION.md)
 ## Plugins:
 
 ~~On version `1.12.0` plugin support was added, and since then you can write your own implementation of a Processor using~~
-~~the Ruby Programming Language (This added support also increased PEMU's size by ~25MB).~~
+~~the Ruby Programming Language (This added support also increased PEMU's size by \~25MB).~~
 
 On version `1.13.0` Ruby Plugin support was dropped in favour of Native (Java) Plugins.
 

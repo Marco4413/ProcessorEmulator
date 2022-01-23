@@ -48,7 +48,7 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
                 DECIMAL, BINARY, OCTAL, HEX, CHAR
         };
 
-        public static HashMap<ShowMode, String> translations = new HashMap<>(ALL.length);
+        public static final HashMap<ShowMode, String> translations = new HashMap<>(ALL.length);
 
         public @NotNull String getName() {
             return super.toString();

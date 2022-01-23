@@ -31,12 +31,12 @@ import java.util.Objects;
 /**
  * This class is not thread-safe by any means
  */
-public final class Application extends JFrame implements KeyListener, ITranslatable, IConfigurable {
+public final class Application implements KeyListener, ITranslatable, IConfigurable {
 
     public static final int NONE = 0;
-    public static final int CLOSE_ON_PROCESSOR_STOP   = 1;
-    public static final int PREVENT_VISIBILITY_CHANGE = 1 << 1;
-    public static final int DISABLE_CONFIG_AUTO_SAVE  = 1 << 2;
+    public static final int DISABLE_CONFIG_AUTO_SAVE = 1;
+    public static final int CLOSE_ON_PROCESSOR_STOP = 1 << 1;
+    public static final int NO_GUI = 1 << 2;
 
     public static final String APP_TITLE = "PEMU";
     public static final String APP_VERSION = "1.12.2";
@@ -49,11 +49,16 @@ public final class Application extends JFrame implements KeyListener, ITranslata
 
     private static Application INSTANCE;
 
+    public final JFrame FRAME;
+    public final JMenuBar MENU_BAR;
+
+    private boolean isRunning = false;
+    private IPlugin pluginToLoadOnRun = null;
     private IPlugin loadedPlugin = null;
 
-    private boolean closeOnProcessorStop = false;
-    private boolean allowVisibilityChange = true;
     private boolean disableConfigAutoSave = false;
+    private boolean closeOnProcessorStop = false;
+    private boolean noGui = false;
 
     protected final FileMenu FILE_MENU;
     protected final ProgramMenu PROGRAM_MENU;
@@ -76,16 +81,16 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     private @NotNull String localePerformanceLabel = "";
     private @NotNull String localeNoProcessorRunning = "";
 
-    private Application() throws HeadlessException {
-        super();
-        setTitle(APP_TITLE);
+    private Application() {
+        FRAME = new JFrame();
+        FRAME.setTitle(APP_TITLE);
 
-        setIconImage(IconUtils.importIcon("/assets/icon.png", FRAME_ICON_SIZE).getImage());
+        FRAME.setIconImage(IconUtils.importIcon("/assets/icon.png", FRAME_ICON_SIZE).getImage());
 
-        setSize(FRAME_WIDTH, FRAME_HEIGHT);
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        FRAME.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+        FRAME.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-        addWindowListener(new WindowAdapter() {
+        FRAME.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 close(null);
             }
@@ -94,32 +99,32 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         ConfigManager.addConfigListener(this);
         TranslationManager.addTranslationListener(this);
 
-        setLayout(new BorderLayout());
+        FRAME.setLayout(new BorderLayout());
 
         // Making instances of this class to allow it to get its translation
         GFileDialog.getInstance();
 
         MEMORY_VIEW = new MemoryView(this);
 
-        JMenuBar menuBar = new JMenuBar();
-        setJMenuBar(menuBar);
+        MENU_BAR = new JMenuBar();
+        FRAME.setJMenuBar(MENU_BAR);
 
         // FILE MENU
         FILE_MENU = new FileMenu(this);
-        menuBar.add(FILE_MENU);
+        MENU_BAR.add(FILE_MENU);
 
         // PROGRAM MENU
         PROGRAM_MENU = new ProgramMenu(this);
-        menuBar.add(PROGRAM_MENU);
+        MENU_BAR.add(PROGRAM_MENU);
 
         // PROCESSOR MENU
         PROCESSOR_MENU = new ProcessorMenu(this);
-        menuBar.add(PROCESSOR_MENU);
+        MENU_BAR.add(PROCESSOR_MENU);
         processorConfig = PROCESSOR_MENU.CONFIG_PANEL.getConfig();
 
         // ABOUT MENU
         ABOUT_MENU = new AboutMenu(this);
-        menuBar.add(ABOUT_MENU);
+        MENU_BAR.add(ABOUT_MENU);
 
         ConsoleComponent programComponent = Console.getProgramComponent();
         ConsoleComponent debugComponent = Console.getDebugComponent();
@@ -127,12 +132,12 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(programComponent), new JScrollPane(debugComponent));
         splitPane.setResizeWeight(0.5d);
         splitPane.resetToPreferredSizes();
-        add(splitPane, BorderLayout.CENTER);
+        FRAME.add(splitPane, BorderLayout.CENTER);
 
         PERFORMANCE_LABEL = new JLabel();
         PERFORMANCE_LABEL.setBorder(new EmptyBorder(2, 10, 2, 10));
         PERFORMANCE_LABEL.setHorizontalAlignment(SwingConstants.RIGHT);
-        add(PERFORMANCE_LABEL, BorderLayout.PAGE_END);
+        FRAME.add(PERFORMANCE_LABEL, BorderLayout.PAGE_END);
 
         programComponent.addKeyListener(this);
 
@@ -146,7 +151,7 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     }
 
     private void updateFrame(ActionEvent actionEvent) {
-        if (!isVisible() || currentProcessor == null || currentProcessor.isPaused() || !currentProcessor.isRunning()) {
+        if (!FRAME.isVisible() || currentProcessor == null || currentProcessor.isPaused() || !currentProcessor.isRunning()) {
             PERFORMANCE_LABEL.setText(localeNoProcessorRunning);
             return;
         }
@@ -165,13 +170,13 @@ public final class Application extends JFrame implements KeyListener, ITranslata
     }
 
     public void setFlags(int flags) {
-        closeOnProcessorStop  = (flags & CLOSE_ON_PROCESSOR_STOP  ) == CLOSE_ON_PROCESSOR_STOP  ;
-        allowVisibilityChange = (flags & PREVENT_VISIBILITY_CHANGE) != PREVENT_VISIBILITY_CHANGE;
-        disableConfigAutoSave = (flags & DISABLE_CONFIG_AUTO_SAVE ) == DISABLE_CONFIG_AUTO_SAVE ;
+        disableConfigAutoSave = (flags & DISABLE_CONFIG_AUTO_SAVE) == DISABLE_CONFIG_AUTO_SAVE;
+        closeOnProcessorStop = (flags & CLOSE_ON_PROCESSOR_STOP) == CLOSE_ON_PROCESSOR_STOP;
+        noGui = (flags & NO_GUI) == NO_GUI;
     }
 
     public void updateTitle() {
-        setTitle(
+        FRAME.setTitle(
                 StringUtils.format(
                         "{0} {1} {2}",
                         APP_TITLE, APP_VERSION,
@@ -195,11 +200,15 @@ public final class Application extends JFrame implements KeyListener, ITranslata
                 Objects.equals(loadedPlugin.getID(), plugin.getID())
         ) return false;
 
-        if (loadedPlugin != null)
-            loadedPlugin.onUnload();
+        if (isRunning) {
+            if (loadedPlugin != null)
+                loadedPlugin.onUnload();
 
-        loadedPlugin = plugin;
-        plugin.onLoad();
+            loadedPlugin = plugin;
+            plugin.onLoad();
+        } else {
+            pluginToLoadOnRun = plugin;
+        }
 
         return true;
     }
@@ -485,9 +494,15 @@ public final class Application extends JFrame implements KeyListener, ITranslata
         Console.Debug.println();
     }
 
-    @Override
-    public void setVisible(boolean b) {
-        if (allowVisibilityChange) super.setVisible(b);
+    public boolean isRunning() {
+        return this.isRunning;
+    }
+
+    public void run() {
+        if (isRunning) throw new RuntimeException("Application is already running.");
+        isRunning = true;
+        FRAME.setVisible(!noGui);
+        loadPlugin(pluginToLoadOnRun);
     }
 
     public void close(ActionEvent e) {

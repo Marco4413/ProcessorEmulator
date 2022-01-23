@@ -100,9 +100,6 @@ public final class Main {
             }
 
             Console.usePrintStream(System.out);
-        } else {
-            System.setOut(Console.Debug.toPrintStream());
-            System.setErr(Console.Debug.toPrintStream());
         }
 
         // Setting System-based look and feel
@@ -145,20 +142,22 @@ public final class Main {
 
         app.setCurrentProgram(new File((String) parser.getOption("--program").getValue()));
 
-        // Setting the app visible only if not on command line
-        app.setVisible(!isCommandLine);
-
         // Setting app's flags to prevent setVisible to change the app's visibility
         //  and making it close on Processor Stop if on command line
         app.setFlags(
-                  (isCommandLine ? Application.CLOSE_ON_PROCESSOR_STOP : Application.NONE)
-                | Application.PREVENT_VISIBILITY_CHANGE
-                | (parser.isSpecified("--no-config-auto-save") ? Application.DISABLE_CONFIG_AUTO_SAVE : Application.NONE)
+                  (parser.isSpecified("--no-config-auto-save") ? Application.DISABLE_CONFIG_AUTO_SAVE : Application.NONE)
+                | (isCommandLine ? Application.CLOSE_ON_PROCESSOR_STOP : Application.NONE)
+                | (isCommandLine ? Application.NO_GUI : Application.NONE)
         );
+
+        System.out.println("Running Application...");
+        app.run();
 
         boolean closeApplication = isCommandLine;
         if (runOnStart) {
             boolean successfulRun = app.runProcessor(null);
+            // SuccessfulRun is true if no error was encountered and Processor was run
+            // If the processor runs the application should close automatically
             closeApplication = closeApplication && !successfulRun;
         } else if (verifyOnStart) {
             app.verifyProgram(null);

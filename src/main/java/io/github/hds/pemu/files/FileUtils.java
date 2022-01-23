@@ -32,6 +32,7 @@ public final class FileUtils {
 
     public static @Nullable File getFileFromDirectory(@NotNull File folder, String... fileNames) {
         File[] files = folder.listFiles();
+        assert files != null;
         for (String fileName : fileNames) {
             for (File file : files) {
                 if (file.isFile() && file.getName().equals(fileName)) return file;

@@ -1,5 +1,15 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @6a55bcd
+
+Now Plugins should be loaded by the Application only after the Config Event
+Now Application class doesn't extend JFrame anymore, it stores the frame in a public field instead
+Added public field Application#MENU_BAR
+Changed some Application flags
+Added method Application#run and Application#isRunning to run the Application
+
+Minor Code Improvements here and there
+
 -- Changes from commit @244d736
 
 Now Math Expressions assigned to Compiler Variables are evaluated when Compiling

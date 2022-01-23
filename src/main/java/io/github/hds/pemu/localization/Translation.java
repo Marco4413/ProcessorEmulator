@@ -22,13 +22,13 @@ public final class Translation {
     public static @NotNull Translation mergeTranslations(@NotNull Translation... translations) {
         Translation mergedTranslation = new Translation();
         for (int i = translations.length - 1; i >= 0; i--)
-            translations[i].MAP.forEach(mergedTranslation.MAP::put);
+            mergedTranslation.MAP.putAll(translations[i].MAP);
         return mergedTranslation;
     }
 
     public @NotNull Translation merge(@NotNull Translation... others) {
         Translation mergedOthers = mergeTranslations(others);
-        this.MAP.forEach(mergedOthers.MAP::put);
+        mergedOthers.MAP.putAll(this.MAP);
         return mergedOthers;
     }
 
