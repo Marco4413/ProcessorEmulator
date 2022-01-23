@@ -1,5 +1,9 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @6b65ee1
+
+Added PluginUtils Class
+
 -- Changes from commit @6a55bcd
 
 Now Plugins should be loaded by the Application only after the Config Event
