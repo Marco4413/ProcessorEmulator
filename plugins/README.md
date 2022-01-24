@@ -3,6 +3,7 @@
 ## What can a Plugin add to PEMU?
 
 Plugins were added to make it possible to create other implementations of a Processor, so they are designed to do so.
+Though they can also add stuff to the Application itself.
 
 **NOTE: Plugins are written in Java, so they can use EVERYTHING that a normal Java App can use, so they might be able
 to harm your computer, so it's recommended to pick plugins with care.**
@@ -28,4 +29,6 @@ Plugins can be added by going into `User's Home Dir -> PEMU -> plugins` and drop
 
 ### Example
 
-**WORK IN PROGRESS**
+A "well-documented" example can be found here:
+
+https://github.com/hds536jhmk/pemu-ExamplePlugin
