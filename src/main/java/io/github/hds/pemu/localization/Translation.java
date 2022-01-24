@@ -1,5 +1,6 @@
 package io.github.hds.pemu.localization;
 
+import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,16 +57,22 @@ public final class Translation {
         return MAP.getOrDefault(key, defaultValue);
     }
 
-    public void translateFrame(@NotNull String key, @NotNull JFrame frame) {
-        frame.setTitle(getOrDefault(key + "._title"));
+    public void translateFrame(@NotNull String key, @NotNull JFrame frame, @Nullable Object... formats) {
+        frame.setTitle(StringUtils.format(
+                getOrDefault(key + "._title"), formats
+        ));
     }
 
-    public void translateComponent(@NotNull String key, @NotNull JLabel component) {
-        component.setText(getOrDefault(key + "._text"));
+    public void translateComponent(@NotNull String key, @NotNull JLabel component, @Nullable Object... formats) {
+        component.setText(StringUtils.format(
+                getOrDefault(key + "._text"), formats
+        ));
     }
 
-    public void translateComponent(@NotNull String key, @NotNull AbstractButton component) {
-        component.setText(getOrDefault(key + "._text"));
+    public void translateComponent(@NotNull String key, @NotNull AbstractButton component, @Nullable Object... formats) {
+        component.setText(StringUtils.format(
+                getOrDefault(key + "._text"), formats
+        ));
         component.setMnemonic(getOrDefault(key + "._mnemonic", String.valueOf(KeyEvent.CHAR_UNDEFINED)).charAt(0));
     }
 

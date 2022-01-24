@@ -3,6 +3,7 @@
 -- Changes from commit @6b65ee1
 
 Added PluginUtils Class
+Added variadic argument to Translation#translateFrame and Translation#translateComponent to be able to add formats
 
 -- Changes from commit @6a55bcd
 

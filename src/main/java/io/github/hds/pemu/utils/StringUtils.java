@@ -95,6 +95,7 @@ public final class StringUtils {
 
     public static @NotNull String format(@Nullable String str, @Nullable Object... formats) {
         if (str == null) return "";
+        if (formats.length == 0) return str;
 
         final char BEGIN_FORMAT = '{';
         final char END_FORMAT = '}';
