@@ -15,7 +15,7 @@ and confirm your choice.
 
 ## How do I add Plugins to PEMU?
 
-Plugins can be added by going into `User's Home Dir -> PEMU -> plugins` and dropping the Plugin's File.
+Plugins can be added by going into `User's Home Dir -> .pemu -> plugins` and dropping the Plugin's File.
 
  - Windows: `%USERPROFILE%/.pemu/plugins/`
  - Linux: `$HOME/.pemu/plugins/`
