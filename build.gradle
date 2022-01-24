@@ -3,6 +3,10 @@ plugins {
     id 'java'
 }
 
+// This is needed to make sure that we're building for the right Java version
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
 group 'io.github.hds'
 version '1.12.2-RELEASE'
 
@@ -44,6 +48,6 @@ shadowJar {
 
 dependencies {
     implementation 'org.jetbrains:annotations:22.0.0'
-    implementation 'org.reflections:reflections:0.10.1'
-    implementation 'org.slf4j:slf4j-nop:1.7.32'
+    implementation 'org.reflections:reflections:0.10.2'
+    implementation 'org.slf4j:slf4j-nop:1.7.33'
 }
