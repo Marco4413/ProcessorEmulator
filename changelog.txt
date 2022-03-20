@@ -1,5 +1,9 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @1d9f773
+
+Separated Application from its GUI, this will make PEMU compatible with Headless Systems
+
 -- Changes from commit @6b65ee1
 
 Added PluginUtils Class

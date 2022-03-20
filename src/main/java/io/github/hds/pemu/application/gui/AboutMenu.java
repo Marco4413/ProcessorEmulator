@@ -1,4 +1,4 @@
-package io.github.hds.pemu.app;
+package io.github.hds.pemu.application.gui;
 
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
@@ -12,7 +12,7 @@ import java.net.URI;
 
 public final class AboutMenu extends JMenu implements ITranslatable {
 
-    private final Application app;
+    private final ApplicationGUI appGui;
     private static final String WEBPAGE = "https://github.com/hds536jhmk/ProcessorEmulator";
     private static final String DOCUMENTATION = "https://github.com/hds536jhmk/ProcessorEmulator/blob/master/DOCUMENTATION.md";
 
@@ -25,14 +25,14 @@ public final class AboutMenu extends JMenu implements ITranslatable {
     private @NotNull String localeOpenLinkErrorTitle = "";
     private @NotNull String localeOpenLinkErrorMsg = "";
 
-    protected AboutMenu(@NotNull Application parentApp) {
+    protected AboutMenu(@NotNull ApplicationGUI parentAppGui) {
         super();
-        app = parentApp;
+        appGui = parentAppGui;
 
         TranslationManager.addTranslationListener(this);
 
-        ICON_OPEN_WEBPAGE = IconUtils.importIcon("/assets/webpage.png", Application.MENU_ITEM_ICON_SIZE);
-        ICON_OPEN_DOCUMENTATION = IconUtils.importIcon("/assets/documentation.png", Application.MENU_ITEM_ICON_SIZE);
+        ICON_OPEN_WEBPAGE = IconUtils.importIcon("/assets/webpage.png", ApplicationGUI.MENU_ITEM_ICON_SIZE);
+        ICON_OPEN_DOCUMENTATION = IconUtils.importIcon("/assets/documentation.png", ApplicationGUI.MENU_ITEM_ICON_SIZE);
 
         OPEN_WEBPAGE = new JMenuItem();
         OPEN_WEBPAGE.setIcon(ICON_OPEN_WEBPAGE);

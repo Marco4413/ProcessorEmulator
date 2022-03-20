@@ -1,148 +1,59 @@
-package io.github.hds.pemu.app;
+package io.github.hds.pemu.application;
 
-import io.github.hds.pemu.console.Console;
-import io.github.hds.pemu.console.ConsoleComponent;
 import io.github.hds.pemu.compiler.CompiledProgram;
 import io.github.hds.pemu.compiler.Compiler;
 import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
 import io.github.hds.pemu.config.IConfigurable;
-import io.github.hds.pemu.files.FileUtils;
+import io.github.hds.pemu.console.Console;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.plugins.DefaultPlugin;
 import io.github.hds.pemu.plugins.IPlugin;
 import io.github.hds.pemu.plugins.PluginManager;
-import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.processor.ProcessorConfig;
-import io.github.hds.pemu.utils.*;
+import io.github.hds.pemu.utils.CThread;
+import io.github.hds.pemu.utils.IClearable;
+import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.util.Objects;
 
-/**
- * This class is not thread-safe by any means
- */
-public final class Application implements KeyListener, ITranslatable, IConfigurable {
+public final class Application implements KeyListener, IConfigurable, ITranslatable {
+    public static final String APP_NAME = "PEMU";
+    public static final String APP_VERSION = "1.12.2";
+
+    private static Application INSTANCE;
 
     public static final int NONE = 0;
     public static final int DISABLE_CONFIG_AUTO_SAVE = 1;
     public static final int CLOSE_ON_PROCESSOR_STOP = 1 << 1;
-    public static final int NO_GUI = 1 << 2;
-
-    public static final String APP_TITLE = "PEMU";
-    public static final String APP_VERSION = "1.12.2";
-    public static final int FRAME_WIDTH = 800;
-    public static final int FRAME_HEIGHT = 600;
-    public static final int FRAME_ICON_SIZE = 32;
-    public static final int MENU_ITEM_ICON_SIZE = 20;
-
-    public static final int PERFORMANCE_UPDATE_INTERVAL = 1000;
-
-    private static Application INSTANCE;
-
-    public final JFrame FRAME;
-    public final JMenuBar MENU_BAR;
 
     private boolean isRunning = false;
     private IPlugin pluginToLoadOnRun = null;
     private IPlugin loadedPlugin = null;
 
+    private @Nullable File currentProgram = null;
+    private @Nullable IProcessor currentProcessor = null;
+    private @NotNull ProcessorConfig processorConfig = new ProcessorConfig();
+    private @NotNull Translation currentTranslation;
+
     private boolean disableConfigAutoSave = false;
     private boolean closeOnProcessorStop = false;
-    private boolean noGui = false;
-
-    protected final FileMenu FILE_MENU;
-    protected final ProgramMenu PROGRAM_MENU;
-    protected final ProcessorMenu PROCESSOR_MENU;
-    protected final AboutMenu ABOUT_MENU;
-
-    protected final JLabel PERFORMANCE_LABEL;
-    protected final Timer UPDATE_TIMER;
-
-    protected @Nullable File currentProgram = null;
-    protected @Nullable IProcessor currentProcessor = null;
-    protected @NotNull ProcessorConfig processorConfig;
-
-    protected final MemoryView MEMORY_VIEW;
-
-    private @NotNull Translation currentTranslation = TranslationManager.getCurrentTranslation();
-
-    private @NotNull String localeNoProgramSelected = "";
-    private @NotNull String localeProgramSelected = "";
-    private @NotNull String localePerformanceLabel = "";
-    private @NotNull String localeNoProcessorRunning = "";
 
     private Application() {
-        FRAME = new JFrame();
-        FRAME.setTitle(APP_TITLE);
-
-        FRAME.setIconImage(IconUtils.importIcon("/assets/icon.png", FRAME_ICON_SIZE).getImage());
-
-        FRAME.setSize(FRAME_WIDTH, FRAME_HEIGHT);
-        FRAME.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
-        FRAME.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                close(null);
-            }
-        });
-
-        ConfigManager.addConfigListener(this);
         TranslationManager.addTranslationListener(this);
+        ConfigManager.addConfigListener(this);
+        currentTranslation = TranslationManager.getCurrentTranslation();
 
-        FRAME.setLayout(new BorderLayout());
-
-        // Making instances of this class to allow it to get its translation
-        GFileDialog.getInstance();
-
-        MEMORY_VIEW = new MemoryView(this);
-
-        MENU_BAR = new JMenuBar();
-        FRAME.setJMenuBar(MENU_BAR);
-
-        // FILE MENU
-        FILE_MENU = new FileMenu(this);
-        MENU_BAR.add(FILE_MENU);
-
-        // PROGRAM MENU
-        PROGRAM_MENU = new ProgramMenu(this);
-        MENU_BAR.add(PROGRAM_MENU);
-
-        // PROCESSOR MENU
-        PROCESSOR_MENU = new ProcessorMenu(this);
-        MENU_BAR.add(PROCESSOR_MENU);
-        processorConfig = PROCESSOR_MENU.CONFIG_PANEL.getConfig();
-
-        // ABOUT MENU
-        ABOUT_MENU = new AboutMenu(this);
-        MENU_BAR.add(ABOUT_MENU);
-
-        ConsoleComponent programComponent = Console.getProgramComponent();
-        ConsoleComponent debugComponent = Console.getDebugComponent();
-
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(programComponent), new JScrollPane(debugComponent));
-        splitPane.setResizeWeight(0.5d);
-        splitPane.resetToPreferredSizes();
-        FRAME.add(splitPane, BorderLayout.CENTER);
-
-        PERFORMANCE_LABEL = new JLabel();
-        PERFORMANCE_LABEL.setBorder(new EmptyBorder(2, 10, 2, 10));
-        PERFORMANCE_LABEL.setHorizontalAlignment(SwingConstants.RIGHT);
-        FRAME.add(PERFORMANCE_LABEL, BorderLayout.PAGE_END);
-
-        programComponent.addKeyListener(this);
-
-        UPDATE_TIMER = new Timer(PERFORMANCE_UPDATE_INTERVAL, this::updateFrame);
-        UPDATE_TIMER.start();
+        PluginManager.registerPlugins();
+        ConfigManager.loadOrCreate();
     }
 
     public static @NotNull Application getInstance() {
@@ -150,42 +61,6 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
         return INSTANCE;
     }
 
-    private void updateFrame(ActionEvent actionEvent) {
-        if (!FRAME.isVisible() || currentProcessor == null || currentProcessor.isPaused() || !currentProcessor.isRunning()) {
-            PERFORMANCE_LABEL.setText(localeNoProcessorRunning);
-            return;
-        }
-
-        Clock clock = currentProcessor.getClock();
-        double interval  = clock.getInterval();
-        double deltaTime = clock.getDeltaTime();
-        PERFORMANCE_LABEL.setText(
-                StringUtils.format(
-                        localePerformanceLabel,
-                        StringUtils.getEngNotation(interval, "s"),
-                        StringUtils.getEngNotation(deltaTime, "s"),
-                        StringUtils.getEngNotation(deltaTime - interval, "s")
-                )
-        );
-    }
-
-    public void setFlags(int flags) {
-        disableConfigAutoSave = (flags & DISABLE_CONFIG_AUTO_SAVE) == DISABLE_CONFIG_AUTO_SAVE;
-        closeOnProcessorStop = (flags & CLOSE_ON_PROCESSOR_STOP) == CLOSE_ON_PROCESSOR_STOP;
-        noGui = (flags & NO_GUI) == NO_GUI;
-    }
-
-    public void updateTitle() {
-        FRAME.setTitle(
-                StringUtils.format(
-                        "{0} {1} {2}",
-                        APP_TITLE, APP_VERSION,
-                        currentProgram == null ?
-                                localeNoProgramSelected :
-                                StringUtils.format(localeProgramSelected, FileUtils.tryGetCanonicalPath(currentProgram))
-                )
-        );
-    }
 
     public boolean loadPlugin(@Nullable String pluginID) {
         return loadPlugin(PluginManager.getPlugin(pluginID));
@@ -221,7 +96,6 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
         if (program.canRead())
             currentProgram = program;
         else currentProgram = null;
-        updateTitle();
     }
 
     public @Nullable File getCurrentProgram() {
@@ -238,46 +112,10 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
         return processorConfig;
     }
 
-    @Override
-    public void keyTyped(KeyEvent e) {
-        if (currentProcessor == null) return;
-
-        char typed = e.getKeyChar();
-        if (typed == KeyEvent.CHAR_UNDEFINED)
-            currentProcessor.setCharPressed('\0');
-        else
-            currentProcessor.setCharPressed(typed);
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        if (currentProcessor == null) return;
-        currentProcessor.setKeyPressed(e.getKeyCode());
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        if (currentProcessor == null) return;
-
-        char character = e.getKeyChar();
-        if (character != KeyEvent.CHAR_UNDEFINED && Character.toLowerCase(character) == Character.toLowerCase(currentProcessor.getCharPressed()))
-            currentProcessor.setCharPressed('\0');
-
-        if (e.getKeyCode() == currentProcessor.getKeyPressed())
-            currentProcessor.setKeyPressed(KeyEvent.VK_UNDEFINED);
-    }
-
-    private @NotNull String getPluginNotLoadedMessage() {
-        return StringUtils.format(
-                currentTranslation.getOrDefault("messages.noPluginLoaded"),
-                FILE_MENU.getText(), FILE_MENU.LOAD_PLUGIN.getText()
-        );
-    }
-
     public @Nullable IProcessor createProcessor() {
         IPlugin loadedPlugin = getLoadedPlugin();
         if (loadedPlugin == null) {
-            Console.Debug.println(getPluginNotLoadedMessage());
+            Console.Debug.println(currentTranslation.getOrDefault("messages.noPluginLoaded"));
             Console.Debug.println();
             return null;
         }
@@ -304,7 +142,7 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
     public @Nullable IProcessor createDummyProcessor() {
         IPlugin loadedPlugin = getLoadedPlugin();
         if (loadedPlugin == null) {
-            Console.Debug.println(getPluginNotLoadedMessage());
+            Console.Debug.println(currentTranslation.getOrDefault("messages.noPluginLoaded"));
             Console.Debug.println();
             return null;
         }
@@ -368,14 +206,14 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
         return compiledProgram;
     }
 
-    public void verifyProgram(ActionEvent e) {
+    public void verifyProgram() {
         IProcessor dummyProcessor = createDummyProcessor();
         if (dummyProcessor == null) return;
 
         compileProgram(dummyProcessor);
     }
 
-    public void obfuscateProgram(ActionEvent e) {
+    public void obfuscateProgram() {
         IProcessor dummyProcessor = createDummyProcessor();
         if (dummyProcessor == null) return;
 
@@ -387,7 +225,7 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
         Console.Debug.println();
     }
 
-    public boolean runProcessor(ActionEvent e) {
+    public boolean runProcessor() {
         // Make sure that the last thread is dead
         if (currentProcessor != null && currentProcessor.isRunning()) {
             Console.Debug.println(currentTranslation.getOrDefault("messages.processorAlreadyRunning"));
@@ -442,7 +280,7 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
                         Console.Debug.println(currentTranslation.getOrDefault("messages.processorStopped"));
                         Console.Debug.println();
 
-                        if (closeOnProcessorStop) Application.this.close(null);
+                        if (closeOnProcessorStop) System.exit(0);
                     },
                     err -> {
                         currentProcessor.stop(); // Make sure to stop the processor if it fails
@@ -460,7 +298,7 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
         }
     }
 
-    public void stopProcessor(ActionEvent e) {
+    public void stopProcessor() {
         if (currentProcessor == null || !currentProcessor.isRunning()) {
             Console.Debug.println(currentTranslation.getOrDefault("messages.processorStopNotRunning"));
             Console.Debug.println();
@@ -469,7 +307,19 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
         currentProcessor.stop();
     }
 
-    public void toggleProcessorExecution(ActionEvent e) {
+    public @Nullable IProcessor getCurrentProcessor() {
+        return currentProcessor;
+    }
+
+    public boolean isProcessorPaused() {
+        return currentProcessor == null || currentProcessor.isPaused();
+    }
+
+    public boolean isProcessorRunning() {
+        return currentProcessor == null || currentProcessor.isRunning();
+    }
+
+    public void toggleProcessorExecution() {
         if (currentProcessor == null || !currentProcessor.isRunning()) {
             Console.Debug.println(currentTranslation.getOrDefault("messages.processorPauseResumeNotRunning"));
         } else if (currentProcessor.isPaused()) {
@@ -483,7 +333,7 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
         Console.Debug.println();
     }
 
-    public void stepProcessor(ActionEvent e) {
+    public void stepProcessor() {
         if (currentProcessor == null || !currentProcessor.isRunning()) {
             Console.Debug.println(currentTranslation.getOrDefault("messages.processorStepNotRunning"));
         } else {
@@ -494,6 +344,11 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
         Console.Debug.println();
     }
 
+    public void setFlags(int flags) {
+        disableConfigAutoSave = (flags & DISABLE_CONFIG_AUTO_SAVE) == DISABLE_CONFIG_AUTO_SAVE;
+        closeOnProcessorStop = (flags & CLOSE_ON_PROCESSOR_STOP) == CLOSE_ON_PROCESSOR_STOP;
+    }
+
     public boolean isRunning() {
         return this.isRunning;
     }
@@ -501,24 +356,41 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
     public void run() {
         if (isRunning) throw new RuntimeException("Application is already running.");
         isRunning = true;
-        FRAME.setVisible(!noGui);
         loadPlugin(pluginToLoadOnRun);
     }
 
-    public void close(ActionEvent e) {
+    public void close() {
         if (!disableConfigAutoSave) ConfigManager.saveConfig();
         System.exit(0);
     }
 
     @Override
-    public void updateTranslations(@NotNull Translation translation) {
-        currentTranslation = translation;
-        localeNoProgramSelected = translation.getOrDefault("application.noProgramSelected");
-        localeProgramSelected = translation.getOrDefault("application.programSelected");
+    public void keyTyped(KeyEvent e) {
+        if (currentProcessor == null) return;
 
-        localePerformanceLabel = translation.getOrDefault("application.performanceLabel");
-        localeNoProcessorRunning = translation.getOrDefault("application.noProcessorRunning");
-        updateTitle();
+        char typed = e.getKeyChar();
+        if (typed == KeyEvent.CHAR_UNDEFINED)
+            currentProcessor.setCharPressed('\0');
+        else
+            currentProcessor.setCharPressed(typed);
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (currentProcessor == null) return;
+        currentProcessor.setKeyPressed(e.getKeyCode());
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (currentProcessor == null) return;
+
+        char character = e.getKeyChar();
+        if (character != KeyEvent.CHAR_UNDEFINED && Character.toLowerCase(character) == Character.toLowerCase(currentProcessor.getCharPressed()))
+            currentProcessor.setCharPressed('\0');
+
+        if (e.getKeyCode() == currentProcessor.getKeyPressed())
+            currentProcessor.setKeyPressed(KeyEvent.VK_UNDEFINED);
     }
 
     @Override
@@ -572,5 +444,10 @@ public final class Application implements KeyListener, ITranslatable, IConfigura
         String defaultPluginID = DefaultPlugin.getInstance().getID();
         assert defaultPluginID != null;
         e.config.put("loadedPlugin", defaultPluginID);
+    }
+
+    @Override
+    public void updateTranslations(@NotNull Translation translation) {
+        currentTranslation = translation;
     }
 }

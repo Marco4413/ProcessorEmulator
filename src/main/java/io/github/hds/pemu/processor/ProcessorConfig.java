@@ -25,6 +25,10 @@ public final class ProcessorConfig {
     private int memorySize;
     private int clockFrequency;
 
+    public ProcessorConfig() {
+        this(DEFAULT_BITS, DEFAULT_MEMORY_SIZE, DEFAULT_FREQUENCY);
+    }
+
     public ProcessorConfig(int bits) {
         this(bits, DEFAULT_MEMORY_SIZE);
     }

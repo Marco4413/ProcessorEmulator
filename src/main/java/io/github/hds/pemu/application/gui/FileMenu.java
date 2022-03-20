@@ -1,4 +1,4 @@
-package io.github.hds.pemu.app;
+package io.github.hds.pemu.application.gui;
 
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
@@ -14,11 +14,11 @@ import java.awt.event.KeyEvent;
 
 public final class FileMenu extends JMenu implements ITranslatable {
 
-    private final Application app;
+    private final ApplicationGUI appGui;
 
     private final JMenuItem OPEN_PROGRAM;
     private final JMenuItem CHANGE_LANGUAGE;
-    protected final JMenuItem LOAD_PLUGIN;
+    private final JMenuItem LOAD_PLUGIN;
     private final JMenuItem QUIT;
 
     private final ImageIcon ICON_CHANGE_LANGUAGE;
@@ -30,9 +30,9 @@ public final class FileMenu extends JMenu implements ITranslatable {
     private String localeSelectPluginTitle = "";
     private String localeSelectPluginMsg = "";
 
-    protected FileMenu(@NotNull Application parentApp) {
+    protected FileMenu(@NotNull ApplicationGUI parentAppGui) {
         super();
-        app = parentApp;
+        appGui = parentAppGui;
 
         TranslationManager.addTranslationListener(this);
 
@@ -42,25 +42,25 @@ public final class FileMenu extends JMenu implements ITranslatable {
         OPEN_PROGRAM.addActionListener(this::openProgram);
         add(OPEN_PROGRAM);
 
-        ICON_CHANGE_LANGUAGE = IconUtils.importIcon("/assets/change_language.png", Application.MENU_ITEM_ICON_SIZE);
+        ICON_CHANGE_LANGUAGE = IconUtils.importIcon("/assets/change_language.png", ApplicationGUI.MENU_ITEM_ICON_SIZE);
 
         CHANGE_LANGUAGE = new JMenuItem("Change Language");
         CHANGE_LANGUAGE.setIcon(ICON_CHANGE_LANGUAGE);
         CHANGE_LANGUAGE.addActionListener(this::changeLanguage);
         add(CHANGE_LANGUAGE);
 
-        ICON_LOAD_PLUGIN = IconUtils.importIcon("/assets/load_plugin.png", Application.MENU_ITEM_ICON_SIZE);
+        ICON_LOAD_PLUGIN = IconUtils.importIcon("/assets/load_plugin.png", ApplicationGUI.MENU_ITEM_ICON_SIZE);
 
         LOAD_PLUGIN = new JMenuItem("Load Plugin");
         LOAD_PLUGIN.setIcon(ICON_LOAD_PLUGIN);
         LOAD_PLUGIN.addActionListener(this::loadPlugin);
         add(LOAD_PLUGIN);
 
-        ICON_QUIT = IconUtils.importIcon("/assets/quit.png", Application.MENU_ITEM_ICON_SIZE);
+        ICON_QUIT = IconUtils.importIcon("/assets/quit.png", ApplicationGUI.MENU_ITEM_ICON_SIZE);
 
         QUIT = new JMenuItem();
         QUIT.setIcon(ICON_QUIT);
-        QUIT.addActionListener(app::close);
+        QUIT.addActionListener(appGui::close);
         add(QUIT);
     }
 
@@ -79,8 +79,8 @@ public final class FileMenu extends JMenu implements ITranslatable {
 
     private void openProgram(ActionEvent e) {
         GFileDialog gFileDialog = GFileDialog.getInstance();
-        if (gFileDialog.showOpenDialog(this, app.currentProgram, GFileDialog.getPEMUFileFilter(), GFileDialog.getPEMULibFileFilter()) == JFileChooser.APPROVE_OPTION)
-            app.setCurrentProgram(gFileDialog.getSelectedFile());
+        if (gFileDialog.showOpenDialog(this, appGui.APP.getCurrentProgram(), GFileDialog.getPEMUFileFilter(), GFileDialog.getPEMULibFileFilter()) == JFileChooser.APPROVE_OPTION)
+            appGui.APP.setCurrentProgram(gFileDialog.getSelectedFile());
     }
 
     private void loadPlugin(ActionEvent e) {
@@ -88,11 +88,11 @@ public final class FileMenu extends JMenu implements ITranslatable {
 
         IPlugin selectedPlugin = (IPlugin) JOptionPane.showInputDialog(
                 this, localeSelectPluginMsg, localeSelectPluginTitle,
-                JOptionPane.PLAIN_MESSAGE, ICON_LOAD_PLUGIN, availablePlugins, app.getLoadedPlugin()
+                JOptionPane.PLAIN_MESSAGE, ICON_LOAD_PLUGIN, availablePlugins, appGui.APP.getLoadedPlugin()
         );
         if (selectedPlugin == null) return;
 
-        app.loadPlugin(selectedPlugin);
+        appGui.APP.loadPlugin(selectedPlugin);
     }
     
     private void changeLanguage(ActionEvent e) {

@@ -1,6 +1,7 @@
 package io.github.hds.pemu;
 
-import io.github.hds.pemu.app.Application;
+import io.github.hds.pemu.application.Application;
+import io.github.hds.pemu.application.gui.ApplicationGUI;
 import io.github.hds.pemu.console.Console;
 import io.github.hds.pemu.localization.TranslationManager;
 import io.github.hds.pemu.plugins.DefaultPlugin;
@@ -43,7 +44,7 @@ public final class Main {
         boolean printHelp = parser.isSpecified("--help");
         boolean printVersion = parser.isSpecified("--version");
         if (printHelp || printVersion) {
-            if (printVersion) System.out.println(StringUtils.format("{0} version \"{1}\"", Application.APP_TITLE, Application.APP_VERSION));
+            if (printVersion) System.out.println(StringUtils.format("{0} version \"{1}\"", Application.APP_NAME, Application.APP_VERSION));
             if (printHelp) System.out.println("PEMU [options]:\n" + parser.getUsage());
             return;
         }
@@ -102,21 +103,21 @@ public final class Main {
             Console.usePrintStream(System.out);
         }
 
-        // Setting System-based look and feel
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ignored) { }
-
-        // Trying to get an instance of the app
         ConfigManager.setDefaultOnLoadError(true);
-        Application app = Application.getInstance();
 
         // Queuing DefaultPlugin for register
         PluginManager.queueForRegister(DefaultPlugin.getInstance());
 
-        // Loading Config after the Application was created and the
-        //  DefaultPlugin queued for registration
-        ConfigManager.loadOrCreate();
+        Application app = Application.getInstance();
+
+        // Initializing GUI if necessary
+        if (!isCommandLine) {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ignored) { }
+            ApplicationGUI.getInstance().FRAME.setVisible(true);
+            TranslationManager.setCurrentTranslation(TranslationManager.getCurrentTranslation().getShortName());
+        }
 
         // Console Arguments override config settings
         // Setting App's ProcessorConfig based on the specified arguments
@@ -147,25 +148,23 @@ public final class Main {
         app.setFlags(
                   (parser.isSpecified("--no-config-auto-save") ? Application.DISABLE_CONFIG_AUTO_SAVE : Application.NONE)
                 | (isCommandLine ? Application.CLOSE_ON_PROCESSOR_STOP : Application.NONE)
-                | (isCommandLine ? Application.NO_GUI : Application.NONE)
         );
 
-        System.out.println("Running Application...");
         app.run();
 
         boolean closeApplication = isCommandLine;
         if (runOnStart) {
-            boolean successfulRun = app.runProcessor(null);
+            boolean successfulRun = app.runProcessor();
             // SuccessfulRun is true if no error was encountered and Processor was run
             // If the processor runs the application should close automatically
             closeApplication = closeApplication && !successfulRun;
         } else if (verifyOnStart) {
-            app.verifyProgram(null);
+            app.verifyProgram();
         } else if (obfuscateOnStart) {
-            app.obfuscateProgram(null);
+            app.obfuscateProgram();
         }
 
-        if (closeApplication) app.close(null);
+        if (closeApplication) app.close();
     }
 
 }

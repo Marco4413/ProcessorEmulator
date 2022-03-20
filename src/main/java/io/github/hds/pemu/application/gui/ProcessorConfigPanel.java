@@ -1,4 +1,4 @@
-package io.github.hds.pemu.app;
+package io.github.hds.pemu.application.gui;
 
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;

@@ -1,8 +1,8 @@
 package io.github.hds.pemu.console;
 
-import io.github.hds.pemu.app.Application;
-import io.github.hds.pemu.app.GFileDialog;
-import io.github.hds.pemu.app.TJMenuItem;
+import io.github.hds.pemu.application.gui.ApplicationGUI;
+import io.github.hds.pemu.application.gui.GFileDialog;
+import io.github.hds.pemu.application.gui.TJMenuItem;
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.localization.Translation;
 import io.github.hds.pemu.localization.TranslationManager;
@@ -40,14 +40,14 @@ public final class ConsoleContextualMenu extends JPopupMenu implements ITranslat
         SAVE.addActionListener(this::saveConsole);
         add(SAVE);
 
-        ICON_CLEAR = IconUtils.importIcon("/assets/clear.png", Application.MENU_ITEM_ICON_SIZE);
+        ICON_CLEAR = IconUtils.importIcon("/assets/clear.png", ApplicationGUI.MENU_ITEM_ICON_SIZE);
 
         CLEAR = new TJMenuItem(enableCondition);
         CLEAR.setIcon(ICON_CLEAR);
         CLEAR.addActionListener(this::clearConsole);
         add(CLEAR);
 
-        ICON_RESET_ZOOM = IconUtils.importIcon("/assets/reset_zoom.png", Application.MENU_ITEM_ICON_SIZE);
+        ICON_RESET_ZOOM = IconUtils.importIcon("/assets/reset_zoom.png", ApplicationGUI.MENU_ITEM_ICON_SIZE);
 
         RESET_FONT_SIZE = new TJMenuItem(i -> getInvoker() instanceof ConsoleComponent && ((ConsoleComponent) getInvoker()).getFontSize() != ConsoleComponent.DEFAULT_FONT_SIZE);
         RESET_FONT_SIZE.setIcon(ICON_RESET_ZOOM);

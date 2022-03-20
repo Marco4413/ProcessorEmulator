@@ -1,4 +1,4 @@
-package io.github.hds.pemu.app;
+package io.github.hds.pemu.application.gui;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;

@@ -1,4 +1,4 @@
-package io.github.hds.pemu.app;
+package io.github.hds.pemu.application.gui;
 
 import io.github.hds.pemu.files.FileUtils;
 import io.github.hds.pemu.localization.ITranslatable;
@@ -15,8 +15,8 @@ import java.io.File;
 
 public final class GFileDialog extends JFileChooser implements ITranslatable {
 
-    public static final ImageIcon ICON_SAVE = IconUtils.importIcon("/assets/save.png", Application.MENU_ITEM_ICON_SIZE);
-    public static final ImageIcon ICON_OPEN = IconUtils.importIcon("/assets/open_file.png", Application.MENU_ITEM_ICON_SIZE);
+    public static final ImageIcon ICON_SAVE = IconUtils.importIcon("/assets/save.png", ApplicationGUI.MENU_ITEM_ICON_SIZE);
+    public static final ImageIcon ICON_OPEN = IconUtils.importIcon("/assets/open_file.png", ApplicationGUI.MENU_ITEM_ICON_SIZE);
 
     private static GFileDialog INSTANCE;
 

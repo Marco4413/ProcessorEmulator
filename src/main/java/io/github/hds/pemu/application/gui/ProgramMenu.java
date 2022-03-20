@@ -1,4 +1,4 @@
-package io.github.hds.pemu.app;
+package io.github.hds.pemu.application.gui;
 
 import io.github.hds.pemu.localization.ITranslatable;
 import io.github.hds.pemu.utils.IconUtils;
@@ -11,7 +11,7 @@ import java.awt.event.KeyEvent;
 
 public final class ProgramMenu extends JMenu implements ITranslatable {
 
-    private final Application app;
+    private final ApplicationGUI appGui;
 
     private final TJMenuItem VERIFY;
     private final TJMenuItem OBFUSCATE;
@@ -19,25 +19,25 @@ public final class ProgramMenu extends JMenu implements ITranslatable {
     private final ImageIcon ICON_VERIFY;
     private final ImageIcon ICON_OBFUSCATE;
 
-    protected ProgramMenu(@NotNull Application parentApp) {
+    protected ProgramMenu(@NotNull ApplicationGUI parentAppGui) {
         super();
-        app = parentApp;
+        appGui = parentAppGui;
 
         TranslationManager.addTranslationListener(this);
 
-        ICON_VERIFY = IconUtils.importIcon("/assets/verify.png", Application.MENU_ITEM_ICON_SIZE);
+        ICON_VERIFY = IconUtils.importIcon("/assets/verify.png", ApplicationGUI.MENU_ITEM_ICON_SIZE);
 
-        VERIFY = new TJMenuItem(i -> app.currentProgram != null);
+        VERIFY = new TJMenuItem(i -> appGui.APP.getCurrentProgram() != null);
         VERIFY.setIcon(ICON_VERIFY);
         VERIFY.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
-        VERIFY.addActionListener(app::verifyProgram);
+        VERIFY.addActionListener(e -> appGui.APP.verifyProgram());
         add(VERIFY);
 
-        ICON_OBFUSCATE = IconUtils.importIcon("/assets/obfuscate.png", Application.MENU_ITEM_ICON_SIZE);
+        ICON_OBFUSCATE = IconUtils.importIcon("/assets/obfuscate.png", ApplicationGUI.MENU_ITEM_ICON_SIZE);
 
-        OBFUSCATE = new TJMenuItem(i -> app.currentProgram != null);
+        OBFUSCATE = new TJMenuItem(i -> appGui.APP.getCurrentProgram() != null);
         OBFUSCATE.setIcon(ICON_OBFUSCATE);
-        OBFUSCATE.addActionListener(app::obfuscateProgram);
+        OBFUSCATE.addActionListener(e -> appGui.APP.obfuscateProgram());
         add(OBFUSCATE);
     }
 

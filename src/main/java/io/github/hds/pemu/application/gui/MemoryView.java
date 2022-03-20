@@ -1,4 +1,4 @@
-package io.github.hds.pemu.app;
+package io.github.hds.pemu.application.gui;
 
 import io.github.hds.pemu.config.ConfigEvent;
 import io.github.hds.pemu.config.ConfigManager;
@@ -26,7 +26,7 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
 
     private static final String UNKNOWN_PROCESSOR = "?";
 
-    private final Application app;
+    private final ApplicationGUI appGui;
 
     private final Timer UPDATE_TIMER;
     private final MemoryTable MEMORY_TABLE;
@@ -119,13 +119,13 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
         }
     }
 
-    protected MemoryView(@NotNull Application parentApp) {
+    protected MemoryView(@NotNull ApplicationGUI parentAppGui) {
         super();
-        app = parentApp;
+        appGui = parentAppGui;
 
-        setIconImage(IconUtils.importIcon("/assets/memory_view.png", Application.FRAME_ICON_SIZE).getImage());
+        setIconImage(IconUtils.importIcon("/assets/memory_view.png", ApplicationGUI.FRAME_ICON_SIZE).getImage());
 
-        setSize(Application.FRAME_WIDTH, Application.FRAME_HEIGHT);
+        setSize(ApplicationGUI.FRAME_WIDTH, ApplicationGUI.FRAME_HEIGHT);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
         ConfigManager.addConfigListener(this);
@@ -222,7 +222,7 @@ public final class MemoryView extends JFrame implements ITranslatable, IConfigur
         if (!isVisible()) return;
 
         // Getting the processor that is currently attached to the app
-        IProcessor processor = app.currentProcessor;
+        IProcessor processor = appGui.APP.getCurrentProcessor();
         DefaultTableModel model = (DefaultTableModel) MEMORY_TABLE.getModel();
         // If no processor was found then we remove the table and set registers to unknown values
         if (processor == null) {

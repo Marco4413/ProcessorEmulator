@@ -1,6 +1,6 @@
 package io.github.hds.pemu.plugins;
 
-import io.github.hds.pemu.app.Application;
+import io.github.hds.pemu.application.Application;
 import io.github.hds.pemu.instructions.Instructions;
 import io.github.hds.pemu.processor.*;
 import org.jetbrains.annotations.NotNull;
