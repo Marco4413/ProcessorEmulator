@@ -23,6 +23,8 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
 
 public final class Application implements KeyListener, IConfigurable, ITranslatable {
@@ -47,6 +49,8 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
     private boolean disableConfigAutoSave = false;
     private boolean closeOnProcessorStop = false;
 
+    private final HashSet<IApplicationListener> APPLICATION_LISTENERS = new HashSet<>();
+
     private Application() {
         TranslationManager.addTranslationListener(this);
         ConfigManager.addConfigListener(this);
@@ -60,6 +64,13 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
         return INSTANCE;
     }
 
+    public boolean addApplicationListener(@NotNull IApplicationListener listener) {
+        return APPLICATION_LISTENERS.add(listener);
+    }
+
+    public boolean removeApplicationListener(@NotNull IApplicationListener listener) {
+        return APPLICATION_LISTENERS.remove(listener);
+    }
 
     public boolean loadPlugin(@Nullable String pluginID) {
         return loadPlugin(PluginManager.getPlugin(pluginID));
@@ -95,6 +106,7 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
         if (program.canRead())
             currentProgram = program;
         else currentProgram = null;
+        APPLICATION_LISTENERS.forEach(l -> l.onProgramChanged(currentProgram));
     }
 
     public @Nullable File getCurrentProgram() {

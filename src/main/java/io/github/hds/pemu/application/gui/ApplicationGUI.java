@@ -1,6 +1,7 @@
 package io.github.hds.pemu.application.gui;
 
 import io.github.hds.pemu.application.Application;
+import io.github.hds.pemu.application.IApplicationListener;
 import io.github.hds.pemu.console.Console;
 import io.github.hds.pemu.console.ConsoleComponent;
 import io.github.hds.pemu.files.FileUtils;
@@ -11,6 +12,7 @@ import io.github.hds.pemu.processor.Clock;
 import io.github.hds.pemu.processor.IProcessor;
 import io.github.hds.pemu.utils.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -21,7 +23,7 @@ import java.io.File;
 /**
  * This class is not thread-safe by any means
  */
-public final class ApplicationGUI implements ITranslatable {
+public final class ApplicationGUI implements ITranslatable, IApplicationListener {
     public static final int FRAME_WIDTH = 800;
     public static final int FRAME_HEIGHT = 600;
     public static final int FRAME_ICON_SIZE = 32;
@@ -66,6 +68,7 @@ public final class ApplicationGUI implements ITranslatable {
         });
 
         TranslationManager.addTranslationListener(this);
+        APP.addApplicationListener(this);
 
         FRAME.setLayout(new BorderLayout());
 
@@ -119,7 +122,9 @@ public final class ApplicationGUI implements ITranslatable {
     }
 
     private void updateFrame(ActionEvent actionEvent) {
-        if (!FRAME.isVisible() || APP.isProcessorPaused() || !APP.isProcessorRunning()) {
+        if (!FRAME.isVisible()) return;
+
+        if (APP.isProcessorPaused() || !APP.isProcessorRunning()) {
             PERFORMANCE_LABEL.setText(currentTranslation.getOrDefault("application.noProcessorRunning"));
             return;
         }
@@ -140,22 +145,6 @@ public final class ApplicationGUI implements ITranslatable {
         );
     }
 
-    public void updateTitle() {
-        File currentProgram = APP.getCurrentProgram();
-        FRAME.setTitle(
-                StringUtils.format(
-                        "{0} {1} {2}",
-                        Application.APP_NAME, Application.APP_VERSION,
-                        currentProgram == null ?
-                                currentTranslation.getOrDefault("application.noProgramSelected") :
-                                StringUtils.format(
-                                        currentTranslation.getOrDefault("application.programSelected"),
-                                        FileUtils.tryGetCanonicalPath(currentProgram)
-                                )
-                )
-        );
-    }
-
     public void close(ActionEvent e) {
         APP.close();
     }
@@ -163,6 +152,22 @@ public final class ApplicationGUI implements ITranslatable {
     @Override
     public void updateTranslations(@NotNull Translation translation) {
         currentTranslation = translation;
-        updateTitle();
+        onProgramChanged(APP.getCurrentProgram());
+    }
+
+    @Override
+    public void onProgramChanged(@Nullable File newProgram) {
+        FRAME.setTitle(
+                StringUtils.format(
+                        "{0} {1} {2}",
+                        Application.APP_NAME, Application.APP_VERSION,
+                        newProgram == null ?
+                                currentTranslation.getOrDefault("application.noProgramSelected") :
+                                StringUtils.format(
+                                        currentTranslation.getOrDefault("application.programSelected"),
+                                        FileUtils.tryGetCanonicalPath(newProgram)
+                                )
+                )
+        );
     }
 }

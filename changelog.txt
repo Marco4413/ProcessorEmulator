@@ -1,5 +1,10 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @eafb42e
+
+Added methods to Application: addApplicationListener, removeApplicationListener
+Added interface IApplicationListener which will be used to listen for Application events
+
 -- Changes from commit @d1b7309
 
 Completely reworked Arguments Parser
