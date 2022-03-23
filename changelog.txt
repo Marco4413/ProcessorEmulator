@@ -1,5 +1,15 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @d1b7309
+
+Completely reworked Arguments Parser
+
+Fixed Application#isProcessorRunning not returning the correct value
+Application now loads Plugins after Translations
+
+Plugins must now provide a non-null String as their ID
+PluginManager now uses Console.Debug to log messages
+
 -- Changes from commit @1d9f773
 
 Separated Application from its GUI, this will make PEMU compatible with Headless Systems

@@ -2,104 +2,59 @@ package io.github.hds.pemu;
 
 import io.github.hds.pemu.application.Application;
 import io.github.hds.pemu.application.gui.ApplicationGUI;
+import io.github.hds.pemu.arguments.*;
 import io.github.hds.pemu.console.Console;
 import io.github.hds.pemu.localization.TranslationManager;
+import io.github.hds.pemu.math.MathUtils;
 import io.github.hds.pemu.plugins.DefaultPlugin;
 import io.github.hds.pemu.config.ConfigManager;
-import io.github.hds.pemu.arguments.ArgumentsParser;
 import io.github.hds.pemu.plugins.PluginManager;
 import io.github.hds.pemu.processor.ProcessorConfig;
 import io.github.hds.pemu.utils.StringUtils;
 
 import javax.swing.*;
 import java.io.File;
-import java.util.Scanner;
-import java.util.regex.Pattern;
 
 public final class Main {
 
     public static void main(String[] args) {
+        Command argParser = new Command(Application.APP_NAME, new Command[] {
+                new Command("help"),
+                new Command("version"),
+                new Command("run"),
+                new Command("verify"),
+                new Command("obfuscate")
+        }, new BaseOption[] {
+                new ConstrainedIntegerOption("bits", new String[] { "--bits", "-b" },
+                        n -> n == null ? ProcessorConfig.DEFAULT_BITS : MathUtils.constrain(n, ProcessorConfig.MIN_BITS, ProcessorConfig.MAX_BITS)
+                ),
+                new ConstrainedIntegerOption("memory-size", new String[] { "--memory-size", "-ms" },
+                        n -> n == null ? ProcessorConfig.DEFAULT_MEMORY_SIZE : MathUtils.constrain(n, ProcessorConfig.MIN_MEMORY_SIZE, ProcessorConfig.MAX_MEMORY_SIZE)
+                ),
+                new ConstrainedIntegerOption("clock-frequency", new String[] { "--clock-frequency", "-cf" },
+                        n -> n == null ? ProcessorConfig.DEFAULT_FREQUENCY : MathUtils.constrain(n, ProcessorConfig.MIN_FREQUENCY, ProcessorConfig.MAX_FREQUENCY)
+                ),
+                new StringOption("plugin", new String[] { "--plugin", "-pl" }, DefaultPlugin.getInstance().getID()),
+                new StringOption("language", new String[] { "--language", "-lang" }, "en-us"),
+                new StringOption("program", new String[] { "--program", "-p" }, "."),
+                new FlagOption("command-line", new String[] { "--command-line", "-cl" }),
+                new FlagOption("no-config-auto-save", new String[] { "--no-config-auto-save", "-ncas" })
+        }).parse(args);
 
-        // Create new arguments parser
-        ArgumentsParser parser = new ArgumentsParser();
-        // Define valid options
-        parser.defineFlag("--help", "-h")
-              .defineFlag("--version", "-ver")
-              .defineFlag("--run", "-r")
-              .defineFlag("--verify", "-v")
-              .defineFlag("--obfuscate", "-o")
-              .defineFlag("--command-line", "-cl")
-              .defineFlag("--skip-warning", "-sw")
-              .defineFlag("--no-config-auto-save", "-ncas")
-              .defineRangedInt("--bits", "-b", ProcessorConfig.DEFAULT_BITS, ProcessorConfig.MIN_BITS, ProcessorConfig.MAX_BITS)
-              .defineRangedInt("--memory-size", "-ms", ProcessorConfig.DEFAULT_MEMORY_SIZE, ProcessorConfig.MIN_MEMORY_SIZE, ProcessorConfig.MAX_MEMORY_SIZE)
-              .defineRangedInt("--clock-frequency", "-cf", ProcessorConfig.DEFAULT_FREQUENCY, ProcessorConfig.MIN_FREQUENCY, ProcessorConfig.MAX_FREQUENCY)
-              .defineStr("--program", "-p", "")
-              .defineStr("--plugin", "-pl", "")
-              .defineStr("--language", "-lang", "");
-        // Parse Arguments
-        parser.parse(args);
-
-        // If help flag was specified, print help and return
-        boolean printHelp = parser.isSpecified("--help");
-        boolean printVersion = parser.isSpecified("--version");
-        if (printHelp || printVersion) {
-            if (printVersion) System.out.println(StringUtils.format("{0} version \"{1}\"", Application.APP_NAME, Application.APP_VERSION));
-            if (printHelp) System.out.println("PEMU [options]:\n" + parser.getUsage());
+        if (argParser.getCommandByName("help").isSet()) {
+            System.out.println(argParser.getUsage());
             return;
         }
 
-        boolean isCommandLine = parser.isSpecified("--command-line");
-        boolean runOnStart = parser.isSpecified("--run");
-        boolean verifyOnStart = parser.isSpecified("--verify");
-        boolean obfuscateOnStart = parser.isSpecified("--obfuscate");
-
-        int onStartFlagCount = 0;
-        for (boolean f : new boolean[] { runOnStart, verifyOnStart, obfuscateOnStart })
-            if (f) onStartFlagCount++;
-
-        if (onStartFlagCount > 1) {
-            System.err.println("Only one of \"--run\", \"--verify\" and \"--obfuscate\" flags can be set at once");
+        if (argParser.getCommandByName("version").isSet()) {
+            System.out.println(StringUtils.format("{0} version \"{1}\"", Application.APP_NAME, Application.APP_VERSION));
             return;
         }
+
+        boolean isCommandLine = argParser.getOptionByName("command-line").isSet();
 
         // If the user wants the program to run as a console app
         if (isCommandLine) {
-            // Auto run must be specified, because otherwise the program wouldn't run
-            if (onStartFlagCount == 0) {
-                System.err.println("Either \"--run\", \"--verify\" or \"--obfuscate\" flag must be specified with the \"--command-line\" flag");
-                return;
-            }
-
-            if (!parser.isSpecified("--skip-warning")) {
-                // Making sure that's what the user wants, because there are some compatibility issues with this choice
-                //  (Those are the issues that pushed me into making a Swing app)
-                System.out.println("Note that not all programs run properly on the console (See: https://github.com/hds536jhmk/ProcessorEmulator/blob/master/DOCUMENTATION.md#running-on-the-command-line)");
-                System.out.println("Are you sure you want to continue? (Y|N)");
-
-                // Initializing System.in Scanner and user choice
-                Scanner userInput = new Scanner(System.in);
-                String userChoice;
-
-                // This filters Yes and No
-                Pattern optionFilter = Pattern.compile("Y(?:es)?|No?", Pattern.CASE_INSENSITIVE);
-
-                while (true) {
-                    // Get the user's choice
-                    userChoice = userInput.nextLine();
-
-                    // If it falls within the choice filter, break
-                    if (optionFilter.matcher(userChoice).find()) break;
-
-                    // If not then print the valid choices to the user
-                    System.out.println("Invalid choice, valid choices are: (Yes, Y | No, N)");
-                }
-
-                // If the choice starts with "n" then the user has chosen "No"
-                //  so we return from main else we initialize the Console's output
-                if (userChoice.toLowerCase().startsWith("n")) return;
-            }
-
             Console.usePrintStream(System.out);
         }
 
@@ -122,45 +77,45 @@ public final class Main {
         // Console Arguments override config settings
         // Setting App's ProcessorConfig based on the specified arguments
         ProcessorConfig processorConfig = app.getProcessorConfig();
-        if (parser.isSpecified("--bits"))
-            processorConfig.setBits((int) parser.getOption("--bits").getValue());
-        if (parser.isSpecified("--memory-size"))
-            processorConfig.setMemorySize((int) parser.getOption("--memory-size").getValue());
-        if (parser.isSpecified("--clock-frequency"))
-            processorConfig.setClockFrequency((int) parser.getOption("--clock-frequency").getValue());
+        if (argParser.getOptionByName("bits").isSet())
+            processorConfig.setBits((int) argParser.getOptionByName("bits").getValue());
+        if (argParser.getOptionByName("memory-size").isSet())
+            processorConfig.setMemorySize((int) argParser.getOptionByName("memory-size").getValue());
+        if (argParser.getOptionByName("clock-frequency").isSet())
+            processorConfig.setClockFrequency((int) argParser.getOptionByName("clock-frequency").getValue());
 
-        if (parser.isSpecified("--language")) {
+        if (argParser.getOptionByName("language").isSet()) {
             TranslationManager.setCurrentTranslation(
-                    (String) parser.getOption("--language").getValue()
+                    (String) argParser.getOptionByName("language").getValue()
             );
         }
 
-        if (parser.isSpecified("--plugin")) {
+        if (argParser.getOptionByName("plugin").isSet()) {
             app.loadPlugin(PluginManager.getPlugin(
-                    (String) parser.getOption("--plugin").getValue()
+                    (String) argParser.getOptionByName("plugin").getValue()
             ));
         }
 
-        app.setCurrentProgram(new File((String) parser.getOption("--program").getValue()));
+        app.setCurrentProgram(new File((String) argParser.getOptionByName("program").getValue()));
 
         // Setting app's flags to prevent setVisible to change the app's visibility
         //  and making it close on Processor Stop if on command line
         app.setFlags(
-                  (parser.isSpecified("--no-config-auto-save") ? Application.DISABLE_CONFIG_AUTO_SAVE : Application.NONE)
+                  (argParser.getOptionByName("no-config-auto-save").isSet() ? Application.DISABLE_CONFIG_AUTO_SAVE : Application.NONE)
                 | (isCommandLine ? Application.CLOSE_ON_PROCESSOR_STOP : Application.NONE)
         );
 
         app.run();
 
         boolean closeApplication = isCommandLine;
-        if (runOnStart) {
+        if (argParser.getCommandByName("run").isSet()) {
             boolean successfulRun = app.runProcessor();
             // SuccessfulRun is true if no error was encountered and Processor was run
             // If the processor runs the application should close automatically
             closeApplication = closeApplication && !successfulRun;
-        } else if (verifyOnStart) {
+        } else if (argParser.getCommandByName("verify").isSet()) {
             app.verifyProgram();
-        } else if (obfuscateOnStart) {
+        } else if (argParser.getCommandByName("obfuscate").isSet()) {
             app.obfuscateProgram();
         }
 

@@ -1,6 +1,7 @@
 package io.github.hds.pemu.plugins;
 
 import io.github.hds.pemu.utils.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractPlugin implements IPlugin {
@@ -28,7 +29,7 @@ public abstract class AbstractPlugin implements IPlugin {
         }
     }
 
-    protected AbstractPlugin(@Nullable String id, @Nullable String name, @Nullable String version) {
+    protected AbstractPlugin(@NotNull String id, @Nullable String name, @Nullable String version) {
         assert this.getClass().getAnnotation(Plugin.class) == null;
         ID = id;
         NAME = name;
@@ -36,7 +37,7 @@ public abstract class AbstractPlugin implements IPlugin {
     }
 
     @Override
-    public final @Nullable String getID() {
+    public final @NotNull String getID() {
         return ID;
     }
 

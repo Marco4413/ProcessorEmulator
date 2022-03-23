@@ -12,7 +12,9 @@ import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 
-import java.io.*;
+import io.github.hds.pemu.console.Console;
+
+import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -46,15 +48,15 @@ public final class PluginManager {
         } else errorMessage = plugin.onRegister();
 
         if (errorMessage != null) {
-            System.err.println(StringUtils.format(
+            Console.Debug.println(StringUtils.format(
                     currentTranslation.getOrDefault("messages.pluginRegistrationFailed"),
                     plugin.getName()
             ));
-            System.err.println(StringUtils.format(
+            Console.Debug.println(StringUtils.format(
                     currentTranslation.getOrDefault("messages.pluginErrorMessage"),
                     errorMessage
             ));
-            System.err.println();
+            Console.Debug.println();
             return;
         }
 
@@ -95,15 +97,15 @@ public final class PluginManager {
         );
 
         // If we get here then the Plugin couldn't be registered
-        System.err.println(StringUtils.format(
+        Console.Debug.println(StringUtils.format(
                 currentTranslation.getOrDefault("messages.pluginRegistrationFailed"),
                 pluginAnnotation.name()
         ));
-        System.err.println(StringUtils.format(
+        Console.Debug.println(StringUtils.format(
                 currentTranslation.getOrDefault("messages.pluginErrorMessage"),
                 errorMessage
         ));
-        System.err.println();
+        Console.Debug.println();
     }
 
     /**
@@ -147,9 +149,9 @@ public final class PluginManager {
             pluginClasses.forEach(PluginManager::registerPlugin);
         } catch (Exception err) {
             // This is very unlikely so it's not translated
-            System.err.println("Error while Registering all Plugins:");
-            System.err.println(StringUtils.stackTraceAsString(err));
-            System.err.println();
+            Console.Debug.println("Error while Registering all Plugins:");
+            Console.Debug.println(StringUtils.stackTraceAsString(err));
+            Console.Debug.println();
         }
 
         if (classLoader != null) {

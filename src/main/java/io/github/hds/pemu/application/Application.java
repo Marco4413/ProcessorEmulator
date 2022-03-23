@@ -52,7 +52,6 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
         ConfigManager.addConfigListener(this);
         currentTranslation = TranslationManager.getCurrentTranslation();
 
-        PluginManager.registerPlugins();
         ConfigManager.loadOrCreate();
     }
 
@@ -316,7 +315,7 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
     }
 
     public boolean isProcessorRunning() {
-        return currentProcessor == null || currentProcessor.isRunning();
+        return currentProcessor != null && currentProcessor.isRunning();
     }
 
     public void toggleProcessorExecution() {
@@ -442,7 +441,6 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
 
         e.config.put("selectedLanguage", "en-us");
         String defaultPluginID = DefaultPlugin.getInstance().getID();
-        assert defaultPluginID != null;
         e.config.put("loadedPlugin", defaultPluginID);
     }
 
