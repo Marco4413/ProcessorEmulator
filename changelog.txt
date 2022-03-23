@@ -1,5 +1,9 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @7cf23ff
+
+Added static method ApplicationGUI.isHeadless
+
 -- Changes from commit @eafb42e
 
 Added methods to Application: addApplicationListener, removeApplicationListener

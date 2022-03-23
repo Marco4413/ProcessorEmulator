@@ -121,6 +121,10 @@ public final class ApplicationGUI implements ITranslatable, IApplicationListener
         return INSTANCE;
     }
 
+    public static boolean isHeadless() {
+        return INSTANCE == null;
+    }
+
     private void updateFrame(ActionEvent actionEvent) {
         if (!FRAME.isVisible()) return;
 
