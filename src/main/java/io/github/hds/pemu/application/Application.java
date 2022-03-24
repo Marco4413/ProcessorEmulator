@@ -136,7 +136,7 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
     }
 
     public void setCurrentProgram(@NotNull File program) {
-        if (program.canRead())
+        if (program.isFile() && program.canRead())
             currentProgram = program;
         else currentProgram = null;
         APPLICATION_LISTENERS.forEach(l -> l.onProgramChanged(currentProgram));
