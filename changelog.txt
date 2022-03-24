@@ -1,5 +1,15 @@
 
 -- Version (v1.13.0-RELEASE)
+-- Changes from commit @bb40f5d
+
+Added methods to Application class: getGUI, isHeadless
+Now plugins can safely throw on load
+
+Moved classes from package application.gui to application
+Removed static method ApplicationGUI.getInstance
+Added static method TranslationManager.reloadTranslation
+Improved localization
+
 -- Changes from commit @7cf23ff
 
 Added static method ApplicationGUI.isHeadless

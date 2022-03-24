@@ -92,10 +92,11 @@
 "consoleContextualMenu.saveErrorPanelMsg"   = "{0}\nCouldn't write to file:\n{1}"
 
 "messages.pluginRegistrationFailed" = "Failed to register plugin: \"{0}\""
+"messages.pluginLoadFailed" = "Failed to load plugin: \"{0}\""
 "messages.pluginErrorMessage" = " - {0}"
 "messages.pluginInvalidType"  = "The Plugin didn't return an instance of {0}"
 "messages.pluginDuplicateID"  = "Duplicate Plugin ID: {0}"
-"messages.noPluginLoaded" = "No plugin loaded ({0} -> {1})."
+"messages.noPluginLoaded" = "No plugin loaded."
 "messages.pluginNullProcessor"    = "Couldn't create Processor using plugin: {0}"
 "messages.processorCreationError" = "Couldn't create Processor."
 "messages.pluginNullDummyProcessor"    = "Couldn't create Dummy Processor using plugin: {0}"

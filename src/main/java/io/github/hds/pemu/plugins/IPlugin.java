@@ -12,7 +12,7 @@ public interface IPlugin {
      * If null or another Plugin with the same ID is present then this Plugin won't be registered
      * @return The ID of this plugin
      */
-    @Nullable String getID();
+    @NotNull String getID();
 
     /**
      * Returns the Name of this plugin

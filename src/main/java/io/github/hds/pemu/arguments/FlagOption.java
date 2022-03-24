@@ -1,6 +1,5 @@
 package io.github.hds.pemu.arguments;
 
-import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 public final class FlagOption extends BaseOption<Boolean> {

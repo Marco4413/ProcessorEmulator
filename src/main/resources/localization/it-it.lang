@@ -92,10 +92,11 @@
 "consoleContextualMenu.saveErrorPanelMsg"   = "{0}\nNon è stato possibile scrivere sul file:\n{1}"
 
 "messages.pluginRegistrationFailed" = "Impossibile registrare il plugin: \"{0}\""
+"messages.pluginLoadFailed" = "Impossibile caricare il plugin: \"{0}\""
 "messages.pluginErrorMessage" = " - {0}"
 "messages.pluginInvalidType"  = "Il plugin non ha ritornato un'istanza di {0}"
 "messages.pluginDuplicateID"  = "ID Plugin Duplicato: {0}"
-"messages.noPluginLoaded" = "Nessun plugin caricato ({0} -> {1})."
+"messages.noPluginLoaded" = "Nessun plugin caricato."
 "messages.pluginNullProcessor"    = "Impossibile creare un Processore usando il plugin: {0}"
 "messages.processorCreationError" = "Creazione Processore fallita."
 "messages.pluginNullDummyProcessor"    = "Impossibile creare un Processore \"Finto\" usando il plugin: {0}"

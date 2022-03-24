@@ -1,4 +1,4 @@
-package io.github.hds.pemu.application.gui;
+package io.github.hds.pemu.application;
 
 import io.github.hds.pemu.utils.Fonts;
 import org.jetbrains.annotations.NotNull;

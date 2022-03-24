@@ -1,7 +1,5 @@
-package io.github.hds.pemu.application.gui;
+package io.github.hds.pemu.application;
 
-import io.github.hds.pemu.application.Application;
-import io.github.hds.pemu.application.IApplicationListener;
 import io.github.hds.pemu.console.Console;
 import io.github.hds.pemu.console.ConsoleComponent;
 import io.github.hds.pemu.files.FileUtils;
@@ -31,8 +29,6 @@ public final class ApplicationGUI implements ITranslatable, IApplicationListener
 
     public static final int PERFORMANCE_UPDATE_INTERVAL = 1000;
 
-    private static ApplicationGUI INSTANCE;
-
     public final JFrame FRAME;
     public final JMenuBar MENU_BAR;
 
@@ -50,7 +46,11 @@ public final class ApplicationGUI implements ITranslatable, IApplicationListener
 
     private @NotNull Translation currentTranslation = TranslationManager.getCurrentTranslation();
 
-    private ApplicationGUI(@NotNull Application parentApp) {
+    protected ApplicationGUI(@NotNull Application parentApp) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) { }
+
         APP = parentApp;
 
         FRAME = new JFrame();
@@ -114,15 +114,6 @@ public final class ApplicationGUI implements ITranslatable, IApplicationListener
 
         UPDATE_TIMER = new Timer(PERFORMANCE_UPDATE_INTERVAL, this::updateFrame);
         UPDATE_TIMER.start();
-    }
-
-    public static @NotNull ApplicationGUI getInstance() {
-        if (INSTANCE == null) INSTANCE = new ApplicationGUI(Application.getInstance());
-        return INSTANCE;
-    }
-
-    public static boolean isHeadless() {
-        return INSTANCE == null;
     }
 
     private void updateFrame(ActionEvent actionEvent) {

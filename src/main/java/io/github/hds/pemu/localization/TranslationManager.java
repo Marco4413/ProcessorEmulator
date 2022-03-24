@@ -80,6 +80,10 @@ public final class TranslationManager {
         return false;
     }
 
+    public static void reloadTranslation() {
+        LISTENERS.forEach(listener -> listener.updateTranslations(currentTranslation));
+    }
+
     private static @NotNull Translation loadTranslation(@NotNull String resourcePath) {
         InputStream stream = Main.class.getResourceAsStream(resourcePath);
         return parseTranslation(new InputStreamReader(stream, StandardCharsets.UTF_8));

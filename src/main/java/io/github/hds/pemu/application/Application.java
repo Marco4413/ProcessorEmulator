@@ -20,10 +20,10 @@ import io.github.hds.pemu.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 
@@ -51,7 +51,14 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
 
     private final HashSet<IApplicationListener> APPLICATION_LISTENERS = new HashSet<>();
 
-    private Application() {
+    private final boolean HEADLESS;
+    private final ApplicationGUI GUI_INSTANCE;
+
+    private Application(boolean headless) {
+        HEADLESS = headless || GraphicsEnvironment.isHeadless();
+
+        GUI_INSTANCE = isHeadless() ? null : new ApplicationGUI(this);
+
         TranslationManager.addTranslationListener(this);
         ConfigManager.addConfigListener(this);
         currentTranslation = TranslationManager.getCurrentTranslation();
@@ -60,8 +67,23 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
     }
 
     public static @NotNull Application getInstance() {
-        if (INSTANCE == null) INSTANCE = new Application();
+        if (INSTANCE == null) INSTANCE = new Application(false);
         return INSTANCE;
+    }
+
+    public static @NotNull Application getInstance(boolean headless) {
+        if (INSTANCE == null) INSTANCE = new Application(headless);
+        return INSTANCE;
+    }
+
+    public @NotNull ApplicationGUI getGUI() {
+        if (GUI_INSTANCE == null)
+            throw new HeadlessException("Trying to get instance of Application's GUI while in Headless Mode.");
+        return GUI_INSTANCE;
+    }
+
+    public boolean isHeadless() {
+        return HEADLESS;
     }
 
     public boolean addApplicationListener(@NotNull IApplicationListener listener) {
@@ -89,8 +111,19 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
             if (loadedPlugin != null)
                 loadedPlugin.onUnload();
 
-            loadedPlugin = plugin;
-            plugin.onLoad();
+            try {
+                loadedPlugin = plugin;
+                plugin.onLoad();
+            } catch (Throwable err) {
+                loadedPlugin = null;
+                Console.Debug.println(StringUtils.format(
+                        currentTranslation.getOrDefault("messages.pluginLoadFailed"), plugin.getID()
+                ));
+                Console.Debug.println(StringUtils.format(
+                        currentTranslation.getOrDefault("messages.pluginErrorMessage"), StringUtils.stackTraceAsString(err)
+                ));
+                Console.Debug.println();
+            }
         } else {
             pluginToLoadOnRun = plugin;
         }
@@ -367,6 +400,8 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
     public void run() {
         if (isRunning) throw new RuntimeException("Application is already running.");
         isRunning = true;
+
+        if (GUI_INSTANCE != null) GUI_INSTANCE.FRAME.setVisible(true);
         loadPlugin(pluginToLoadOnRun);
     }
 
@@ -440,7 +475,7 @@ public final class Application implements KeyListener, IConfigurable, ITranslata
         e.config.put("selectedLanguage", selectedLanguage);
 
         IPlugin loadedPlugin = this.getLoadedPlugin();
-        if (loadedPlugin != null && loadedPlugin.getID() != null)
+        if (loadedPlugin != null)
             e.config.put("loadedPlugin", loadedPlugin.getID());
     }
 

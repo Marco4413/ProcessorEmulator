@@ -1,7 +1,7 @@
 package io.github.hds.pemu;
 
 import io.github.hds.pemu.application.Application;
-import io.github.hds.pemu.application.gui.ApplicationGUI;
+import io.github.hds.pemu.application.ApplicationGUI;
 import io.github.hds.pemu.arguments.*;
 import io.github.hds.pemu.console.Console;
 import io.github.hds.pemu.localization.TranslationManager;
@@ -13,6 +13,7 @@ import io.github.hds.pemu.processor.ProcessorConfig;
 import io.github.hds.pemu.utils.StringUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 
 public final class Main {
@@ -51,10 +52,10 @@ public final class Main {
             return;
         }
 
-        boolean isCommandLine = argParser.getOptionByName("command-line").isSet();
+        boolean isHeadless = argParser.getOptionByName("command-line").isSet() || GraphicsEnvironment.isHeadless();
 
         // If the user wants the program to run as a console app
-        if (isCommandLine) {
+        if (isHeadless) {
             Console.usePrintStream(System.out);
         }
 
@@ -63,16 +64,7 @@ public final class Main {
         // Queuing DefaultPlugin for register
         PluginManager.queueForRegister(DefaultPlugin.getInstance());
 
-        Application app = Application.getInstance();
-
-        // Initializing GUI if necessary
-        if (!isCommandLine) {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception ignored) { }
-            ApplicationGUI.getInstance().FRAME.setVisible(true);
-            TranslationManager.setCurrentTranslation(TranslationManager.getCurrentTranslation().getShortName());
-        }
+        Application app = Application.getInstance(isHeadless);
 
         // Console Arguments override config settings
         // Setting App's ProcessorConfig based on the specified arguments
@@ -102,12 +94,12 @@ public final class Main {
         //  and making it close on Processor Stop if on command line
         app.setFlags(
                   (argParser.getOptionByName("no-config-auto-save").isSet() ? Application.DISABLE_CONFIG_AUTO_SAVE : Application.NONE)
-                | (isCommandLine ? Application.CLOSE_ON_PROCESSOR_STOP : Application.NONE)
+                | (isHeadless ? Application.CLOSE_ON_PROCESSOR_STOP : Application.NONE)
         );
 
         app.run();
 
-        boolean closeApplication = isCommandLine;
+        boolean closeApplication = isHeadless;
         if (argParser.getCommandByName("run").isSet()) {
             boolean successfulRun = app.runProcessor();
             // SuccessfulRun is true if no error was encountered and Processor was run

@@ -1,4 +1,4 @@
-package io.github.hds.pemu.application.gui;
+package io.github.hds.pemu.application;
 
 import javax.swing.*;
 import java.util.function.Function;
