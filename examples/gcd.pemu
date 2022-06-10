@@ -1,12 +1,12 @@
 
 ;;
  ; @File
- ; @Author: [hds536jhmk](https://github.com/hds536jhmk)
+ ; @Author: [Marco4413](https://github.com/Marco4413)
  ; @Name: gcd.pemu
  ; @Description: A PEMU program that calculates the GCD between two numbers given by the user.
  ; @License: MIT
  ; @Created-At   : 16-07-2021
- ; @Last-Modified: 21-07-2021
+ ; @Last-Modified: 10-06-2022
 
 ;;
  ; @Processor-Requirements

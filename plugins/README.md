@@ -31,4 +31,4 @@ Plugins can be added by going into `User's Home Dir -> .pemu -> plugins` and dro
 
 A "well-documented" example can be found here:
 
-https://github.com/hds536jhmk/pemu-ExamplePlugin
+https://github.com/Marco4413/pemu-ExamplePlugin

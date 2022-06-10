@@ -2,7 +2,7 @@
 
 ![PEMU Logo](logo.png)
 
-[![Gradle Build](https://github.com/hds536jhmk/ProcessorEmulator/actions/workflows/gradle.yml/badge.svg)](https://github.com/hds536jhmk/ProcessorEmulator/actions/workflows/gradle.yml)
+[![Gradle Build](https://github.com/Marco4413/ProcessorEmulator/actions/workflows/gradle.yml/badge.svg)](https://github.com/Marco4413/ProcessorEmulator/actions/workflows/gradle.yml)
 
 ## What's this project all about?
 
@@ -27,12 +27,12 @@ This project is built using [**Adopt OpenJDK 8**](https://adoptopenjdk.net/?vari
 though any newer JRE should be able to run this properly.
 
 There are four main ways to run it:
- 1. By downloading the jar file from [GitHub Releases](https://github.com/hds536jhmk/ProcessorEmulator/releases).
+ 1. By downloading the jar file from [GitHub Releases](https://github.com/Marco4413/ProcessorEmulator/releases).
  2. By opening the project using **IntelliJ IDEA** and building the **project's artifact**.
  3. By opening the project using **IntelliJ IDEA** and creating a new **Run Config**:
     - Java Version: `1.8` (Adopt OpenJDK)
     - Class Path: `PEMU.main`
-    - Main Class: `io.github.hds.pemu.Main`
+    - Main Class: `io.github.marco4413.pemu.Main`
  4. By building the source with gradle. Pull the latest version from the repo and run `gradlew shadowJar`,
     the jar file should be located in `./build/libs/PEMU-version.jar`.
 
@@ -44,7 +44,7 @@ folder.
 ## PEMU Libraries:
 
 Since version `1.10.0` added the `#INCLUDE` Compiler Instruction (see [docs](#documentation)) libraries became possible,
-so I've made a [Standard Library](https://github.com/hds536jhmk/pemu-stdlib) Which is separated
+so I've made a [Standard Library](https://github.com/Marco4413/pemu-stdlib) Which is separated
 into modules (since Memory Management is so important) with all functions that I've found myself rewriting all the time.
 
 You can download the above linked folder and start using it yourself to make your life much easier!
@@ -72,11 +72,11 @@ Syntax Highlighting (For PEMU Docs too!), Icons (Still waiting for VSCode to sup
 utilities to be used with the PEMU Programming Language:
 
  - https://marketplace.visualstudio.com/items?itemName=hds.pemu-language-extensions
- - https://github.com/hds536jhmk/vscode-pemu-language
+ - https://github.com/Marco4413/vscode-pemu-language
 
-![](https://raw.githubusercontent.com/hds536jhmk/vscode-pemu-language/master/pemu-language-extension.verify-code.gif)
+![](https://raw.githubusercontent.com/Marco4413/vscode-pemu-language/master/pemu-language-extension.verify-code.gif)
 
-![](https://raw.githubusercontent.com/hds536jhmk/vscode-pemu-language/master/pemu-language-extension.snippets.gif)
+![](https://raw.githubusercontent.com/Marco4413/vscode-pemu-language/master/pemu-language-extension.snippets.gif)
 
 ## Dependencies:
 

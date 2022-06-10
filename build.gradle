@@ -7,7 +7,7 @@ plugins {
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-group 'io.github.hds'
+group 'io.github.marco4413'
 version '1.12.2-RELEASE'
 
 repositories {
@@ -27,7 +27,7 @@ jar {
     //noinspection GroovyAssignabilityCheck
     manifest {
         attributes(
-                'Main-Class': 'io.github.hds.pemu.Main'
+                'Main-Class': 'io.github.marco4413.pemu.Main'
         )
     }
 }
